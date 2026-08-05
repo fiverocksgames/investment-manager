@@ -8,13 +8,19 @@ Protect account identity, portfolio information, application configuration, and 
 
 Supabase Auth with Google Login is the initial sign-in method. Authorization must be enforced by database policy or trusted server-side logic, not only by the user interface. User-owned tables require Row Level Security with default-deny rules and tests proving cross-user isolation.
 
+The frontend restores the current Supabase session and subscribes to authentication-state changes. Missing public configuration must produce a visible configuration state rather than a crash. OAuth end-to-end success is not established until a real Supabase project and Google provider are configured and tested.
+
 ## Credential handling
 
 Credentials and tokens must not be committed to the repository. Development, CI, and production values must use approved environment or platform secret storage. Application logs and error responses must avoid exposing sensitive values.
 
+The frontend may receive only the Supabase project URL and browser-safe publishable or anon key through `VITE_` variables. Supabase service-role keys, database passwords, and Google OAuth client secrets must never be exposed to Vite or committed. Setup and validation steps are documented in `docs/SUPABASE_SETUP.md`.
+
 ## Client and API controls
 
 Only browser-safe configuration may be included in the frontend. Inputs require validation, redirects require allow-listing, and error responses must avoid internal details. Public and privileged operations must have clearly separated permissions.
+
+Authentication establishes identity but does not by itself authorize access to portfolio or analysis data. Every user-owned table requires Row Level Security before frontend access is enabled.
 
 ## Financial data
 
