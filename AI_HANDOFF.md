@@ -2,17 +2,31 @@
 
 ## Current State
 
-Investment Manager has completed Phase 1 infrastructure and authentication. The upstream deployment at `e20cboy/investment-manager` is live on GitHub Pages and has passed end-to-end Google OAuth validation.
+Investment Manager has completed Phase 1 infrastructure and authentication. The canonical development repository is now `fiverocksgames/investment-manager`. Phase 2 Data Platform design is the next product-development objective after Project Development Policy v1 is merged.
 
 ## Repository and Active Work
 
-- Working repository: `fiverocksgames/investment-manager`
-- Upstream repository: `e20cboy/investment-manager`
+- Canonical repository: `fiverocksgames/investment-manager`
 - Default branch: `main`
-- Active branch: `agent/phase-1-closeout`
-- Issue: #11 — `docs: close Phase 1 and prepare Phase 2`
+- Active branch: `agent/project-policy-v1`
+- Issue: #13 — `docs: establish project development policy v1`
+- PR: not yet created
 
-Because the GitHub app can write only to the fork, implement changes in fork feature branches and open upstream PRs manually from those branches to `e20cboy:main`.
+All Issues, branches, pull requests, CI evidence, reviews, merges, and project records are maintained in the canonical repository. External repositories are not part of the normal development workflow.
+
+## Governing Documents
+
+Read these before changing behavior:
+
+- `PROJECT_CHARTER.md`
+- `PROJECT_POLICY.md`
+- `AGENTS.md`
+- `CONTRIBUTING.md`
+- `docs/INVESTMENT_POLICY.md`
+- `WORKLOG.md`
+- `docs/FEATURE_MATRIX.md`
+
+The repository is the single source of truth. Important decisions must not exist only in conversation history.
 
 ## Completed Phase 1 Baseline
 
@@ -29,7 +43,7 @@ Because the GitHub app can write only to the fork, implement changes in fork fea
 
 ## Validation Evidence
 
-The upstream deployed application has been manually verified for:
+The deployed application has been manually verified for:
 
 - Successful GitHub Pages deployment.
 - Supabase configuration detection after repository Variables were added and a new build was deployed.
@@ -39,6 +53,17 @@ The upstream deployed application has been manually verified for:
 - Successful sign-out.
 
 PWA installation and offline behavior have not been browser-verified.
+
+## Current Policy Work
+
+Issue #13 establishes:
+
+- `fiverocksgames/investment-manager` as the canonical repository.
+- Issue → Design → Documentation → Branch → Implementation → Test → Draft PR → CI → Review → User Approval → Merge → Issue Close.
+- No direct commits to `main`.
+- Draft PR and explicit user-approval requirements.
+- Constitution and living-document classifications.
+- Requirement traceability and AI handoff requirements.
 
 ## Security Boundaries
 
@@ -57,13 +82,14 @@ PWA installation and offline behavior have not been browser-verified.
 
 ## Development Rules
 
-1. Read `PROJECT_CHARTER.md`, `AGENTS.md`, `WORKLOG.md`, and this file first.
-2. Follow Issue → Design → Documentation → Implementation → Test → PR.
-3. Preserve Requirement IDs and update `docs/FEATURE_MATRIX.md`.
+1. Follow `PROJECT_POLICY.md`.
+2. Work from an Issue and stable Requirement IDs for substantial changes.
+3. Preserve Requirement IDs and update `docs/FEATURE_MATRIX.md` when requirements or evidence change.
 4. Keep financial calculations outside the UI.
 5. Never commit secrets or personal portfolio data.
-6. Update Worklog and Handoff in every PR.
+6. Update Worklog, Handoff, and Changelog in every substantial PR.
 7. Never claim validation without evidence.
+8. Never merge without explicit user approval.
 
 ## Run and Test Instructions
 
@@ -77,4 +103,4 @@ For local authentication, copy `.env.example` to `.env.local`, use only the brow
 
 ## Exact Next Recommended Task
 
-Create the Phase 2 Data Platform design issue. Define provider-independent schemas for assets, observations, source metadata, retrieval timestamps, freshness status, and ingestion failures before implementing Yahoo Finance, FRED, ECOS, or FX adapters.
+Complete Issue #13 by creating a Draft PR, verifying Documentation CI, and requesting user approval before merge. After merge, create the Phase 2 Data Platform design Issue and define provider-independent schemas for assets, observations, source metadata, retrieval timestamps, freshness status, and ingestion failures before implementing provider adapters.
