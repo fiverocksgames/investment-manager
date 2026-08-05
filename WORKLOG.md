@@ -5,77 +5,60 @@
 ### Today’s Work
 
 - Verified GitHub access and administrative permissions for `fiverocksgames/investment-manager`.
-- Initialized the empty repository on `main`.
-- Created `agent/project-bootstrap` and Draft PR #1.
-- Established governance, requirement traceability, investment boundaries, product requirements, architecture, data, analysis, portfolio, database, API, security, operations, and testing specifications.
-- Expanded the README into the repository entry point and documentation map.
+- Initialized `main`, created `agent/project-bootstrap`, and opened Draft PR #1.
+- Established the full governance and specification document set.
+- Added feature and bug Issue forms, the mandatory PR template, CODEOWNERS, and a documentation validation workflow.
+- Added the MIT License and recorded the decision in `docs/DECISIONS.md`.
 
 ### Completed
 
-- `GOV-BOOT-001`: Mandatory governance and specification document set created.
+- `GOV-BOOT-001`: Governance, specification, contribution, ownership, license, and repository-template baseline created.
 - `GOV-TRACE-001`: Requirement ID and feature traceability rules documented.
 - `GOV-AI-001`: AI operating and handoff rules documented.
-- `GOV-DOC-001`: Documentation receives the same completion and review weight as code.
-- MVP scope, excluded scope, success criteria, quality criteria, Definition of Done, risks, and roadmap documented.
-- Technical choices and investment-policy boundaries recorded.
-- Draft PR #1 contains the required Summary, Requirement IDs, Validation, Test, Documentation, Known Limitations, and Next Steps structure.
+- `GOV-DOC-001`: Documentation review is part of completion and is represented in the PR template and CI.
+- All 21 mandatory bootstrap documents exist.
+- `.github/ISSUE_TEMPLATE/feature_request.yml` and `bug_report.yml` exist.
+- `.github/PULL_REQUEST_TEMPLATE.md`, `.github/CODEOWNERS`, and `.github/workflows/docs.yml` exist.
+- `LICENSE` uses MIT; `DEC-008` records the rationale and consequences.
 
-### Files Completed in Bootstrap
+### Validation Added
 
-- `README.md`
-- `PROJECT_CHARTER.md`
-- `AGENTS.md`
-- `CHANGELOG.md`
-- `CONTRIBUTING.md`
-- `ROADMAP.md`
-- `WORKLOG.md`
-- `AI_HANDOFF.md`
-- `docs/PRD.md`
-- `docs/ARCHITECTURE.md`
-- `docs/FEATURE_MATRIX.md`
-- `docs/ANALYSIS_SPEC.md`
-- `docs/PORTFOLIO_SPEC.md`
-- `docs/DATABASE.md`
-- `docs/API_SPEC.md`
-- `docs/SECURITY.md`
-- `docs/OPERATIONS.md`
-- `docs/DATA_SOURCES.md`
-- `docs/INVESTMENT_POLICY.md`
-- `docs/TEST_PLAN.md`
-- `docs/DECISIONS.md`
+The `Documentation` GitHub Actions workflow now:
+
+1. Verifies every mandatory document exists and is non-empty.
+2. Runs Markdown linting.
+3. Checks Markdown links in offline mode.
+
+Workflow results must be inspected before PR #1 is marked ready or merged.
 
 ### Incomplete
 
-Phase 0 implementation and repository-automation items remain:
+- Review the workflow result and resolve any lint or link failures.
+- Perform focused human review for MVP-scope consistency and financial-safety language.
+- Review repository labels, milestones, branch protection, secret scanning, and dependency/security settings; these are repository settings and are not established by the current files.
+- Decide whether settings work belongs before merge or in a dedicated follow-up Issue.
 
-- GitHub Issue templates.
-- Pull request template.
-- Documentation consistency and link-validation workflow.
-- CI policy and repository-settings review.
-- Labels, milestones, branch protection, and security-feature review.
-- Formal license decision.
-
-No application code, database migration, deployment workflow, or automated tests exist yet.
+No application code, database migration, deployment workflow, or application test suite exists.
 
 ### Next Work
 
-1. Review all bootstrap documents for scope consistency and broken links.
-2. Add Issue and PR templates under `.github/` through a traceable change.
-3. Add documentation validation and baseline CI.
-4. Review Draft PR #1 against the Definition of Done and resolve review findings.
-5. Merge the governance PR before starting Phase 1 infrastructure work.
-6. Begin Phase 1 with a dedicated Issue and branch for React, TypeScript, Vite, and PWA bootstrap.
+1. Inspect PR #1 checks and changed-file list.
+2. Fix documentation validation failures, if any.
+3. Review the PR against `PROJECT_CHARTER.md` Definition of Done.
+4. Refresh this worklog, `AI_HANDOFF.md`, and the PR description with final validation evidence.
+5. Mark ready for review only after checks and review pass.
+6. Merge, then begin Phase 1 through a dedicated Issue and branch.
 
 ### Cautions
 
-- Free data provider access, terms, identifiers, and reliability assumptions require verification before implementation.
-- Analysis formulas and thresholds remain design inputs, not approved production values.
-- Bitcoin exposure is not approved for MVP implementation without a separate decision.
-- Do not mark PR #1 ready until documentation review and link validation are complete.
-- Do not invent run or test commands before executable project files exist.
+- Free data-provider access, terms, identifiers, and reliability require verification before implementation.
+- Analysis formulas and thresholds remain specifications, not approved production values.
+- Bitcoin exposure remains outside approved MVP implementation without a separate decision.
+- The MIT license is now an accepted project decision; changing it later requires explicit governance review.
+- Do not report CI success until GitHub reports the workflow result.
 
 ### Current Branch and PR
 
 - Branch: `agent/project-bootstrap`
 - Pull Request: #1 — `docs: establish project governance`
-- Status: Draft
+- Status: Draft pending validation and review
