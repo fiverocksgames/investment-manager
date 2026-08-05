@@ -4,8 +4,8 @@
 
 Investment Manager is completing Phase 0 — Foundation. PR #1 contains the
 project governance, specifications, repository templates, ownership rules,
-documentation CI, and MIT License. Automated documentation validation passes
-on the latest head. No application, database migration, deployment workflow,
+documentation CI, and MIT License. Automated documentation validation has
+passed repeatedly. No application, database migration, deployment workflow,
 or application test suite exists.
 
 ## Repository and Active Work
@@ -28,8 +28,7 @@ or application test suite exists.
 
 ## Validation Evidence
 
-Documentation run #12, run ID `30999233577`, completed successfully on the
-latest PR head.
+Documentation run #12, run ID `30999233577`, completed successfully.
 
 - Required-document check: passed.
 - Markdown lint: passed.
