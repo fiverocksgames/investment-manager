@@ -1,12 +1,16 @@
 # Contributing
 
+## Policy
+
+All contributors must follow [`PROJECT_POLICY.md`](PROJECT_POLICY.md). The canonical repository is `fiverocksgames/investment-manager`.
+
 ## Workflow
 
-All work follows:
+Substantial work follows:
 
-Issue → Design → Documentation → Implementation → Test → Pull Request
+Issue → Design → Documentation → Branch → Implementation → Test → Draft Pull Request → CI → Review → User Approval → Merge → Issue Close
 
-Do not begin implementation until the requirement, scope, and acceptance criteria are documented.
+Do not begin implementation until the requirement, scope, exclusions, acceptance criteria, and validation plan are documented.
 
 ## Issues
 
@@ -21,16 +25,21 @@ An Issue should include:
 
 Use stable IDs such as:
 
-- `REQ-MKT-*` market and data
-- `REQ-SIG-*` analysis and signals
-- `REQ-PORT-*` portfolio
+- `REQ-DATA-*` data models and normalization
+- `REQ-PROVIDER-*` provider adapters
+- `REQ-ANALYSIS-*` analysis and signals
+- `REQ-PORTFOLIO-*` portfolio behavior
+- `REQ-RECOMMEND-*` recommendation behavior
+- `REQ-UI-*` user interface
 - `REQ-AUTH-*` authentication
-- `REQ-BKT-*` backtesting
-- `REQ-REC-*` recommendation
+- `REQ-INFRA-*` infrastructure
+- `REQ-SEC-*` security
 - `REQ-OPS-*` operations
 - `GOV-*` governance
 
-IDs are append-only. Deprecated requirements remain documented with status and replacement references.
+Existing identifiers such as `REQ-MKT-*`, `REQ-SIG-*`, `REQ-PORT-*`, and `REQ-REC-*` remain valid. IDs are append-only. Deprecated requirements remain documented with status and replacement references.
+
+Small typo, broken-link, or formatting-only corrections may omit a separate Issue when they do not change behavior, requirements, architecture, data, security, or operations.
 
 ## Branches
 
@@ -40,8 +49,9 @@ Use short-lived branches:
 - `feature/<description>` for features
 - `fix/<description>` for defects
 - `docs/<description>` for documentation
+- `ci/<description>` for automation
 
-Branch from the current default branch unless the Issue explicitly identifies another base.
+Branch from the current `main`. Never commit directly to `main`. Keep one coherent purpose per branch.
 
 ## Documentation First
 
@@ -59,6 +69,8 @@ Before code, update the relevant documents:
 - Tests: `docs/TEST_PLAN.md`
 - Decisions: `docs/DECISIONS.md`
 - Traceability: `docs/FEATURE_MATRIX.md`
+
+Every substantial PR updates `WORKLOG.md`, `AI_HANDOFF.md`, and `CHANGELOG.md`. Update `docs/FEATURE_MATRIX.md` whenever requirements or evidence change.
 
 ## Commits
 
@@ -90,7 +102,7 @@ At minimum, implementation PRs should eventually include:
 
 ## Pull Requests
 
-Open Draft PRs early for substantial work. Every PR body must contain:
+Open every substantial PR as Draft. Every PR body must contain:
 
 - Summary
 - Requirement IDs
@@ -100,7 +112,7 @@ Open Draft PRs early for substantial work. Every PR body must contain:
 - Known Limitations
 - Next Steps
 
-Update `WORKLOG.md`, `AI_HANDOFF.md`, and `docs/FEATURE_MATRIX.md` in the same PR.
+Mark the PR ready only after required CI succeeds. Do not merge without explicit user approval. Close the linked Issue only after the merge and final evidence are recorded.
 
 ## Review
 

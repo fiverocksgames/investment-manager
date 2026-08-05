@@ -1,5 +1,64 @@
 # Worklog
 
+## 2026-08-06 — Project Development Policy v1
+
+### Policy Work
+
+- Confirmed `fiverocksgames/investment-manager` as the canonical development repository.
+- Created Issue #13 and branch `agent/project-policy-v1`.
+- Added `PROJECT_POLICY.md` as the durable development-policy document.
+- Standardized the Issue, documentation-first, branch, Draft PR, CI, approval, merge, and Issue-close workflow.
+- Separated constitution documents from living operational documents.
+- Updated contributor guidance to preserve Requirement traceability and AI handoff quality.
+
+### Policy Completion
+
+- Canonical repository decision documented.
+- Project workflow documented as: Issue → Design → Documentation → Branch → Implementation → Test → Draft PR → CI → Review → User Approval → Merge → Issue Close.
+- Direct commits to `main` prohibited.
+- Draft PR and explicit user-approval requirements documented.
+- Security, architecture, data-integrity, and investment-safety priorities retained.
+
+### Policy Validation
+
+- Documentation changes are committed on `agent/project-policy-v1`.
+- Draft PR #14 was created.
+- Documentation run #40 failed only because the new Worklog entry reused headings from the previous entry.
+- This follow-up commit gives the new entry unique headings so Markdownlint can pass.
+
+### Policy Remaining Work
+
+- Verify the new Documentation CI run.
+- Mark PR #14 ready for review only after CI succeeds.
+- Merge only after explicit user approval.
+- Begin Phase 2 Data Platform design after policy adoption.
+- Validate PWA installation and offline behavior separately.
+- Generate `package-lock.json` and change CI from `npm install` to `npm ci`.
+- Create user-owned database tables, default-deny RLS policies, and cross-user isolation tests.
+
+### Policy Next Steps
+
+1. Verify the replacement Documentation run.
+2. Record the exact successful run evidence.
+3. Mark PR #14 ready for review.
+4. Request user approval before merge.
+5. After merge, create the Phase 2 Data Platform design Issue.
+
+### Policy Cautions
+
+- The canonical-repository decision does not move or synchronize external repositories.
+- Tool limitations must not weaken Issue, CI, review, or approval controls.
+- Authentication proves identity but does not authorize access to future user-owned tables.
+- PWA offline behavior has not yet been validated and must not be described as complete.
+
+### Policy Issue, Branch, and PR
+
+- Repository: `fiverocksgames/investment-manager`
+- Issue: #13 — `docs: establish project development policy v1`
+- Branch: `agent/project-policy-v1`
+- PR: #14 — `docs: establish project development policy v1`
+- Status: Draft PR; documentation fix pushed after run #40 failure
+
 ## 2026-08-06 — Phase 1 Closure
 
 ### Today’s Work
@@ -41,11 +100,9 @@
 
 ### Next Work
 
-1. Merge the Phase 1 closeout documentation into fork `main`.
-2. Open an upstream PR from `fiverocksgames:agent/phase-1-closeout` to `e20cboy:main`.
-3. Merge the documentation-only upstream PR after CI passes.
-4. Create the Phase 2 Data Platform design issue and provider-independent data model.
-5. Define freshness, source metadata, caching, retry, and failure-state rules before implementation.
+1. Establish the canonical-repository development policy.
+2. Create the Phase 2 Data Platform design issue and provider-independent data model.
+3. Define freshness, source metadata, caching, retry, and failure-state rules before implementation.
 
 ### Cautions
 
@@ -53,14 +110,6 @@
 - Default-deny RLS and isolation tests are required before storing personal portfolio data.
 - Browser-visible publishable keys are not privileged credentials.
 - PWA offline behavior has not yet been validated and must not be described as complete.
-
-### Current Branch and PR
-
-- Working repository: `fiverocksgames/investment-manager`
-- Upstream repository: `e20cboy/investment-manager`
-- Branch: `agent/phase-1-closeout`
-- Issue: #11 — `docs: close Phase 1 and prepare Phase 2`
-- Status: Phase 1 closure documentation in progress
 
 ## 2026-08-06 — Upstream Synchronization
 

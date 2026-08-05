@@ -6,7 +6,7 @@ Investment Manager is a personal investment decision-support system for conserva
 
 ## Status
 
-Phase 1 infrastructure and authentication are complete in the upstream deployment.
+Phase 1 infrastructure and authentication are complete.
 
 Verified baseline:
 
@@ -20,6 +20,12 @@ Verified baseline:
 - GitHub Actions repository Variables wiring for Supabase public configuration
 
 Phase 2 Data Platform design is the next development objective. Browser-level PWA installation and offline behavior remain to be validated separately.
+
+## Canonical Repository
+
+The canonical development repository is `fiverocksgames/investment-manager`. All Issues, branches, pull requests, CI evidence, reviews, merges, and project records are maintained here.
+
+Development operations are governed by [`PROJECT_POLICY.md`](PROJECT_POLICY.md).
 
 ## MVP Scope
 
@@ -45,6 +51,7 @@ The project prioritizes capital preservation, diversification, ETF-based exposur
 ### Governance
 
 - [`PROJECT_CHARTER.md`](PROJECT_CHARTER.md)
+- [`PROJECT_POLICY.md`](PROJECT_POLICY.md)
 - [`AGENTS.md`](AGENTS.md)
 - [`CONTRIBUTING.md`](CONTRIBUTING.md)
 - [`ROADMAP.md`](ROADMAP.md)
@@ -75,7 +82,7 @@ Every product requirement receives a stable ID. The path from planning through d
 
 ## Development Process
 
-`Issue → Design → Documentation → Implementation → Test → Pull Request`
+`Issue → Design → Documentation → Branch → Implementation → Test → Draft PR → CI → Review → User Approval → Merge → Issue Close`
 
 A feature is not complete when documentation, worklog, handoff, tests, or traceability evidence is missing.
 
