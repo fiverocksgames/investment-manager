@@ -6,19 +6,20 @@ Investment Manager is a personal investment decision-support system for conserva
 
 ## Status
 
-Phase 1 infrastructure is implemented in this fork and is being prepared for a one-time synchronization to `e20cboy/investment-manager`.
+Phase 1 infrastructure and authentication are complete in the upstream deployment.
 
-Implemented baseline:
+Verified baseline:
 
 - React, TypeScript, and Vite application shell
 - Tailwind CSS styling
 - PWA registration and manifest generation
 - GitHub Pages build and deployment workflow
 - Supabase browser client and authentication context
-- Google sign-in and sign-out actions
+- Google sign-in and sign-out
+- Session restoration after refresh and browser restart
 - GitHub Actions repository Variables wiring for Supabase public configuration
 
-External configuration and browser-level validation are still pending.
+Phase 2 Data Platform design is the next development objective. Browser-level PWA installation and offline behavior remain to be validated separately.
 
 ## MVP Scope
 
@@ -86,7 +87,7 @@ npm run dev
 npm run build
 ```
 
-`npm install` and `npm run build` have been verified in GitHub Actions. Browser-level PWA and OAuth validation remain pending.
+`npm install` and `npm run build` have been verified in GitHub Actions. Google OAuth sign-in, refresh persistence, browser-restart persistence, and sign-out have been verified against the deployed GitHub Pages application.
 
 ## Security
 

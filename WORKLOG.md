@@ -1,59 +1,70 @@
 # Worklog
 
-## 2026-08-06 — Upstream Synchronization Preparation
+## 2026-08-06 — Phase 1 Closure
 
 ### Today’s Work
 
-- Verified Frontend run #18 passed for the Supabase GitHub Variables workflow change.
-- Marked PR #8 ready for review and merged it into fork `main`.
-- Created Issue #9 and branch `agent/upstream-sync-prep`.
-- Updated README and AI Handoff to reflect the actual Phase 1 state.
-- Declared the fork as the authoritative source for the one-time forced synchronization to `e20cboy/investment-manager`.
+- Synchronized the Phase 1 implementation into `e20cboy/investment-manager`.
+- Verified GitHub Pages deployment succeeded in the upstream repository.
+- Registered `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` as upstream repository Variables.
+- Verified the deployed app detected the Supabase configuration.
+- Completed Google OAuth sign-in against the deployed application.
+- Verified session persistence after page refresh and browser restart.
+- Verified sign-out completed successfully.
+- Created Issue #11 and branch `agent/phase-1-closeout` to record Phase 1 completion and prepare Phase 2.
 
 ### Completed
 
-- React, TypeScript, Vite, Tailwind CSS, PWA, and GitHub Pages baseline.
+- React, TypeScript, Vite, Tailwind CSS, PWA manifest, and GitHub Pages baseline.
 - Supabase browser client and authentication context.
-- Google sign-in and sign-out invocation paths.
-- Safe unconfigured-state behavior.
-- GitHub Actions Variables wiring for Supabase public configuration.
-- Setup, security, traceability, Worklog, Handoff, and Changelog documentation.
+- Google OAuth sign-in and sign-out.
+- Session restoration and auth-state subscription.
+- Safe missing-configuration behavior.
+- GitHub Actions Variables wiring for public Supabase configuration.
+- Production deployment and browser-level authentication validation.
 
 ### Validation Evidence
 
-- Frontend run #18 passed after `.github/workflows/frontend.yml` was updated.
-- Earlier Frontend and Documentation runs passed production build, required-document checks, Markdown lint, and link validation.
+- Upstream GitHub Pages deployment completed successfully.
+- Deployed application displayed Google sign-in after repository Variables were included in a new build.
+- Google sign-in returned to the deployed application successfully.
+- Authentication remained active after page refresh.
+- Authentication remained active after browser restart.
+- Sign-out returned the application to the signed-out state.
 
 ### Incomplete
 
-- Create the browser-based upstream PR and resolve conflicts by retaining the fork version.
-- Verify upstream CI and merge the one-time synchronization.
-- Configure the final upstream repository Variables.
-- Create a real Supabase project and configure Google OAuth.
-- Verify GitHub Pages deployment, OAuth callback, session restoration, sign-out, PWA installation, and offline behavior.
-- Generate `package-lock.json` and change CI to `npm ci`.
+- Validate PWA installation and offline behavior in a browser.
+- Generate `package-lock.json` and change CI from `npm install` to `npm ci`.
+- Create user-owned database tables, default-deny RLS policies, and cross-user isolation tests.
+- Implement Phase 2 market, macro, and FX data collection.
 
 ### Next Work
 
-1. Merge the synchronization-preparation PR into fork `main`.
-2. Open `fiverocksgames:main` → `e20cboy:main` in the GitHub browser.
-3. Resolve all conflicts using the fork as authoritative.
-4. Verify upstream Documentation and Frontend workflows.
-5. Merge upstream and synchronize the fork from upstream.
-6. Resume feature development using fork feature branches that target upstream directly.
+1. Merge the Phase 1 closeout documentation into fork `main`.
+2. Open an upstream PR from `fiverocksgames:agent/phase-1-closeout` to `e20cboy:main`.
+3. Merge the documentation-only upstream PR after CI passes.
+4. Create the Phase 2 Data Platform design issue and provider-independent data model.
+5. Define freshness, source metadata, caching, retry, and failure-state rules before implementation.
 
 ### Cautions
 
-- Do not expose service-role keys, Google client secrets, database passwords, or JWT secrets.
-- Build success does not prove OAuth, Pages deployment, PWA behavior, or RLS isolation.
-- During the one-time synchronization, old upstream Phase 0 content may be discarded because no independent upstream work must be preserved.
+- Authentication proves identity but does not authorize access to future user-owned tables.
+- Default-deny RLS and isolation tests are required before storing personal portfolio data.
+- Browser-visible publishable keys are not privileged credentials.
+- PWA offline behavior has not yet been validated and must not be described as complete.
 
 ### Current Branch and PR
 
-- Repository: `fiverocksgames/investment-manager`
-- Branch: `agent/upstream-sync-prep`
-- Issue: #9 — `docs: prepare fork for upstream synchronization`
-- Status: documentation synchronization preparation in progress
+- Working repository: `fiverocksgames/investment-manager`
+- Upstream repository: `e20cboy/investment-manager`
+- Branch: `agent/phase-1-closeout`
+- Issue: #11 — `docs: close Phase 1 and prepare Phase 2`
+- Status: Phase 1 closure documentation in progress
+
+## 2026-08-06 — Upstream Synchronization
+
+The Phase 1 frontend and Supabase authentication baseline was copied into the upstream repository through `agent/import-phase-1` and merged in upstream PR #4.
 
 ## 2026-08-05 — Supabase Authentication Bootstrap
 

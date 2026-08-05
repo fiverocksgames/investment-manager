@@ -2,20 +2,19 @@
 
 ## Current State
 
-Investment Manager is in Phase 1 — Infrastructure. The fork now contains the complete validated frontend and Supabase authentication baseline, including GitHub Actions wiring for the public Supabase build variables.
+Investment Manager has completed Phase 1 infrastructure and authentication. The upstream deployment at `e20cboy/investment-manager` is live on GitHub Pages and has passed end-to-end Google OAuth validation.
 
 ## Repository and Active Work
 
-- Temporary authoritative repository: `fiverocksgames/investment-manager`
-- Intended upstream repository: `e20cboy/investment-manager`
+- Working repository: `fiverocksgames/investment-manager`
+- Upstream repository: `e20cboy/investment-manager`
 - Default branch: `main`
-- Active branch: `agent/upstream-sync-prep`
-- Issue: #9 — `docs: prepare fork for upstream synchronization`
-- Previous merged PRs: #4, #6, #8
+- Active branch: `agent/phase-1-closeout`
+- Issue: #11 — `docs: close Phase 1 and prepare Phase 2`
 
-The immediate goal is a one-time forced synchronization in which the fork version is authoritative and conflicting upstream Phase 0 content may be discarded.
+Because the GitHub app can write only to the fork, implement changes in fork feature branches and open upstream PRs manually from those branches to `e20cboy:main`.
 
-## Implemented Baseline
+## Completed Phase 1 Baseline
 
 - React 19, TypeScript, and Vite application shell.
 - Tailwind CSS and PostCSS configuration.
@@ -23,44 +22,38 @@ The immediate goal is a one-time forced synchronization in which the fork versio
 - GitHub Pages build and deployment workflow.
 - Supabase browser client using public Vite variables.
 - Authentication context with initial session restoration and auth-state subscription.
-- Google sign-in and sign-out actions.
+- Google sign-in and sign-out.
 - Safe missing-configuration UI state.
 - GitHub Actions Variables wiring for `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.
 - Supabase setup, security, traceability, Worklog, and Changelog documentation.
 
 ## Validation Evidence
 
-- Frontend run #18 passed after the GitHub Variables workflow change.
-- Earlier frontend and documentation runs passed dependency installation, production build, required-document checks, Markdown lint, and link validation.
-- PR builds succeeded without Supabase variables, proving the safe unconfigured fallback.
+The upstream deployed application has been manually verified for:
 
-This does not prove real Google OAuth, browser session persistence, GitHub Pages deployment, or database authorization.
+- Successful GitHub Pages deployment.
+- Supabase configuration detection after repository Variables were added and a new build was deployed.
+- Successful Google OAuth sign-in and callback.
+- Session persistence after page refresh.
+- Session persistence after closing and reopening the browser.
+- Successful sign-out.
 
-## Upstream Synchronization Procedure
-
-1. Merge the final synchronization-preparation PR into the fork `main`.
-2. Create a browser-based cross-repository PR from `fiverocksgames:main` to `e20cboy:main`.
-3. Resolve conflicts by keeping the fork version as authoritative.
-4. Confirm all React, Supabase, workflow, and documentation files are present.
-5. Run upstream CI and merge after success.
-6. Synchronize the fork from upstream after the one-time replacement.
-7. For future work, create feature branches in the fork and open upstream PRs directly from those branches without first merging them into fork `main`.
+PWA installation and offline behavior have not been browser-verified.
 
 ## Security Boundaries
 
 - Only `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` may enter the frontend build.
 - Never commit service-role keys, database passwords, Google client secrets, JWT secrets, or personal portfolio data.
 - Authentication proves identity but does not authorize user data access.
-- User-owned tables require default-deny Row Level Security and isolation tests.
+- User-owned tables require default-deny Row Level Security and cross-user isolation tests before use.
 
 ## Known Limitations
 
-- No real Supabase project or Google provider is connected.
-- GitHub repository Variables are not yet configured in the final upstream repository.
-- OAuth callback, session restoration, and sign-out are not browser-verified.
-- No protected routes, user-owned tables, RLS policies, or isolation tests exist.
+- No protected routes or user-owned application tables exist.
+- No RLS policies or cross-user isolation tests exist.
 - No `package-lock.json` is committed; CI uses `npm install`.
-- GitHub Pages deployment and PWA offline behavior remain unverified.
+- PWA installation and offline behavior remain unverified.
+- Market data, macro data, FX data, portfolio analysis, indicators, and recommendation capabilities are not implemented.
 
 ## Development Rules
 
@@ -84,4 +77,4 @@ For local authentication, copy `.env.example` to `.env.local`, use only the brow
 
 ## Exact Next Recommended Task
 
-Complete the one-time upstream synchronization, verify upstream CI, then configure Supabase, Google OAuth, GitHub Actions Variables, and browser-level authentication in a separate tracked task.
+Create the Phase 2 Data Platform design issue. Define provider-independent schemas for assets, observations, source metadata, retrieval timestamps, freshness status, and ingestion failures before implementing Yahoo Finance, FRED, ECOS, or FX adapters.
