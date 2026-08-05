@@ -4,9 +4,9 @@
 
 Investment Manager is completing Phase 0 — Foundation. PR #1 contains the
 project governance, specifications, repository templates, ownership rules,
-documentation CI, and MIT License. Automated documentation validation passes.
-No application, database migration, deployment workflow, or application test
-suite exists.
+documentation CI, and MIT License. Automated documentation validation passes
+on the latest head. No application, database migration, deployment workflow,
+or application test suite exists.
 
 ## Repository and Active Work
 
@@ -28,15 +28,16 @@ suite exists.
 
 ## Validation Evidence
 
-Documentation run #7, run ID `30998869604`, completed successfully.
+Documentation run #10, run ID `30999145723`, completed successfully on the
+latest PR head.
 
 - Required-document check: passed.
-- Markdown lint: 22 files, 0 errors.
-- Offline Markdown links: 20 successful, 0 errors.
+- Markdown lint: passed.
+- Offline Markdown link check: passed.
 
-Run #6 previously failed because default Markdown lint enforced line-length and
-PR-template H1 rules. `.markdownlint-cli2.yaml` disables only `MD013` and
-`MD041`, after which run #7 passed.
+Documentation runs #7 and #9 also completed successfully. Run #6 previously
+failed because default Markdown lint enforced line-length and PR-template H1
+rules. `.markdownlint-cli2.yaml` disables only `MD013` and `MD041`.
 
 ## Required Before Merge
 
