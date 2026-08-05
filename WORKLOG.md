@@ -5,60 +5,65 @@
 ### Today’s Work
 
 - Verified GitHub access and administrative permissions for `fiverocksgames/investment-manager`.
-- Initialized `main`, created `agent/project-bootstrap`, and opened Draft PR #1.
-- Established the full governance and specification document set.
-- Added feature and bug Issue forms, the mandatory PR template, CODEOWNERS, and a documentation validation workflow.
-- Added the MIT License and recorded the decision in `docs/DECISIONS.md`.
+- Initialized `main`, created `agent/project-bootstrap`, and opened PR #1.
+- Established the complete governance and specification document set.
+- Added Issue forms, the PR template, CODEOWNERS, documentation CI, and MIT License.
+- Investigated Documentation run #6 and corrected the Markdown lint configuration.
+- Verified Documentation run #7 completed successfully.
 
 ### Completed
 
-- `GOV-BOOT-001`: Governance, specification, contribution, ownership, license, and repository-template baseline created.
+- `GOV-BOOT-001`: Foundation governance and repository bootstrap completed.
 - `GOV-TRACE-001`: Requirement ID and feature traceability rules documented.
 - `GOV-AI-001`: AI operating and handoff rules documented.
-- `GOV-DOC-001`: Documentation review is part of completion and is represented in the PR template and CI.
-- All 21 mandatory bootstrap documents exist.
-- `.github/ISSUE_TEMPLATE/feature_request.yml` and `bug_report.yml` exist.
-- `.github/PULL_REQUEST_TEMPLATE.md`, `.github/CODEOWNERS`, and `.github/workflows/docs.yml` exist.
-- `LICENSE` uses MIT; `DEC-008` records the rationale and consequences.
+- `GOV-DOC-001`: Documentation review and validation are mandatory.
+- All 21 mandatory governance and specification documents exist.
+- Feature and bug Issue forms exist.
+- PR template, CODEOWNERS, and documentation workflow exist.
+- MIT License exists and `DEC-008` records the decision.
 
-### Validation Added
+### Validation Evidence
 
-The `Documentation` GitHub Actions workflow now:
+Documentation run #7, run ID `30998869604`, completed successfully.
 
-1. Verifies every mandatory document exists and is non-empty.
-2. Runs Markdown linting.
-3. Checks Markdown links in offline mode.
+- Required-document check: passed.
+- Markdown lint: passed with 22 files and 0 errors.
+- Offline Markdown link check: passed with 20 successful links and 0 errors.
 
-Workflow results must be inspected before PR #1 is marked ready or merged.
+The prior run #6 failed because the default lint configuration enforced
+80-character lines and required an H1 in the PR template. The project now
+explicitly disables only `MD013` and `MD041` in `.markdownlint-cli2.yaml`.
 
-### Incomplete
+### Remaining Human Review
 
-- Review the workflow result and resolve any lint or link failures.
-- Perform focused human review for MVP-scope consistency and financial-safety language.
-- Review repository labels, milestones, branch protection, secret scanning, and dependency/security settings; these are repository settings and are not established by the current files.
-- Decide whether settings work belongs before merge or in a dedicated follow-up Issue.
+- Review MVP-scope consistency across charter, PRD, feature matrix,
+  specifications, and investment policy.
+- Review investment-safety, data-freshness, and uncertainty language.
+- Review repository settings for labels, milestones, branch protection,
+  secret scanning, and dependency security.
 
-No application code, database migration, deployment workflow, or application test suite exists.
+The first two items are part of PR review. Repository settings may be handled
+before merge or through a linked follow-up Issue.
 
 ### Next Work
 
-1. Inspect PR #1 checks and changed-file list.
-2. Fix documentation validation failures, if any.
-3. Review the PR against `PROJECT_CHARTER.md` Definition of Done.
-4. Refresh this worklog, `AI_HANDOFF.md`, and the PR description with final validation evidence.
-5. Mark ready for review only after checks and review pass.
-6. Merge, then begin Phase 1 through a dedicated Issue and branch.
+1. Review PR #1 as Ready for Review.
+2. Resolve any human review findings.
+3. Merge PR #1 after approval.
+4. Create a Phase 1 Issue for React, TypeScript, Vite, PWA, and TailwindCSS.
+5. Start Phase 1 on a new focused branch.
 
 ### Cautions
 
-- Free data-provider access, terms, identifiers, and reliability require verification before implementation.
-- Analysis formulas and thresholds remain specifications, not approved production values.
-- Bitcoin exposure remains outside approved MVP implementation without a separate decision.
-- The MIT license is now an accepted project decision; changing it later requires explicit governance review.
-- Do not report CI success until GitHub reports the workflow result.
+- Data-provider access, terms, identifiers, and reliability remain unverified.
+- Analysis formulas and thresholds are specifications, not production values.
+- Bitcoin exposure is not approved without a separate decision.
+- No application code, database migration, deployment workflow, or application
+  test suite exists.
 
 ### Current Branch and PR
 
 - Branch: `agent/project-bootstrap`
 - Pull Request: #1 — `docs: establish project governance`
-- Status: Draft pending validation and review
+- Automated validation: passed
+- Status: Ready for Review
