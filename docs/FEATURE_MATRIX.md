@@ -32,11 +32,13 @@
 
 | Requirement ID | Requirement | Phase | Status | Planning / Design | DB | API | UI | Test | PR |
 |---|---|---:|---|---|---|---|---|---|---|
-| REQ-INFRA-001 | Bootstrap a maintainable React, TypeScript, and Vite frontend | 1 | In Validation | Issue #3, `docs/ARCHITECTURE.md` | N/A — frontend baseline | N/A — static shell | `src/`, `index.html`, Vite config | Frontend run #2 build passed | #4 |
-| REQ-UI-001 | Provide a responsive application shell with clear capability status | 1 | In Validation | Issue #3, `docs/ARCHITECTURE.md` | N/A | N/A | `src/App.tsx`, `src/index.css` | TypeScript and Vite build passed | #4 |
+| REQ-INFRA-001 | Bootstrap a maintainable React, TypeScript, and Vite frontend | 1 | Done | Issue #3, `docs/ARCHITECTURE.md` | N/A — frontend baseline | N/A — static shell | `src/`, `index.html`, Vite config | Frontend run #7 passed | #4 |
+| REQ-UI-001 | Provide a responsive application shell with clear capability status | 1 | Done | Issue #3, `docs/ARCHITECTURE.md` | N/A | N/A | `src/App.tsx`, `src/index.css` | TypeScript and Vite build passed | #4 |
 | REQ-PWA-001 | Provide a PWA baseline and generated web manifest | 1 | In Validation | Issue #3, `docs/ARCHITECTURE.md` | N/A | N/A | `vite-plugin-pwa`, `src/vite-env.d.ts` | Build passed; browser install validation pending | #4 |
 | REQ-DEPLOY-001 | Build and deploy the static application through GitHub Pages | 1 | In Validation | Issue #3, `docs/ARCHITECTURE.md` | N/A | N/A | Repository-relative Vite base path | PR build passed; post-merge deployment pending | #4 |
-| REQ-AUTH-001 | Authenticate users through Supabase Google login | 1 | Planned | `docs/PRD.md`, `docs/SECURITY.md` | `docs/DATABASE.md` | `docs/API_SPEC.md` | Auth screens planned | `docs/TEST_PLAN.md` | TBD |
+| REQ-AUTH-001 | Authenticate users through Supabase Google login | 1 | In Validation | Issue #5, `docs/SUPABASE_SETUP.md`, `docs/SECURITY.md` | Auth identity managed by Supabase; user tables pending | Supabase Auth client | `src/auth/AuthContext.tsx`, auth-aware `src/App.tsx` | Frontend run #9 passed; OAuth E2E pending | #6 |
+| REQ-INFRA-002 | Provide guarded browser-safe Supabase configuration | 1 | In Validation | Issue #5, `.env.example`, `docs/SUPABASE_SETUP.md` | N/A — client configuration | `src/lib/supabase.ts` | Configuration state in app shell | Missing-variable build passed in run #9 | #6 |
+| REQ-SEC-001 | Separate public frontend identifiers from privileged credentials | 1 | In Validation | `docs/SECURITY.md`, `docs/SUPABASE_SETUP.md` | RLS required before user tables | No service-role client | Error and configuration states | Documentation and build validation pending latest head | #6 |
 
 ## MVP Product Requirements
 
