@@ -6,27 +6,33 @@
 
 - Verified GitHub access and administrative permissions for `fiverocksgames/investment-manager`.
 - Initialized the empty repository on `main`.
-- Created `agent/project-bootstrap`.
-- Opened Draft PR #1, `docs: establish project governance`.
-- Established the project charter, contributor rules, roadmap, contribution process, decision log, feature traceability, product requirements, architecture, and investment policy.
+- Created `agent/project-bootstrap` and Draft PR #1.
+- Established governance, requirement traceability, investment boundaries, product requirements, architecture, data, analysis, portfolio, database, API, security, operations, and testing specifications.
+- Expanded the README into the repository entry point and documentation map.
 
 ### Completed
 
-- `GOV-BOOT-001`: Core governance baseline drafted.
-- `GOV-TRACE-001`: Requirement ID and feature matrix rules drafted.
-- `GOV-AI-001`: AI operating rules drafted; handoff document remains to be completed in this PR.
-- `GOV-DOC-001`: Documentation-equals-code review rule documented.
-- MVP scope and excluded scope recorded.
-- Initial technical choices recorded in `docs/DECISIONS.md`.
-- Initial MVP requirement inventory recorded in `docs/FEATURE_MATRIX.md`.
+- `GOV-BOOT-001`: Mandatory governance and specification document set created.
+- `GOV-TRACE-001`: Requirement ID and feature traceability rules documented.
+- `GOV-AI-001`: AI operating and handoff rules documented.
+- `GOV-DOC-001`: Documentation receives the same completion and review weight as code.
+- MVP scope, excluded scope, success criteria, quality criteria, Definition of Done, risks, and roadmap documented.
+- Technical choices and investment-policy boundaries recorded.
+- Draft PR #1 contains the required Summary, Requirement IDs, Validation, Test, Documentation, Known Limitations, and Next Steps structure.
 
-### Incomplete
+### Files Completed in Bootstrap
 
-The following required bootstrap documents still need creation or completion:
-
-- `README.md` expansion
+- `README.md`
+- `PROJECT_CHARTER.md`
+- `AGENTS.md`
 - `CHANGELOG.md`
+- `CONTRIBUTING.md`
+- `ROADMAP.md`
+- `WORKLOG.md`
 - `AI_HANDOFF.md`
+- `docs/PRD.md`
+- `docs/ARCHITECTURE.md`
+- `docs/FEATURE_MATRIX.md`
 - `docs/ANALYSIS_SPEC.md`
 - `docs/PORTFOLIO_SPEC.md`
 - `docs/DATABASE.md`
@@ -34,29 +40,39 @@ The following required bootstrap documents still need creation or completion:
 - `docs/SECURITY.md`
 - `docs/OPERATIONS.md`
 - `docs/DATA_SOURCES.md`
+- `docs/INVESTMENT_POLICY.md`
 - `docs/TEST_PLAN.md`
+- `docs/DECISIONS.md`
 
-Phase 0 implementation items not yet started:
+### Incomplete
 
-- Issue templates
-- Pull request template
-- Documentation validation workflow
-- CI policy and repository settings review
+Phase 0 implementation and repository-automation items remain:
+
+- GitHub Issue templates.
+- Pull request template.
+- Documentation consistency and link-validation workflow.
+- CI policy and repository-settings review.
+- Labels, milestones, branch protection, and security-feature review.
+- Formal license decision.
+
+No application code, database migration, deployment workflow, or automated tests exist yet.
 
 ### Next Work
 
-1. Complete `AI_HANDOFF.md` and remaining required specifications.
-2. Expand `README.md` with status, architecture, documentation map, and contribution entry points.
-3. Add Issue and PR templates in a separate, traceable change or extend PR #1 if explicitly scoped.
-4. Add documentation consistency and link validation.
-5. Review Draft PR #1 against the Definition of Done before marking ready.
+1. Review all bootstrap documents for scope consistency and broken links.
+2. Add Issue and PR templates under `.github/` through a traceable change.
+3. Add documentation validation and baseline CI.
+4. Review Draft PR #1 against the Definition of Done and resolve review findings.
+5. Merge the governance PR before starting Phase 1 infrastructure work.
+6. Begin Phase 1 with a dedicated Issue and branch for React, TypeScript, Vite, and PWA bootstrap.
 
 ### Cautions
 
-- The repository is in bootstrap state and contains no application code.
-- Free data provider identifiers, terms, and reliability assumptions must be verified before implementation.
-- Bitcoin eligibility is not approved for MVP implementation; the investment policy requires a separate explicit design and decision.
-- Do not mark governance requirements Done until all mandatory documents and validations are complete.
+- Free data provider access, terms, identifiers, and reliability assumptions require verification before implementation.
+- Analysis formulas and thresholds remain design inputs, not approved production values.
+- Bitcoin exposure is not approved for MVP implementation without a separate decision.
+- Do not mark PR #1 ready until documentation review and link validation are complete.
+- Do not invent run or test commands before executable project files exist.
 
 ### Current Branch and PR
 
