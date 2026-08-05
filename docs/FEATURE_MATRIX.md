@@ -23,16 +23,25 @@
 
 | Requirement ID | Requirement | Phase | Status | Planning / Design | DB | API | UI | Test | PR |
 |---|---|---:|---|---|---|---|---|---|---|
-| GOV-BOOT-001 | Establish project governance and required documents | 0 | In Validation | `PROJECT_CHARTER.md`, `ROADMAP.md` | N/A — governance | N/A — governance | N/A — governance | `docs/TEST_PLAN.md` | #1 |
-| GOV-TRACE-001 | Maintain end-to-end feature traceability | 0 | In Validation | This document | N/A | N/A | N/A | Documentation checks planned | #1 |
-| GOV-AI-001 | Preserve context for future AI and human contributors | 0 | In Validation | `AGENTS.md`, `AI_HANDOFF.md`, `WORKLOG.md` | N/A | N/A | N/A | Handoff review | #1 |
-| GOV-DOC-001 | Require documentation review for functional PRs | 0 | In Validation | `CONTRIBUTING.md`, `docs/DECISIONS.md` | N/A | N/A | N/A | PR template checks planned | #1 |
+| GOV-BOOT-001 | Establish project governance and required documents | 0 | Done | `PROJECT_CHARTER.md`, `ROADMAP.md` | N/A — governance | N/A — governance | N/A — governance | Documentation run #12 | #1 |
+| GOV-TRACE-001 | Maintain end-to-end feature traceability | 0 | Done | This document | N/A | N/A | N/A | Documentation run #12 | #1 |
+| GOV-AI-001 | Preserve context for future AI and human contributors | 0 | Done | `AGENTS.md`, `AI_HANDOFF.md`, `WORKLOG.md` | N/A | N/A | N/A | Handoff review | #1 |
+| GOV-DOC-001 | Require documentation review for functional PRs | 0 | Done | `CONTRIBUTING.md`, `docs/DECISIONS.md` | N/A | N/A | N/A | PR template and documentation CI | #1 |
+
+## Phase 1 Infrastructure Requirements
+
+| Requirement ID | Requirement | Phase | Status | Planning / Design | DB | API | UI | Test | PR |
+|---|---|---:|---|---|---|---|---|---|---|
+| REQ-INFRA-001 | Bootstrap a maintainable React, TypeScript, and Vite frontend | 1 | In Validation | Issue #3, `docs/ARCHITECTURE.md` | N/A — frontend baseline | N/A — static shell | `src/`, `index.html`, Vite config | Frontend run #2 build passed | #4 |
+| REQ-UI-001 | Provide a responsive application shell with clear capability status | 1 | In Validation | Issue #3, `docs/ARCHITECTURE.md` | N/A | N/A | `src/App.tsx`, `src/index.css` | TypeScript and Vite build passed | #4 |
+| REQ-PWA-001 | Provide a PWA baseline and generated web manifest | 1 | In Validation | Issue #3, `docs/ARCHITECTURE.md` | N/A | N/A | `vite-plugin-pwa`, `src/vite-env.d.ts` | Build passed; browser install validation pending | #4 |
+| REQ-DEPLOY-001 | Build and deploy the static application through GitHub Pages | 1 | In Validation | Issue #3, `docs/ARCHITECTURE.md` | N/A | N/A | Repository-relative Vite base path | PR build passed; post-merge deployment pending | #4 |
+| REQ-AUTH-001 | Authenticate users through Supabase Google login | 1 | Planned | `docs/PRD.md`, `docs/SECURITY.md` | `docs/DATABASE.md` | `docs/API_SPEC.md` | Auth screens planned | `docs/TEST_PLAN.md` | TBD |
 
 ## MVP Product Requirements
 
 | Requirement ID | Requirement | Phase | Status | Planning / Design | DB | API | UI | Test | PR |
 |---|---|---:|---|---|---|---|---|---|---|
-| REQ-AUTH-001 | Authenticate users through Supabase Google login | 1 | Planned | `docs/PRD.md`, `docs/SECURITY.md` | `docs/DATABASE.md` | `docs/API_SPEC.md` | Auth screens planned | `docs/TEST_PLAN.md` | TBD |
 | REQ-MKT-001 | Collect and normalize market, macro, and FX data | 2 | Planned | `docs/DATA_SOURCES.md`, `docs/ARCHITECTURE.md` | `docs/DATABASE.md` | `docs/API_SPEC.md` | Data status planned | `docs/TEST_PLAN.md` | TBD |
 | REQ-MKT-002 | Expose source, retrieval time, and freshness status | 2 | Planned | `docs/DATA_SOURCES.md` | `docs/DATABASE.md` | `docs/API_SPEC.md` | Freshness badge planned | `docs/TEST_PLAN.md` | TBD |
 | REQ-SIG-001 | Calculate moving averages, RSI, and MACD in Analysis Engine | 3 | Planned | `docs/ANALYSIS_SPEC.md` | Derived metrics planned | `docs/API_SPEC.md` | Metric views planned | `docs/TEST_PLAN.md` | TBD |
