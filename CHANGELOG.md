@@ -6,6 +6,10 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Added
 
+- `PROJECT_POLICY.md` as the durable project development-policy document
+- Canonical-repository governance requirements
+- Explicit Draft PR, CI, user-approval, merge, and Issue-close controls
+- Constitution and living-document classifications
 - Project governance, specifications, contributor rules, AI handoff, and requirement traceability
 - Issue and pull request templates, CODEOWNERS, documentation CI, and MIT License
 - React 19, TypeScript, Vite, Tailwind CSS, PWA, and GitHub Pages frontend baseline
@@ -19,6 +23,10 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Changed
 
+- Defined `fiverocksgames/investment-manager` as the canonical development repository
+- Standardized the workflow as Issue → Design → Documentation → Branch → Implementation → Test → Draft PR → CI → Review → User Approval → Merge → Issue Close
+- Prohibited direct commits to `main` and merges without explicit user approval
+- Clarified that repository documentation, not conversation history, is the single source of truth
 - Moved the project from Phase 0 governance through Phase 1 infrastructure and authentication
 - Updated architecture and feature traceability with implemented frontend and authentication evidence
 - Removed the unused `@vite-pwa/assets-generator` dependency after CI exposed an incompatible peer dependency
@@ -36,6 +44,7 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 - Google OAuth sign-in and callback completed successfully in the deployed application
 - Authenticated session persisted after page refresh and browser restart
 - Sign-out completed successfully
+- Project Policy v1 documentation CI is pending on Issue #13
 
 ### Known Limitations
 
