@@ -24,6 +24,20 @@ Python data, analysis, portfolio, and recommendation jobs
   +-- ECOS
 ```
 
+## Implemented Frontend Baseline
+
+Phase 1 PR #4 establishes the first runnable application layer:
+
+- React 19 and TypeScript
+- Vite static build
+- Tailwind CSS styling
+- `vite-plugin-pwa` service-worker registration and manifest generation
+- GitHub Actions build validation on pull requests
+- GitHub Pages artifact and deployment jobs on pushes to `main`
+- Repository-relative Vite base path: `/investment-manager/`
+
+The current UI is an application shell only. It deliberately does not contain market calculations, authentication, portfolio imports, or recommendation logic.
+
 ## Components
 
 ### Web Application
@@ -72,6 +86,8 @@ Logical modules:
 - Scheduled data and analysis execution
 - CI for lint, typing, tests, build, documentation, and security checks
 - Secrets supplied only through repository or environment secrets
+- Frontend workflow runs `npm install` and `npm run build` for PR validation
+- Pages artifact upload and deployment run only on pushes to `main`
 
 ### Google Sheets Integration
 
@@ -121,6 +137,13 @@ Logical modules:
 - Scheduled backend: GitHub Actions Python workflows.
 
 The initial design avoids a continuously running custom backend. A dedicated API service requires a future decision if job-based and Supabase interfaces become insufficient.
+
+## Current Deployment Limitations
+
+- PR validation confirms the application builds, but does not deploy.
+- Actual Pages deployment must be verified after merge to `main`.
+- The repository does not yet contain `package-lock.json`; CI currently uses `npm install` rather than `npm ci`.
+- PWA installation and offline behavior require browser-level validation.
 
 ## Architectural Quality Attributes
 
