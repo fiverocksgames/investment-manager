@@ -2,18 +2,20 @@
 
 ## Purpose
 
-This file defines mandatory operating rules for AI and human contributors. The repository, not conversation history, is the source of truth.
+This file defines mandatory operating rules for AI and human contributors. The repository, not conversation history, is the source of truth. `PROJECT_POLICY.md` is the controlling development-policy document.
 
 ## Core Rules
 
-1. Read `PROJECT_CHARTER.md`, `README.md`, `ROADMAP.md`, `WORKLOG.md`, `AI_HANDOFF.md`, `docs/FEATURE_MATRIX.md`, and relevant specifications before changing behavior.
-2. Work from an Issue and stable Requirement IDs.
-3. Follow: Issue → Design → Documentation → Implementation → Test → PR.
-4. Never delete or silently rename a Requirement ID. Deprecate it with rationale and replacement links.
-5. Update documentation in the same PR as behavior changes.
-6. Update `WORKLOG.md` and `AI_HANDOFF.md` in every PR.
-7. Record material technical or product choices in `docs/DECISIONS.md` before or with implementation.
-8. Do not invent market data, test results, provider guarantees, or completed work.
+1. Read `PROJECT_CHARTER.md`, `PROJECT_POLICY.md`, `README.md`, `ROADMAP.md`, `WORKLOG.md`, `AI_HANDOFF.md`, `docs/FEATURE_MATRIX.md`, and relevant specifications before changing behavior.
+2. Work from an Issue and stable Requirement IDs for substantial changes.
+3. Follow: Issue → Design → Documentation → Branch → Implementation → Test → Draft PR → CI → Review → User Approval → Merge → Issue Close.
+4. Never commit directly to `main`.
+5. Never delete or silently rename a Requirement ID. Deprecate it with rationale and replacement links.
+6. Update documentation in the same PR as behavior changes.
+7. Update `WORKLOG.md`, `AI_HANDOFF.md`, and `CHANGELOG.md` in every substantial PR.
+8. Record material technical or product choices in `docs/DECISIONS.md` before or with implementation.
+9. Do not invent market data, test results, provider guarantees, or completed work.
+10. Do not merge without explicit user approval.
 
 ## Architecture Boundaries
 
@@ -23,6 +25,7 @@ This file defines mandatory operating rules for AI and human contributors. The r
 - Recommendation scoring consumes normalized Analysis Engine and Portfolio Engine outputs.
 - Provider-specific formats must be isolated behind data adapters.
 - Authentication and authorization checks must be enforced at the data boundary, not only in the UI.
+- Preserve the processing direction: Provider → Normalizer → Cache → Analysis Engine → Portfolio Engine → Recommendation Engine → UI.
 
 ## Investment Safety
 
@@ -57,7 +60,7 @@ This file defines mandatory operating rules for AI and human contributors. The r
 
 ## PR Requirements
 
-Every PR body must include:
+Every substantial PR begins as Draft and its body must include:
 
 - Summary
 - Requirement IDs
@@ -67,13 +70,13 @@ Every PR body must include:
 - Known Limitations
 - Next Steps
 
-A PR is incomplete when documentation, tests, worklog, or handoff updates are missing.
+A PR is incomplete when documentation, tests, worklog, handoff, or traceability updates are missing. Mark it ready only after required CI succeeds.
 
 ## Handoff Rules
 
 Before ending work, record:
 
-- Current branch and PR
+- Current Issue, branch, and PR
 - Completed and incomplete work
 - Relevant commits and files
 - Validation performed
@@ -85,7 +88,7 @@ Before ending work, record:
 When instructions conflict, apply this order:
 
 1. Security and legal constraints
-2. `PROJECT_CHARTER.md` and investment policy
+2. `PROJECT_CHARTER.md`, `PROJECT_POLICY.md`, and investment policy
 3. Accepted decision records
 4. Architecture and feature specifications
 5. Current Issue and PR scope
