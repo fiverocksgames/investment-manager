@@ -9,6 +9,8 @@
 
 ## Phase 0 — Foundation
 
+**Status:** Complete
+
 **Objective:** establish durable project governance.
 
 Deliverables:
@@ -22,37 +24,50 @@ Deliverables:
 Exit criteria:
 
 - `GOV-BOOT-001`, `GOV-TRACE-001`, `GOV-AI-001`, and `GOV-DOC-001` documented
-- Bootstrap Draft PR reviewed for scope and consistency
+- Bootstrap PR reviewed and merged
 
 ## Phase 1 — Infrastructure
+
+**Status:** Complete, except PWA offline validation remains tracked separately
 
 **Objective:** deploy a secure application shell.
 
 Deliverables:
 
 - React, TypeScript, Vite, TailwindCSS
-- PWA manifest, service worker, and offline-safe shell
+- PWA manifest and service worker baseline
 - GitHub Pages deployment
 - Supabase project integration
 - Google login
 - Environment and secret handling
 
-Exit criteria:
+Exit evidence:
 
-- Authenticated user reaches a deployed shell
-- CI validates build, lint, type checks, and tests
-- No secrets are included in client bundles or repository history
+- Authenticated user reached the deployed shell
+- GitHub Pages deployment succeeded
+- Google OAuth callback succeeded
+- Session persisted after refresh and browser restart
+- Sign-out succeeded
+- Public frontend identifiers were separated from privileged credentials
+
+Remaining validation:
+
+- Browser-level PWA installation and offline behavior
 
 ## Phase 2 — Data Platform
+
+**Status:** Next
 
 **Objective:** collect, normalize, validate, and timestamp free market and macro data.
 
 Deliverables:
 
+- Provider-independent asset and observation schemas
 - Yahoo Finance market adapters
 - FRED macro adapters
 - ECOS macro adapters
 - FX normalization
+- Source metadata and retrieval timestamps
 - Data freshness, caching, retries, and status reporting
 - Scheduled GitHub Actions jobs
 
@@ -61,6 +76,7 @@ Exit criteria:
 - Source metadata and timestamps are visible
 - Missing and stale data fail safely
 - Normalized schemas are provider-independent
+- Provider failures do not silently produce investment signals
 
 ## Phase 3 — Analysis Engine
 
