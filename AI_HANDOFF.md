@@ -2,62 +2,65 @@
 
 ## Current State
 
-Investment Manager is in Phase 1 — Infrastructure. Phase 0 governance and the frontend platform are merged. Draft PR #6 adds the first Supabase authentication integration while deliberately separating build validation from real OAuth validation.
+Investment Manager is in Phase 1 — Infrastructure. The fork now contains the complete validated frontend and Supabase authentication baseline, including GitHub Actions wiring for the public Supabase build variables.
 
 ## Repository and Active Work
 
-- Repository: `fiverocksgames/investment-manager`
+- Temporary authoritative repository: `fiverocksgames/investment-manager`
+- Intended upstream repository: `e20cboy/investment-manager`
 - Default branch: `main`
-- Active branch: `agent/phase-1-auth`
-- Issue: #5 — `feat: bootstrap Supabase authentication`
-- Pull request: #6 — `feat: bootstrap Supabase authentication`
-- PR state: Draft
+- Active branch: `agent/upstream-sync-prep`
+- Issue: #9 — `docs: prepare fork for upstream synchronization`
+- Previous merged PRs: #4, #6, #8
 
-## Completed in PR #6
+The immediate goal is a one-time forced synchronization in which the fork version is authoritative and conflicting upstream Phase 0 content may be discarded.
 
-- Supabase JavaScript client dependency.
-- Guarded client initialization using browser-safe Vite variables.
-- `.env.example` with placeholders only.
-- Authentication context for session restoration and auth-state subscription.
+## Implemented Baseline
+
+- React 19, TypeScript, and Vite application shell.
+- Tailwind CSS and PostCSS configuration.
+- PWA registration and generated manifest.
+- GitHub Pages build and deployment workflow.
+- Supabase browser client using public Vite variables.
+- Authentication context with initial session restoration and auth-state subscription.
 - Google sign-in and sign-out actions.
-- UI states for loading, missing configuration, signed out, signed in, and errors.
-- `docs/SUPABASE_SETUP.md` covering project, provider, redirect, and validation setup.
-- Security and feature-traceability updates.
+- Safe missing-configuration UI state.
+- GitHub Actions Variables wiring for `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.
+- Supabase setup, security, traceability, Worklog, and Changelog documentation.
 
 ## Validation Evidence
 
-Frontend run #9, run ID `31004808492`, completed successfully.
+- Frontend run #18 passed after the GitHub Variables workflow change.
+- Earlier frontend and documentation runs passed dependency installation, production build, required-document checks, Markdown lint, and link validation.
+- PR builds succeeded without Supabase variables, proving the safe unconfigured fallback.
 
-- `npm install`: passed.
-- `npm run build`: passed.
-- The application built without Supabase environment variables.
+This does not prove real Google OAuth, browser session persistence, GitHub Pages deployment, or database authorization.
 
-This proves compile-time and missing-configuration behavior only. It does not prove Google OAuth, callback routing, session persistence in a browser, or database authorization.
+## Upstream Synchronization Procedure
 
-## Required Before Ready for Review
-
-1. Confirm Frontend and Documentation workflows pass on the latest documentation head.
-2. Configure a real Supabase project outside the repository.
-3. Enable Google as an authentication provider.
-4. Add exact localhost and GitHub Pages redirect URLs.
-5. Verify sign-in, callback, refresh persistence, error handling, and sign-out.
-6. Record the browser validation evidence without committing secrets.
-7. Resolve review findings.
+1. Merge the final synchronization-preparation PR into the fork `main`.
+2. Create a browser-based cross-repository PR from `fiverocksgames:main` to `e20cboy:main`.
+3. Resolve conflicts by keeping the fork version as authoritative.
+4. Confirm all React, Supabase, workflow, and documentation files are present.
+5. Run upstream CI and merge after success.
+6. Synchronize the fork from upstream after the one-time replacement.
+7. For future work, create feature branches in the fork and open upstream PRs directly from those branches without first merging them into fork `main`.
 
 ## Security Boundaries
 
-- `VITE_SUPABASE_URL` and the publishable or anon key are browser-visible identifiers.
-- Service-role keys, database passwords, and Google client secrets never belong in Vite variables.
+- Only `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` may enter the frontend build.
+- Never commit service-role keys, database passwords, Google client secrets, JWT secrets, or personal portfolio data.
 - Authentication proves identity but does not authorize user data access.
-- User-owned tables require default-deny Row Level Security and isolation tests before frontend access.
+- User-owned tables require default-deny Row Level Security and isolation tests.
 
 ## Known Limitations
 
 - No real Supabase project or Google provider is connected.
-- No protected routes or user-owned database tables exist.
-- No RLS policies or cross-user isolation tests exist.
+- GitHub repository Variables are not yet configured in the final upstream repository.
+- OAuth callback, session restoration, and sign-out are not browser-verified.
+- No protected routes, user-owned tables, RLS policies, or isolation tests exist.
 - No `package-lock.json` is committed; CI uses `npm install`.
-- GitHub Pages and PWA browser validation remain pending from the previous phase.
+- GitHub Pages deployment and PWA offline behavior remain unverified.
 
 ## Development Rules
 
@@ -77,10 +80,8 @@ npm run dev
 npm run build
 ```
 
-For local authentication, copy `.env.example` to `.env.local` and use only the
-browser-safe project URL and publishable or anon key. Follow
-`docs/SUPABASE_SETUP.md`. Do not commit `.env.local`.
+For local authentication, copy `.env.example` to `.env.local`, use only the browser-safe project URL and publishable key, and follow `docs/SUPABASE_SETUP.md`.
 
 ## Exact Next Recommended Task
 
-Check the latest Frontend and Documentation workflow results. If green, configure a real Supabase project and Google OAuth provider, then complete browser-level authentication validation before marking PR #6 ready for review.
+Complete the one-time upstream synchronization, verify upstream CI, then configure Supabase, Google OAuth, GitHub Actions Variables, and browser-level authentication in a separate tracked task.
