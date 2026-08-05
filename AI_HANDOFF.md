@@ -2,57 +2,62 @@
 
 ## Current State
 
-Investment Manager is completing Phase 0 — Foundation. PR #1 contains the
-project governance, specifications, repository templates, ownership rules,
-documentation CI, and MIT License. Automated documentation validation has
-passed repeatedly. No application, database migration, deployment workflow,
-or application test suite exists.
+Investment Manager is in Phase 1 — Infrastructure. Phase 0 governance is complete, and Draft PR #4 contains the first runnable frontend baseline using React, TypeScript, Vite, Tailwind CSS, PWA support, and GitHub Pages automation.
 
 ## Repository and Active Work
 
 - Repository: `fiverocksgames/investment-manager`
 - Default branch: `main`
-- Active branch: `agent/project-bootstrap`
-- Pull request: #1 — `docs: establish project governance`
-- PR state: Ready for Review
+- Active branch: `agent/phase-1-frontend`
+- Issue: #3 — `feat: bootstrap Phase 1 frontend platform`
+- Pull request: #4 — `feat: bootstrap Phase 1 frontend platform`
+- PR state: Draft pending final documentation and review
 
-## Completed in PR #1
+## Completed in PR #4
 
-- All 21 required governance and specification documents.
-- Feature and bug Issue forms.
-- Pull request template with governance and investment-safety checks.
-- CODEOWNERS assigning review ownership to `@fiverocksgames`.
-- Documentation workflow for required files, Markdown lint, and links.
-- MIT `LICENSE` and accepted decision `DEC-008`.
-- Markdown lint configuration suited to long specifications and PR templates.
+- React 19 application shell.
+- TypeScript and Vite build configuration.
+- Tailwind CSS and PostCSS configuration.
+- PWA registration and generated manifest configuration.
+- GitHub Actions frontend build validation.
+- GitHub Pages artifact and deployment jobs for pushes to `main`.
+- Responsive UI that states which capabilities are not connected.
+- Architecture and feature traceability updates.
 
 ## Validation Evidence
 
-Documentation run #12, run ID `30999233577`, completed successfully.
+Frontend run #2, run ID `31003228610`, completed successfully.
 
-- Required-document check: passed.
-- Markdown lint: passed.
-- Offline Markdown link check: passed.
+- Checkout: passed.
+- Node.js 22 setup: passed.
+- `npm install`: passed.
+- `npm run build`: passed.
+- Artifact upload and deployment were skipped as expected for a pull request.
 
-Earlier successful runs include #7, #9, #10, and #11. Run #6 failed because
-default Markdown lint enforced line-length and PR-template H1 rules.
-`.markdownlint-cli2.yaml` disables only `MD013` and `MD041`.
+Frontend run #1 failed due to an incompatible optional PWA assets generator dependency. The unused package was removed; no force or legacy peer-dependency bypass was introduced.
 
 ## Required Before Merge
 
-1. Complete human review of MVP-scope consistency.
-2. Review investment-safety, freshness, uncertainty, and risk language.
-3. Resolve any review findings.
-4. Merge only after approval.
+1. Confirm Frontend and Documentation workflows pass on the latest PR head.
+2. Review the application shell, Vite base path, PWA configuration, and Pages workflow.
+3. Resolve review findings.
+4. Mark the PR ready for review only after pre-merge checks pass.
+5. Merge after approval.
 
-Repository settings still requiring review:
+## Required After Merge
 
-- Labels and milestones.
-- Branch protection and required checks.
-- Secret scanning and dependency-security features.
+1. Verify the push-to-`main` workflow uploads the Pages artifact.
+2. Verify GitHub Pages deployment succeeds and the site loads under `/investment-manager/`.
+3. Validate PWA installation and offline behavior in a supported browser.
+4. Record deployment evidence in Worklog and Handoff.
 
-These settings may be completed before merge or in a linked Phase 0 follow-up
-Issue if they do not block the governance baseline.
+## Known Limitations
+
+- No `package-lock.json` is committed.
+- CI currently uses `npm install`, not `npm ci`.
+- No authentication, database, market data, portfolio, or recommendation integration exists.
+- No browser-level PWA or accessibility validation has been completed.
+- Successful PR CI does not prove production deployment.
 
 ## Development Rules
 
@@ -64,33 +69,18 @@ Issue if they do not block the governance baseline.
 6. Update Worklog and Handoff in every PR.
 7. Never claim validation without evidence.
 
-## Technical Direction
-
-- React, TypeScript, Vite, PWA, and TailwindCSS.
-- GitHub Pages hosting.
-- Supabase PostgreSQL and Auth.
-- Python scheduled jobs through GitHub Actions.
-- Google Sheets portfolio input.
-- Yahoo Finance, FRED, and ECOS as candidate free data sources, subject to
-  current access and terms verification.
-
-## Investment Boundaries
-
-- Conservative, long-term, ETF-first decision support.
-- No automated trading, individual-stock recommendations, leverage, inverse
-  products, derivatives, margin, or short selling in MVP.
-- Outputs must disclose evidence, timestamps, freshness, assumptions,
-  uncertainty, rationale, and risks.
-- Bitcoin is not approved without a separate policy decision.
-
 ## Run and Test Instructions
 
-There is no runnable application or application test suite. Do not invent setup
-commands. PR #1 is validated by the `Documentation` GitHub Actions workflow and
-human review.
+Current expected commands:
+
+```text
+npm install
+npm run dev
+npm run build
+```
+
+Only `npm install` and `npm run build` have been verified in GitHub Actions. Local development and browser behavior have not been independently verified.
 
 ## Exact Next Recommended Task
 
-Review and approve PR #1, then merge it. After merge, create a Phase 1 Issue and
-a new focused branch for the React, TypeScript, Vite, PWA, and TailwindCSS
-application bootstrap.
+Inspect the latest PR #4 workflow results after the documentation commits. Resolve any failures, update the PR body with final evidence, and mark the PR ready for review when all pre-merge checks pass.
