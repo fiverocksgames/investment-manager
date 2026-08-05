@@ -19,11 +19,12 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Changed
 
-- Moved the project from Phase 0 governance into Phase 1 infrastructure
+- Moved the project from Phase 0 governance through Phase 1 infrastructure and authentication
 - Updated architecture and feature traceability with implemented frontend and authentication evidence
 - Removed the unused `@vite-pwa/assets-generator` dependency after CI exposed an incompatible peer dependency
 - Clarified that browser-safe Supabase identifiers do not replace Row Level Security
-- Prepared the fork as the authoritative snapshot for a one-time synchronization to `e20cboy/investment-manager`
+- Synchronized the Phase 1 implementation into `e20cboy/investment-manager`
+- Set Phase 2 Data Platform design as the next development objective
 
 ### Validation
 
@@ -31,12 +32,15 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 - Frontend run #7 and Documentation run #26 passed before PR #4 merge
 - Frontend run #15 and Documentation run #33 passed before PR #6 merge
 - Frontend run #18 passed the Supabase GitHub Variables workflow change before PR #8 merge
+- Upstream GitHub Pages deployment completed successfully
+- Google OAuth sign-in and callback completed successfully in the deployed application
+- Authenticated session persisted after page refresh and browser restart
+- Sign-out completed successfully
 
 ### Known Limitations
 
-- A real Supabase project and Google OAuth provider are not yet configured
-- OAuth callback, browser session persistence, and sign-out are not yet verified end to end
 - No user-owned database tables or Row Level Security policies exist
+- Cross-user data isolation has not been tested
 - `package-lock.json` is not yet committed, so CI uses `npm install` rather than `npm ci`
-- GitHub Pages deployment and browser-level PWA behavior still require verification
-- Market data, portfolio, and recommendation capabilities are not connected
+- Browser-level PWA installation and offline behavior still require verification
+- Market data, portfolio, analysis, and recommendation capabilities are not connected
