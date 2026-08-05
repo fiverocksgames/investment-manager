@@ -2,7 +2,7 @@
 
 ## 2026-08-06 — Project Development Policy v1
 
-### Today’s Work
+### Policy Work
 
 - Confirmed `fiverocksgames/investment-manager` as the canonical development repository.
 - Created Issue #13 and branch `agent/project-policy-v1`.
@@ -11,7 +11,7 @@
 - Separated constitution documents from living operational documents.
 - Updated contributor guidance to preserve Requirement traceability and AI handoff quality.
 
-### Completed
+### Policy Completion
 
 - Canonical repository decision documented.
 - Project workflow documented as: Issue → Design → Documentation → Branch → Implementation → Test → Draft PR → CI → Review → User Approval → Merge → Issue Close.
@@ -19,43 +19,45 @@
 - Draft PR and explicit user-approval requirements documented.
 - Security, architecture, data-integrity, and investment-safety priorities retained.
 
-### Validation Evidence
+### Policy Validation
 
 - Documentation changes are committed on `agent/project-policy-v1`.
-- Documentation CI must pass before the PR is marked ready for review.
+- Draft PR #14 was created.
+- Documentation run #40 failed only because the new Worklog entry reused headings from the previous entry.
+- This follow-up commit gives the new entry unique headings so Markdownlint can pass.
 
-### Incomplete
+### Policy Remaining Work
 
-- Create the Draft PR.
-- Verify Documentation CI.
+- Verify the new Documentation CI run.
+- Mark PR #14 ready for review only after CI succeeds.
 - Merge only after explicit user approval.
 - Begin Phase 2 Data Platform design after policy adoption.
 - Validate PWA installation and offline behavior separately.
 - Generate `package-lock.json` and change CI from `npm install` to `npm ci`.
 - Create user-owned database tables, default-deny RLS policies, and cross-user isolation tests.
 
-### Next Work
+### Policy Next Steps
 
-1. Complete living-document updates for Issue #13.
-2. Open a Draft PR for Project Development Policy v1.
-3. Verify documentation checks and record exact run evidence.
+1. Verify the replacement Documentation run.
+2. Record the exact successful run evidence.
+3. Mark PR #14 ready for review.
 4. Request user approval before merge.
 5. After merge, create the Phase 2 Data Platform design Issue.
 
-### Cautions
+### Policy Cautions
 
 - The canonical-repository decision does not move or synchronize external repositories.
 - Tool limitations must not weaken Issue, CI, review, or approval controls.
 - Authentication proves identity but does not authorize access to future user-owned tables.
 - PWA offline behavior has not yet been validated and must not be described as complete.
 
-### Current Issue, Branch, and PR
+### Policy Issue, Branch, and PR
 
 - Repository: `fiverocksgames/investment-manager`
 - Issue: #13 — `docs: establish project development policy v1`
 - Branch: `agent/project-policy-v1`
-- PR: not yet created
-- Status: policy documentation in progress
+- PR: #14 — `docs: establish project development policy v1`
+- Status: Draft PR; documentation fix pushed after run #40 failure
 
 ## 2026-08-06 — Phase 1 Closure
 
