@@ -15,6 +15,7 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 - Authentication-aware application shell and visible configuration/error states
 - Placeholder-only `.env.example`
 - Supabase project, Google provider, redirect, and security setup guide
+- GitHub Actions repository Variables wiring for `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`
 
 ### Changed
 
@@ -22,12 +23,14 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 - Updated architecture and feature traceability with implemented frontend and authentication evidence
 - Removed the unused `@vite-pwa/assets-generator` dependency after CI exposed an incompatible peer dependency
 - Clarified that browser-safe Supabase identifiers do not replace Row Level Security
+- Prepared the fork as the authoritative snapshot for a one-time synchronization to `e20cboy/investment-manager`
 
 ### Validation
 
 - Documentation run #12 passed required-document, Markdown lint, and offline link checks
 - Frontend run #7 and Documentation run #26 passed before PR #4 merge
-- Frontend run #9 (`31004808492`) passed dependency installation and production build for the initial Supabase authentication implementation
+- Frontend run #15 and Documentation run #33 passed before PR #6 merge
+- Frontend run #18 passed the Supabase GitHub Variables workflow change before PR #8 merge
 
 ### Known Limitations
 

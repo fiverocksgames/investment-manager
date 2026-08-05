@@ -1,64 +1,63 @@
 # Worklog
 
-## 2026-08-05 — Supabase Authentication Bootstrap
+## 2026-08-06 — Upstream Synchronization Preparation
 
 ### Today’s Work
 
-- Created Issue #5 and branch `agent/phase-1-auth`.
-- Added `@supabase/supabase-js`, guarded browser configuration, and `.env.example`.
-- Added an authentication context for initial session restoration, auth-state changes, Google sign-in, and sign-out.
-- Updated the application shell for configured, signed-out, signed-in, loading, and error states.
-- Opened Draft PR #6.
-- Verified Frontend run #9 passed dependency installation and production build without real Supabase environment values.
-- Added `docs/SUPABASE_SETUP.md` and expanded security boundaries.
-- Added traceability for `REQ-AUTH-001`, `REQ-INFRA-002`, and `REQ-SEC-001`.
+- Verified Frontend run #18 passed for the Supabase GitHub Variables workflow change.
+- Marked PR #8 ready for review and merged it into fork `main`.
+- Created Issue #9 and branch `agent/upstream-sync-prep`.
+- Updated README and AI Handoff to reflect the actual Phase 1 state.
+- Declared the fork as the authoritative source for the one-time forced synchronization to `e20cboy/investment-manager`.
 
 ### Completed
 
-- Browser-safe Supabase client integration.
-- Session lifecycle and Google OAuth invocation path.
-- Missing-configuration behavior that does not crash the application.
-- Placeholder-only environment example.
-- Setup, redirect, secret-boundary, and RLS guidance.
+- React, TypeScript, Vite, Tailwind CSS, PWA, and GitHub Pages baseline.
+- Supabase browser client and authentication context.
+- Google sign-in and sign-out invocation paths.
+- Safe unconfigured-state behavior.
+- GitHub Actions Variables wiring for Supabase public configuration.
+- Setup, security, traceability, Worklog, Handoff, and Changelog documentation.
 
 ### Validation Evidence
 
-Frontend run #9, run ID `31004808492`, completed successfully.
-
-- `npm install`: passed.
-- `npm run build`: passed.
-- Build succeeded with Supabase variables absent.
+- Frontend run #18 passed after `.github/workflows/frontend.yml` was updated.
+- Earlier Frontend and Documentation runs passed production build, required-document checks, Markdown lint, and link validation.
 
 ### Incomplete
 
-- Create a real Supabase project.
-- Configure the Google provider and exact redirect allow-list.
-- Verify sign-in, callback, session persistence, refresh, and sign-out end to end.
-- Create user-owned database tables and Row Level Security policies.
+- Create the browser-based upstream PR and resolve conflicts by retaining the fork version.
+- Verify upstream CI and merge the one-time synchronization.
+- Configure the final upstream repository Variables.
+- Create a real Supabase project and configure Google OAuth.
+- Verify GitHub Pages deployment, OAuth callback, session restoration, sign-out, PWA installation, and offline behavior.
 - Generate `package-lock.json` and change CI to `npm ci`.
-- Update remaining handoff and changelog records.
 
 ### Next Work
 
-1. Update `AI_HANDOFF.md` and `CHANGELOG.md`.
-2. Confirm Frontend and Documentation workflows pass on the latest head.
-3. Update PR #6 with final validation evidence.
-4. Configure a real Supabase project outside the repository.
-5. Complete OAuth browser validation before Ready for Review.
+1. Merge the synchronization-preparation PR into fork `main`.
+2. Open `fiverocksgames:main` → `e20cboy:main` in the GitHub browser.
+3. Resolve all conflicts using the fork as authoritative.
+4. Verify upstream Documentation and Frontend workflows.
+5. Merge upstream and synchronize the fork from upstream.
+6. Resume feature development using fork feature branches that target upstream directly.
 
 ### Cautions
 
-- A publishable or anon key is browser-visible and is not a replacement for RLS.
-- Never expose service-role keys, database passwords, or Google client secrets to Vite.
-- Build success does not prove OAuth configuration or user isolation.
-- No financial data or user-owned tables are connected.
+- Do not expose service-role keys, Google client secrets, database passwords, or JWT secrets.
+- Build success does not prove OAuth, Pages deployment, PWA behavior, or RLS isolation.
+- During the one-time synchronization, old upstream Phase 0 content may be discarded because no independent upstream work must be preserved.
 
 ### Current Branch and PR
 
-- Branch: `agent/phase-1-auth`
-- Issue: #5 — `feat: bootstrap Supabase authentication`
-- Pull Request: #6 — `feat: bootstrap Supabase authentication`
-- Status: Draft; code build passed, real OAuth validation pending
+- Repository: `fiverocksgames/investment-manager`
+- Branch: `agent/upstream-sync-prep`
+- Issue: #9 — `docs: prepare fork for upstream synchronization`
+- Status: documentation synchronization preparation in progress
+
+## 2026-08-05 — Supabase Authentication Bootstrap
+
+PR #6 added the Supabase browser client, authentication context, Google OAuth actions, setup guidance, security boundaries, and feature traceability. Frontend run #15 and Documentation run #33 passed before merge.
 
 ## 2026-08-05 — Phase 1 Frontend Bootstrap
 
