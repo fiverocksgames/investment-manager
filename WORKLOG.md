@@ -9,7 +9,7 @@
 - Established the complete governance and specification document set.
 - Added Issue forms, the PR template, CODEOWNERS, documentation CI, and MIT License.
 - Investigated Documentation run #6 and corrected the Markdown lint configuration.
-- Verified Documentation runs #7 and #9 completed successfully.
+- Verified repeated successful Documentation runs through run #12.
 
 ### Completed
 
@@ -24,19 +24,16 @@
 
 ### Validation Evidence
 
-Documentation run #9, run ID `30999110120`, completed successfully on the
-latest PR head.
+Documentation run #12, run ID `30999233577`, completed successfully.
 
 - Required-document check: passed.
 - Markdown lint: passed.
 - Offline Markdown link check: passed.
 
-Documentation run #7, run ID `30998869604`, also passed with 22 files,
-0 lint errors, 20 successful links, and 0 link errors.
-
-The prior run #6 failed because the default lint configuration enforced
-80-character lines and required an H1 in the PR template. The project now
-explicitly disables only `MD013` and `MD041` in `.markdownlint-cli2.yaml`.
+Earlier successful runs include #7, #9, #10, and #11. Run #6 failed because
+the default lint configuration enforced 80-character lines and required an H1
+in the PR template. `.markdownlint-cli2.yaml` disables only `MD013` and
+`MD041`.
 
 ### Remaining Human Review
 
@@ -69,5 +66,5 @@ before merge or through a linked follow-up Issue.
 
 - Branch: `agent/project-bootstrap`
 - Pull Request: #1 — `docs: establish project governance`
-- Automated validation: passed on latest head
+- Automated validation: successful through run #12
 - Status: Ready for Review
