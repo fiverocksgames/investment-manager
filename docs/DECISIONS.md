@@ -90,4 +90,15 @@ Material technical, product, data, and investment-policy choices are recorded he
 - Decision: A functional PR without corresponding documentation is not complete.
 - Alternatives: Retrospective documentation, code-only Definition of Done.
 - Consequences: PRs may take longer but remain auditable and transferable.
-- Follow-up: Add automated documentation and traceability checks in Phase 0.
+- Follow-up: Enforce the policy through PR templates and documentation validation.
+
+## DEC-008 — Use the MIT License
+
+- Status: Accepted
+- Date: 2026-08-05
+- Requirement IDs: GOV-BOOT-001
+- Context: The project is intended to be easy to inspect, reuse, modify, and extend while retaining a clear warranty disclaimer.
+- Decision: License the repository under the MIT License.
+- Alternatives: Apache License 2.0, GPL family licenses, no explicit license.
+- Consequences: Broad reuse is permitted with preservation of the copyright and license notice; the license does not provide an explicit patent grant beyond its terms.
+- Follow-up: Revisit only through a documented legal and governance decision before external contributions create relicensing complexity.
