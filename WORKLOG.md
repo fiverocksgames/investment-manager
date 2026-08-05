@@ -1,70 +1,75 @@
 # Worklog
 
-## 2026-08-05 — Project Bootstrap
+## 2026-08-05 — Phase 1 Frontend Bootstrap
 
 ### Today’s Work
 
-- Verified GitHub access and administrative permissions for `fiverocksgames/investment-manager`.
-- Initialized `main`, created `agent/project-bootstrap`, and opened PR #1.
-- Established the complete governance and specification document set.
-- Added Issue forms, the PR template, CODEOWNERS, documentation CI, and MIT License.
-- Investigated Documentation run #6 and corrected the Markdown lint configuration.
-- Verified repeated successful Documentation runs through run #12.
+- Created Issue #3 for the Phase 1 frontend platform.
+- Created branch `agent/phase-1-frontend`.
+- Added React, TypeScript, Vite, Tailwind CSS, and PWA configuration.
+- Added a responsive application shell that clearly marks unconnected capabilities.
+- Added a GitHub Actions workflow for frontend build validation and GitHub Pages deployment.
+- Opened Draft PR #4.
+- Investigated Frontend run #1 dependency failure.
+- Removed the unused and incompatible `@vite-pwa/assets-generator` dependency.
+- Verified Frontend run #2 completed successfully.
+- Updated architecture and requirement traceability documentation.
 
 ### Completed
 
-- `GOV-BOOT-001`: Foundation governance and repository bootstrap completed.
-- `GOV-TRACE-001`: Requirement ID and feature traceability rules documented.
-- `GOV-AI-001`: AI operating and handoff rules documented.
-- `GOV-DOC-001`: Documentation review and validation are mandatory.
-- All 21 mandatory governance and specification documents exist.
-- Feature and bug Issue forms exist.
-- PR template, CODEOWNERS, and documentation workflow exist.
-- MIT License exists and `DEC-008` records the decision.
+- `REQ-INFRA-001`: React, TypeScript, and Vite frontend baseline implemented.
+- `REQ-UI-001`: Responsive application shell implemented.
+- `REQ-PWA-001`: PWA registration and manifest generation baseline implemented.
+- `REQ-DEPLOY-001`: GitHub Pages build and deployment workflow implemented.
+
+These requirements remain `In Validation` until PR review and applicable post-merge deployment checks are complete.
 
 ### Validation Evidence
 
-Documentation run #12, run ID `30999233577`, completed successfully.
+Frontend run #2, run ID `31003228610`, completed successfully.
 
-- Required-document check: passed.
-- Markdown lint: passed.
-- Offline Markdown link check: passed.
+- Checkout: passed.
+- Node.js 22 setup: passed.
+- `npm install`: passed.
+- `npm run build`: passed.
+- Pages artifact upload: skipped as expected for a pull request.
+- Deployment: skipped as expected for a pull request.
 
-Earlier successful runs include #7, #9, #10, and #11. Run #6 failed because
-the default lint configuration enforced 80-character lines and required an H1
-in the PR template. `.markdownlint-cli2.yaml` disables only `MD013` and
-`MD041`.
+Frontend run #1 failed during `npm install` because `@vite-pwa/assets-generator@0.2.6` conflicted with the peer dependency required by `vite-plugin-pwa`. The unused package was removed rather than bypassing dependency resolution.
 
-### Remaining Human Review
+### Incomplete
 
-- Review MVP-scope consistency across charter, PRD, feature matrix,
-  specifications, and investment policy.
-- Review investment-safety, data-freshness, and uncertainty language.
-- Review repository settings for labels, milestones, branch protection,
-  secret scanning, and dependency security.
-
-The first two items are part of PR review. Repository settings may be handled
-before merge or through a linked follow-up Issue.
+- Generate and commit `package-lock.json` through a supported workflow.
+- Change CI from `npm install` to `npm ci` after the lockfile exists.
+- Validate PWA installation and offline behavior in a browser.
+- Verify GitHub Pages artifact upload and deployment after merge to `main`.
+- Complete PR review and resolve any findings.
 
 ### Next Work
 
-1. Review PR #1.
-2. Resolve any human review findings.
-3. Merge PR #1 after approval.
-4. Create a Phase 1 Issue for React, TypeScript, Vite, PWA, and TailwindCSS.
-5. Start Phase 1 on a new focused branch.
+1. Update `AI_HANDOFF.md`, `CHANGELOG.md`, and PR #4 with current evidence.
+2. Confirm Documentation and Frontend workflows pass on the latest commit.
+3. Review the application shell and deployment configuration.
+4. Mark PR #4 ready for review when all pre-merge checks pass.
+5. Merge after approval, then verify the Pages deployment.
+6. Start Supabase authentication in a separate Issue and branch.
 
 ### Cautions
 
-- Data-provider access, terms, identifiers, and reliability remain unverified.
-- Analysis formulas and thresholds are specifications, not production values.
-- Bitcoin exposure is not approved without a separate decision.
-- No application code, database migration, deployment workflow, or application
-  test suite exists.
+- The UI contains no financial calculation logic.
+- Authentication, market data, portfolio import, and recommendation capabilities are not connected.
+- No secrets or personal portfolio data are committed.
+- A successful PR build does not prove Pages deployment or browser-level PWA behavior.
+- Do not claim reproducible dependency installation until `package-lock.json` is committed and CI uses `npm ci`.
 
 ### Current Branch and PR
 
-- Branch: `agent/project-bootstrap`
-- Pull Request: #1 — `docs: establish project governance`
-- Automated validation: successful through run #12
-- Status: Ready for Review
+- Branch: `agent/phase-1-frontend`
+- Issue: #3 — `feat: bootstrap Phase 1 frontend platform`
+- Pull Request: #4 — `feat: bootstrap Phase 1 frontend platform`
+- Automated frontend validation: Frontend run #2 passed
+- Status: Draft, documentation and review in progress
+
+## 2026-08-05 — Project Bootstrap
+
+Phase 0 established the governance, specification, templates, ownership, documentation CI, and MIT License baseline in PR #1. Documentation run #12 passed required-document, Markdown lint, and offline link validation.
