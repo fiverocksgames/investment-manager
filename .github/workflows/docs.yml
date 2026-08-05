@@ -1,0 +1,51 @@
+name: Documentation
+
+on:
+  pull_request:
+    paths:
+      - "**/*.md"
+      - ".github/workflows/docs.yml"
+  push:
+    branches: [main]
+    paths:
+      - "**/*.md"
+      - ".github/workflows/docs.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  markdown:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required documents
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            README.md PROJECT_CHARTER.md AGENTS.md CHANGELOG.md CONTRIBUTING.md
+            ROADMAP.md WORKLOG.md AI_HANDOFF.md docs/PRD.md docs/ARCHITECTURE.md
+            docs/FEATURE_MATRIX.md docs/ANALYSIS_SPEC.md docs/PORTFOLIO_SPEC.md
+            docs/DATABASE.md docs/API_SPEC.md docs/SECURITY.md docs/OPERATIONS.md
+            docs/DATA_SOURCES.md docs/INVESTMENT_POLICY.md docs/TEST_PLAN.md
+            docs/DECISIONS.md
+          )
+          for path in "${required[@]}"; do
+            test -s "$path" || { echo "Missing or empty required document: $path"; exit 1; }
+          done
+
+      - name: Lint Markdown
+        uses: DavidAnson/markdownlint-cli2-action@v18
+        with:
+          globs: |
+            **/*.md
+            #node_modules
+
+      - name: Check Markdown links
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --no-progress --offline "**/*.md"
+          fail: true

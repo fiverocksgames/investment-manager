@@ -1,0 +1,58 @@
+name: Bug report
+description: Report reproducible incorrect behavior or documentation defects
+title: "fix: "
+labels: ["type:bug"]
+body:
+  - type: input
+    id: requirement_ids
+    attributes:
+      label: Requirement IDs
+      description: Related requirement IDs, if known.
+      placeholder: REQ-...
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the observed problem.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      description: Provide the smallest reliable sequence that demonstrates the issue.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and data freshness
+      description: Include logs, screenshots, data timestamps, providers, and assumptions. Remove secrets and personal portfolio data.
+  - type: textarea
+    id: impact
+    attributes:
+      label: Investment-decision impact
+      description: Explain whether the defect could misstate data, analysis, allocation, risk, or recommendation rationale.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety checks
+      options:
+        - label: I removed credentials, tokens, and personal financial information.
+          required: true
+        - label: I identified any potentially misleading investment output.
+          required: true
