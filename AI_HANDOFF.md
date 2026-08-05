@@ -28,16 +28,16 @@ or application test suite exists.
 
 ## Validation Evidence
 
-Documentation run #10, run ID `30999145723`, completed successfully on the
+Documentation run #11, run ID `30999184550`, completed successfully on the
 latest PR head.
 
 - Required-document check: passed.
 - Markdown lint: passed.
 - Offline Markdown link check: passed.
 
-Documentation runs #7 and #9 also completed successfully. Run #6 previously
-failed because default Markdown lint enforced line-length and PR-template H1
-rules. `.markdownlint-cli2.yaml` disables only `MD013` and `MD041`.
+Earlier successful runs include #7, #9, and #10. Run #6 failed because default
+Markdown lint enforced line-length and PR-template H1 rules.
+`.markdownlint-cli2.yaml` disables only `MD013` and `MD041`.
 
 ## Required Before Merge
 
