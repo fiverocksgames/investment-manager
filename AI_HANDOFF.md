@@ -2,7 +2,11 @@
 
 ## Current State
 
-Investment Manager is in Phase 0 — Foundation. Draft PR #1 contains the governance, specifications, repository templates, ownership rules, documentation CI, and MIT license. No application, database migration, deployment workflow, or application test suite exists.
+Investment Manager is completing Phase 0 — Foundation. PR #1 contains the
+project governance, specifications, repository templates, ownership rules,
+documentation CI, and MIT License. Automated documentation validation passes.
+No application, database migration, deployment workflow, or application test
+suite exists.
 
 ## Repository and Active Work
 
@@ -10,31 +14,45 @@ Investment Manager is in Phase 0 — Foundation. Draft PR #1 contains the govern
 - Default branch: `main`
 - Active branch: `agent/project-bootstrap`
 - Pull request: #1 — `docs: establish project governance`
-- PR state: Draft pending CI inspection and human documentation review
+- PR state: Ready for Review
 
 ## Completed in PR #1
 
 - All 21 required governance and specification documents.
 - Feature and bug Issue forms.
-- Pull request template with mandatory governance and investment-safety checks.
-- CODEOWNERS assigning repository review ownership to `@fiverocksgames`.
-- Documentation workflow that checks required files, Markdown lint, and offline Markdown links.
+- Pull request template with governance and investment-safety checks.
+- CODEOWNERS assigning review ownership to `@fiverocksgames`.
+- Documentation workflow for required files, Markdown lint, and links.
 - MIT `LICENSE` and accepted decision `DEC-008`.
+- Markdown lint configuration suited to long specifications and PR templates.
+
+## Validation Evidence
+
+Documentation run #7, run ID `30998869604`, completed successfully.
+
+- Required-document check: passed.
+- Markdown lint: 22 files, 0 errors.
+- Offline Markdown links: 20 successful, 0 errors.
+
+Run #6 previously failed because default Markdown lint enforced line-length and
+PR-template H1 rules. `.markdownlint-cli2.yaml` disables only `MD013` and
+`MD041`, after which run #7 passed.
 
 ## Required Before Merge
 
-1. Inspect the GitHub Actions result for the latest PR head.
-2. Fix every documentation lint or link failure.
-3. Review charter, PRD, feature matrix, specifications, and investment policy for scope consistency.
-4. Confirm the PR body records only validations actually performed.
-5. Update `WORKLOG.md`, this file, and the PR description with final evidence.
-6. Mark the PR ready for review only after the above pass.
+1. Complete human review of MVP-scope consistency.
+2. Review investment-safety, freshness, uncertainty, and risk language.
+3. Resolve any review findings.
+4. Merge only after approval.
 
-Repository settings still requiring review, either before merge or in a linked follow-up Issue:
+Repository settings still requiring review:
 
 - Labels and milestones.
 - Branch protection and required checks.
-- Secret scanning and dependency/security features.
+- Secret scanning and dependency-security features.
+
+These settings may be completed before merge or in a linked Phase 0 follow-up
+Issue if they do not block the governance baseline.
 
 ## Development Rules
 
@@ -44,30 +62,35 @@ Repository settings still requiring review, either before merge or in a linked f
 4. Keep financial calculations outside the UI.
 5. Never commit secrets or personal portfolio data.
 6. Update Worklog and Handoff in every PR.
-7. Never claim a command or CI check passed without evidence.
+7. Never claim validation without evidence.
 
 ## Technical Direction
 
-- React, TypeScript, Vite, PWA, TailwindCSS.
+- React, TypeScript, Vite, PWA, and TailwindCSS.
 - GitHub Pages hosting.
 - Supabase PostgreSQL and Auth.
 - Python scheduled jobs through GitHub Actions.
 - Google Sheets portfolio input.
-- Yahoo Finance, FRED, and ECOS as candidate free sources subject to current access and terms verification.
+- Yahoo Finance, FRED, and ECOS as candidate free data sources, subject to
+  current access and terms verification.
 
 ## Investment Boundaries
 
 - Conservative, long-term, ETF-first decision support.
-- No automated trading, individual-stock recommendations, leverage, inverse products, derivatives, margin, or short selling in MVP.
-- Outputs must disclose evidence, timestamps, freshness, assumptions, uncertainty, rationale, and risks.
-- Bitcoin is not approved for implementation without a separate explicit policy decision.
+- No automated trading, individual-stock recommendations, leverage, inverse
+  products, derivatives, margin, or short selling in MVP.
+- Outputs must disclose evidence, timestamps, freshness, assumptions,
+  uncertainty, rationale, and risks.
+- Bitcoin is not approved without a separate policy decision.
 
 ## Run and Test Instructions
 
-There is no runnable application or application test suite. Do not invent setup commands.
-
-For PR #1, use the `Documentation` GitHub Actions workflow plus human review. The workflow is defined in `.github/workflows/docs.yml`.
+There is no runnable application or application test suite. Do not invent setup
+commands. PR #1 is validated by the `Documentation` GitHub Actions workflow and
+human review.
 
 ## Exact Next Recommended Task
 
-Inspect the latest PR #1 workflow run and changed files. Resolve failures, complete the final documentation review, and then decide whether the PR is ready for review. Phase 1 application bootstrap must use a new Issue and focused branch after this PR is merged.
+Review and approve PR #1, then merge it. After merge, create a Phase 1 Issue and
+a new focused branch for the React, TypeScript, Vite, PWA, and TailwindCSS
+application bootstrap.
