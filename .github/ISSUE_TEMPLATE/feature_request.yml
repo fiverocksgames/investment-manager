@@ -1,0 +1,56 @@
+name: Feature request
+description: Propose a traceable product or platform capability
+title: "feat: "
+labels: ["type:feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before submitting, review PROJECT_CHARTER.md, AGENTS.md, ROADMAP.md, and docs/FEATURE_MATRIX.md.
+  - type: input
+    id: requirement_ids
+    attributes:
+      label: Requirement IDs
+      description: Existing IDs or proposed new IDs, for example REQ-MKT-001.
+      placeholder: REQ-...
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Describe the user or project problem without prescribing implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Proposed scope
+      description: State included and excluded behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: design
+    attributes:
+      label: Design and documentation impact
+      description: List documents, data contracts, APIs, UI, tests, and decisions likely to change.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Provide verifiable completion criteria.
+    validations:
+      required: true
+  - type: checkboxes
+    id: policy
+    attributes:
+      label: Policy checks
+      options:
+        - label: This request does not introduce automated trading.
+          required: true
+        - label: This request respects the MVP investment boundaries or explicitly proposes a decision-log change.
+          required: true
+        - label: Documentation and tests are part of the proposed Definition of Done.
+          required: true
