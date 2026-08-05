@@ -1,12 +1,24 @@
 # Investment Manager
 
-Investment Manager is a personal investment decision-support system for conservative, long-term investors. It is designed to explain market conditions, identify ETF candidates, analyze portfolio allocation, and provide reviewable rebalancing guidance.
+Investment Manager is a personal investment decision-support system for conservative, long-term investors. It explains market conditions, identifies ETF candidates, analyzes portfolio allocation, and provides reviewable rebalancing guidance.
 
 > This project does not perform automated trading and does not provide guaranteed returns or individualized fiduciary advice.
 
 ## Status
 
-Phase 0 — Foundation. Project governance and product specifications are being reviewed in Draft PR #1. No runnable application exists yet.
+Phase 1 infrastructure is implemented in this fork and is being prepared for a one-time synchronization to `e20cboy/investment-manager`.
+
+Implemented baseline:
+
+- React, TypeScript, and Vite application shell
+- Tailwind CSS styling
+- PWA registration and manifest generation
+- GitHub Pages build and deployment workflow
+- Supabase browser client and authentication context
+- Google sign-in and sign-out actions
+- GitHub Actions repository Variables wiring for Supabase public configuration
+
+External configuration and browser-level validation are still pending.
 
 ## MVP Scope
 
@@ -31,13 +43,13 @@ The project prioritizes capital preservation, diversification, ETF-based exposur
 
 ### Governance
 
-- [`PROJECT_CHARTER.md`](PROJECT_CHARTER.md) — goals, scope, success criteria, Definition of Done, risks, and roadmap.
-- [`AGENTS.md`](AGENTS.md) — mandatory rules for AI and human contributors.
-- [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribution and PR process.
-- [`ROADMAP.md`](ROADMAP.md) — phased delivery plan.
-- [`WORKLOG.md`](WORKLOG.md) — current work, incomplete items, next steps, and cautions.
-- [`AI_HANDOFF.md`](AI_HANDOFF.md) — exact continuation context for the next contributor.
-- [`CHANGELOG.md`](CHANGELOG.md) — notable project changes.
+- [`PROJECT_CHARTER.md`](PROJECT_CHARTER.md)
+- [`AGENTS.md`](AGENTS.md)
+- [`CONTRIBUTING.md`](CONTRIBUTING.md)
+- [`ROADMAP.md`](ROADMAP.md)
+- [`WORKLOG.md`](WORKLOG.md)
+- [`AI_HANDOFF.md`](AI_HANDOFF.md)
+- [`CHANGELOG.md`](CHANGELOG.md)
 
 ### Product and engineering
 
@@ -51,29 +63,35 @@ The project prioritizes capital preservation, diversification, ETF-based exposur
 - [`docs/SECURITY.md`](docs/SECURITY.md)
 - [`docs/OPERATIONS.md`](docs/OPERATIONS.md)
 - [`docs/DATA_SOURCES.md`](docs/DATA_SOURCES.md)
+- [`docs/INVESTMENT_POLICY.md`](docs/INVESTMENT_POLICY.md)
 - [`docs/TEST_PLAN.md`](docs/TEST_PLAN.md)
 - [`docs/DECISIONS.md`](docs/DECISIONS.md)
+- [`docs/SUPABASE_SETUP.md`](docs/SUPABASE_SETUP.md)
 
 ## Requirement Traceability
 
-Every product requirement receives a stable ID such as `REQ-MKT-001`, `REQ-SIG-001`, `REQ-PORT-001`, or `REQ-AUTH-001`. The path from requirement through design, database, API, UI, tests, and PR evidence is tracked in `docs/FEATURE_MATRIX.md`.
+Every product requirement receives a stable ID. The path from planning through design, data, API, UI, tests, and PR evidence is tracked in `docs/FEATURE_MATRIX.md`.
 
 ## Development Process
 
-Work follows:
-
 `Issue → Design → Documentation → Implementation → Test → Pull Request`
 
-A feature is not complete when its documentation, worklog, handoff, tests, or traceability evidence is missing.
+A feature is not complete when documentation, worklog, handoff, tests, or traceability evidence is missing.
 
 ## Running and Testing
 
-There is no runnable application or automated test suite yet. Do not invent setup commands. Phase 1 will add the frontend, development environment, CI, and verified run instructions.
+```text
+npm install
+npm run dev
+npm run build
+```
 
-## Contributing
+`npm install` and `npm run build` have been verified in GitHub Actions. Browser-level PWA and OAuth validation remain pending.
 
-Read `PROJECT_CHARTER.md`, `AGENTS.md`, `CONTRIBUTING.md`, `WORKLOG.md`, and `AI_HANDOFF.md` before making changes. Never commit credentials, personal portfolio data, or undocumented investment logic.
+## Security
+
+Only `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` may be provided to the frontend. Never commit a Supabase service-role key, Google client secret, database password, JWT secret, or personal portfolio data.
 
 ## License
 
-No license has been selected yet. Until a license is added, normal copyright restrictions apply even though the repository is public.
+MIT License. See [`LICENSE`](LICENSE).
