@@ -2,62 +2,62 @@
 
 ## Current State
 
-Investment Manager is in Phase 1 — Infrastructure. Phase 0 governance is complete, and Draft PR #4 contains the first runnable frontend baseline using React, TypeScript, Vite, Tailwind CSS, PWA support, and GitHub Pages automation.
+Investment Manager is in Phase 1 — Infrastructure. Phase 0 governance and the frontend platform are merged. Draft PR #6 adds the first Supabase authentication integration while deliberately separating build validation from real OAuth validation.
 
 ## Repository and Active Work
 
 - Repository: `fiverocksgames/investment-manager`
 - Default branch: `main`
-- Active branch: `agent/phase-1-frontend`
-- Issue: #3 — `feat: bootstrap Phase 1 frontend platform`
-- Pull request: #4 — `feat: bootstrap Phase 1 frontend platform`
-- PR state: Draft pending final documentation and review
+- Active branch: `agent/phase-1-auth`
+- Issue: #5 — `feat: bootstrap Supabase authentication`
+- Pull request: #6 — `feat: bootstrap Supabase authentication`
+- PR state: Draft
 
-## Completed in PR #4
+## Completed in PR #6
 
-- React 19 application shell.
-- TypeScript and Vite build configuration.
-- Tailwind CSS and PostCSS configuration.
-- PWA registration and generated manifest configuration.
-- GitHub Actions frontend build validation.
-- GitHub Pages artifact and deployment jobs for pushes to `main`.
-- Responsive UI that states which capabilities are not connected.
-- Architecture and feature traceability updates.
+- Supabase JavaScript client dependency.
+- Guarded client initialization using browser-safe Vite variables.
+- `.env.example` with placeholders only.
+- Authentication context for session restoration and auth-state subscription.
+- Google sign-in and sign-out actions.
+- UI states for loading, missing configuration, signed out, signed in, and errors.
+- `docs/SUPABASE_SETUP.md` covering project, provider, redirect, and validation setup.
+- Security and feature-traceability updates.
 
 ## Validation Evidence
 
-Frontend run #2, run ID `31003228610`, completed successfully.
+Frontend run #9, run ID `31004808492`, completed successfully.
 
-- Checkout: passed.
-- Node.js 22 setup: passed.
 - `npm install`: passed.
 - `npm run build`: passed.
-- Artifact upload and deployment were skipped as expected for a pull request.
+- The application built without Supabase environment variables.
 
-Frontend run #1 failed due to an incompatible optional PWA assets generator dependency. The unused package was removed; no force or legacy peer-dependency bypass was introduced.
+This proves compile-time and missing-configuration behavior only. It does not prove Google OAuth, callback routing, session persistence in a browser, or database authorization.
 
-## Required Before Merge
+## Required Before Ready for Review
 
-1. Confirm Frontend and Documentation workflows pass on the latest PR head.
-2. Review the application shell, Vite base path, PWA configuration, and Pages workflow.
-3. Resolve review findings.
-4. Mark the PR ready for review only after pre-merge checks pass.
-5. Merge after approval.
+1. Confirm Frontend and Documentation workflows pass on the latest documentation head.
+2. Configure a real Supabase project outside the repository.
+3. Enable Google as an authentication provider.
+4. Add exact localhost and GitHub Pages redirect URLs.
+5. Verify sign-in, callback, refresh persistence, error handling, and sign-out.
+6. Record the browser validation evidence without committing secrets.
+7. Resolve review findings.
 
-## Required After Merge
+## Security Boundaries
 
-1. Verify the push-to-`main` workflow uploads the Pages artifact.
-2. Verify GitHub Pages deployment succeeds and the site loads under `/investment-manager/`.
-3. Validate PWA installation and offline behavior in a supported browser.
-4. Record deployment evidence in Worklog and Handoff.
+- `VITE_SUPABASE_URL` and the publishable or anon key are browser-visible identifiers.
+- Service-role keys, database passwords, and Google client secrets never belong in Vite variables.
+- Authentication proves identity but does not authorize user data access.
+- User-owned tables require default-deny Row Level Security and isolation tests before frontend access.
 
 ## Known Limitations
 
-- No `package-lock.json` is committed.
-- CI currently uses `npm install`, not `npm ci`.
-- No authentication, database, market data, portfolio, or recommendation integration exists.
-- No browser-level PWA or accessibility validation has been completed.
-- Successful PR CI does not prove production deployment.
+- No real Supabase project or Google provider is connected.
+- No protected routes or user-owned database tables exist.
+- No RLS policies or cross-user isolation tests exist.
+- No `package-lock.json` is committed; CI uses `npm install`.
+- GitHub Pages and PWA browser validation remain pending from the previous phase.
 
 ## Development Rules
 
@@ -71,16 +71,16 @@ Frontend run #1 failed due to an incompatible optional PWA assets generator depe
 
 ## Run and Test Instructions
 
-Current expected commands:
-
 ```text
 npm install
 npm run dev
 npm run build
 ```
 
-Only `npm install` and `npm run build` have been verified in GitHub Actions. Local development and browser behavior have not been independently verified.
+For local authentication, copy `.env.example` to `.env.local` and use only the
+browser-safe project URL and publishable or anon key. Follow
+`docs/SUPABASE_SETUP.md`. Do not commit `.env.local`.
 
 ## Exact Next Recommended Task
 
-Inspect the latest PR #4 workflow results after the documentation commits. Resolve any failures, update the PR body with final evidence, and mark the PR ready for review when all pre-merge checks pass.
+Check the latest Frontend and Documentation workflow results. If green, configure a real Supabase project and Google OAuth provider, then complete browser-level authentication validation before marking PR #6 ready for review.
