@@ -2,15 +2,26 @@
 
 ## Current State
 
-Phase 1 application infrastructure is complete with residual PWA and data-isolation validation work. Phase 2 data-platform design, canonical Python models, provider contracts, the FRED adapter, and protected FRED live connectivity validation are complete.
+Phase 1 application infrastructure is complete with residual PWA and data-isolation validation work. Phase 2 includes the canonical Python data model, provider contract, FRED adapter with verified live connectivity, and an active Yahoo daily market-data adapter implementation.
 
 ## Repository and Active Work
 
 - Canonical repository: `fiverocksgames/investment-manager`
 - Default branch: `main`
-- Active branch: `agent/roadmap-release-history`
-- Issue: #25 — `docs: establish roadmap and release history`
-- PR: not yet created
+- Active branch: `agent/yahoo-market-adapter`
+- Issue: #28 — `feat: implement Yahoo market-data adapter`
+- PR: pending creation
+
+## Implemented on the Active Branch
+
+- `investment_manager/data/yahoo.py` with explicit symbol bindings and daily chart normalization.
+- Market-price and FX-rate dataset support.
+- Adjusted close as the canonical value with OHLCV and adjustment metadata preserved.
+- Deterministic observation IDs, `Decimal` values, and UTC timestamps.
+- Explicit binding, dataset, HTTP, transport, payload, missing-value, parsing, and range failures.
+- Partial results when some symbols succeed and others fail.
+- `tests/test_yahoo_provider.py` with deterministic fixtures and no live network dependency.
+- `docs/YAHOO_ADAPTER.md` with contract, normalization, failure, test, and operational boundaries.
 
 ## Verified Completed Work
 
@@ -18,34 +29,23 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 - PR #18: canonical data model and provider abstraction
 - PR #20: FRED economic-series adapter
 - PR #22: protected FRED live smoke workflow
-- PR #24: corrected expected partial-result handling for live smoke validation
-- Python and Documentation CI passed for the FRED adapter and smoke fix.
-- Live FRED connectivity was successfully validated with repository secret `FRED_API_KEY`.
+- PR #24: corrected expected partial-result handling
+- PR #26: release-oriented roadmap and release history
+- Live FRED connectivity validated with repository secret `FRED_API_KEY`
 
-## Active Documentation Work
+## Yahoo Rules
 
-- Refresh `ROADMAP.md` with release-oriented status and exit criteria.
-- Add `RELEASES.md` as the curated product-level release history.
-- Define the project Definition of Done without weakening explicit user approval before merge.
-- Correct stale FRED status in living documentation.
-
-## FRED Rules Enforced
-
-- The FRED API key is runtime-only and stored as an encrypted GitHub Actions secret.
-- The key is not committed, logged, returned, or exposed to the frontend.
-- Series IDs map to canonical subject IDs and units only through explicit bindings.
-- Requests use the official Version 1 observations JSON endpoint.
-- Values use `Decimal`; observation dates become UTC timestamps.
-- FRED `.` values never become observations.
-- Revision metadata and explicit provider failures are preserved.
-- Live smoke validation succeeds only when valid observations exist and all failure codes are expected `MISSING_VALUE` or `OUT_OF_RANGE` warnings.
-- Authentication, HTTP, transport, payload, binding, parsing, and empty-result failures remain fatal.
+- Canonical identity comes only from explicit `YahooSymbolBinding` entries.
+- The adapter uses daily historical chart payloads only.
+- No rendered HTML scraping or third-party Yahoo wrapper is used.
+- Financial values use `Decimal`; timestamps are normalized to UTC.
+- Missing or malformed rows never become trusted observations.
+- No stable production availability is claimed without a separate controlled live smoke test.
 
 ## Known Limitations
 
-- No production FRED series catalog is approved.
-- No Yahoo, ECOS, or FX adapter exists.
-- No cache executor, retry executor, persistence, migration, scheduled ingestion, analysis, portfolio, recommendation, or backtest logic exists.
+- Yahoo implementation has not yet passed PR CI or live validation.
+- No ECOS adapter, cache executor, retry executor, persistence, migration, scheduled ingestion, analysis, portfolio, recommendation, or backtest logic exists.
 - PWA install/offline validation, user-owned tables, RLS, and cross-user isolation remain pending.
 - Frontend CI still lacks a committed package lockfile.
 
@@ -63,4 +63,4 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 
 ## Exact Next Recommended Task
 
-Complete Issue #25 by updating living documents, opening a Draft PR, and passing Documentation CI. After user-approved merge, create a separately scoped Issue for the Yahoo market-data adapter only after verifying the current provider contract, access method, stability, and legal or operational constraints.
+Create the Yahoo Adapter Draft PR, run Python and Documentation CI, fix any failures, and keep the PR unmerged until explicit user approval. After merge, create a separately scoped protected live smoke test before claiming production connectivity.
