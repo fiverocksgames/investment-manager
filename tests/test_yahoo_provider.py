@@ -14,13 +14,13 @@ from investment_manager.data.providers import FetchRequest, ProviderCapability
 from investment_manager.data.yahoo import YahooProvider, YahooSymbolBinding
 
 NOW = datetime(2026, 8, 6, 12, 0, tzinfo=UTC)
-START = datetime(2026, 8, 3, 0, 0, tzinfo=UTC)
-END = datetime(2026, 8, 6, 23, 59, tzinfo=UTC)
+START = datetime(2025, 8, 3, 0, 0, tzinfo=UTC)
+END = datetime(2025, 8, 6, 23, 59, tzinfo=UTC)
 SPY_ID = UUID("9099d56f-5795-5778-bae0-b5425562d614")
 FX_ID = UUID("a15d7850-46f2-5a0b-9f94-bdc22a5b2dc1")
 
 
-def payload(*, missing_second: bool = False) -> bytes:
+def payload(*, missing_second: bool = False, symbol: str = "SPY", currency: str = "USD") -> bytes:
     second_close = None if missing_second else 632.1
     second_adjclose = None if missing_second else 631.8
     body = {
@@ -28,8 +28,8 @@ def payload(*, missing_second: bool = False) -> bytes:
             "result": [
                 {
                     "meta": {
-                        "currency": "USD",
-                        "symbol": "SPY",
+                        "currency": currency,
+                        "symbol": symbol,
                         "exchangeTimezoneName": "America/New_York",
                     },
                     "timestamp": [1754265600, 1754352000],
@@ -128,11 +128,9 @@ class YahooProviderTests(unittest.TestCase):
         self.assertEqual(result.failures[0].code, "BINDING_KIND_MISMATCH")
 
     def test_fx_binding_uses_fx_observation_kind(self) -> None:
-        fx_body = json.loads(payload().decode("utf-8"))
-        fx_body["chart"]["result"][0]["meta"]["currency"] = "KRW"
-        result = self.provider(lambda _url, _timeout: json.dumps(fx_body).encode("utf-8")).fetch(
-            self.request("KRW=X", dataset=ProviderCapability.FX_RATES.value)
-        )
+        result = self.provider(
+            lambda _url, _timeout: payload(symbol="KRW=X", currency="KRW")
+        ).fetch(self.request("KRW=X", dataset=ProviderCapability.FX_RATES.value))
 
         self.assertEqual(result.observations[0].kind, ObservationKind.FX_RATE)
         self.assertEqual(result.observations[0].unit, "KRW")
