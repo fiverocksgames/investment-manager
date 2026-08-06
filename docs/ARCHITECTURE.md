@@ -22,135 +22,125 @@ Python data, analysis, portfolio, and recommendation jobs
   +-- Yahoo Finance
   +-- FRED
   +-- ECOS
+  +-- approved FX sources
 ```
+
+## Layered Architecture
+
+```text
+Provider Adapter
+      |
+      v
+Validation and Normalization
+      |
+      v
+Canonical Observation Model
+      |
+      +--> Cache
+      |
+      +--> Supabase Persistence
+      |
+      v
+Analysis Engine
+      |
+      v
+Portfolio and Recommendation Engines
+      |
+      v
+React UI
+```
+
+Provider payloads never cross the adapter boundary. All downstream consumers use the canonical entities defined in [`DATA_MODEL.md`](DATA_MODEL.md).
 
 ## Implemented Frontend Baseline
 
-Phase 1 PR #4 establishes the first runnable application layer:
+Phase 1 established:
 
 - React 19 and TypeScript
 - Vite static build
 - Tailwind CSS styling
 - `vite-plugin-pwa` service-worker registration and manifest generation
-- GitHub Actions build validation on pull requests
-- GitHub Pages artifact and deployment jobs on pushes to `main`
-- Repository-relative Vite base path: `/investment-manager/`
+- GitHub Actions build validation and Pages deployment
+- Supabase Auth with Google OAuth
 
-The current UI is an application shell only. It deliberately does not contain market calculations, authentication, portfolio imports, or recommendation logic.
+The UI remains presentation-only and does not calculate financial indicators or normalize provider data.
 
-## Components
+## Phase 2 Components
 
-### Web Application
+### Provider Adapters
 
-Responsibilities:
+Each provider adapter owns authentication, request construction, response parsing, provider error mapping, and provider-specific identifiers. Initial adapters are planned for Yahoo Finance, FRED, ECOS, and approved FX sources.
 
-- Authentication flow and session handling
-- Market, candidate, portfolio, and operations views
-- Rendering explanations, timestamps, and risk disclosures
-- Input validation feedback and user-controlled refresh requests where supported
+### Validation and Normalization
 
-Non-responsibilities:
+The normalization layer converts provider output into canonical assets, series, observations, currencies, units, frequencies, and timestamps. Invalid values are rejected rather than coerced silently.
 
-- Financial indicator calculation
-- Portfolio rebalancing calculation
-- Secret-bearing provider calls
-- Brokerage transactions
+### Canonical Data Model
 
-### Supabase Auth
+The model contains assets, aliases, economic series, providers, observations, dataset policies, ingestion runs, failures, quality states, freshness states, and immutable source snapshots. Observation identity includes provider and source revision dimensions so revised macro data and corrected prices remain auditable.
 
-- Google login for MVP
-- User identity for ownership boundaries
-- Future OTP only after a separate decision
+### Cache
 
-### Supabase PostgreSQL
+The cache reduces unnecessary provider calls but never replaces source metadata or freshness evaluation. A cache hit must expose the original observation time, retrieval time, and expiry decision. Expired data may be returned only with an explicit stale state.
 
-- User-owned portfolio metadata and snapshots
-- Normalized market observations and derived analysis snapshots
-- Recommendation snapshots and job status
-- Row Level Security for private data
+### Persistence
 
-### Python Jobs
+Supabase PostgreSQL stores normalized reference data, observations, ingestion metadata, and later derived outputs. Writes are idempotent and transactional when partial publication could mislead consumers.
 
-Logical modules:
+### Operations
 
-- Data Adapters — provider-specific retrieval and parsing
-- Normalization — symbols, dates, timezones, currencies, units
-- Analysis Engine — indicators, momentum, volatility, regime
-- Portfolio Engine — holdings normalization, allocation, rebalance math
-- Recommendation Engine — eligibility, factors, scores, explanations
-- Persistence — transactional writes and idempotency
-- Operations — retries, freshness, telemetry, failure summaries
-
-### GitHub Actions
-
-- Scheduled data and analysis execution
-- CI for lint, typing, tests, build, documentation, and security checks
-- Secrets supplied only through repository or environment secrets
-- Frontend workflow runs `npm install` and `npm run build` for PR validation
-- Pages artifact upload and deployment run only on pushes to `main`
-
-### Google Sheets Integration
-
-- MVP portfolio source
-- Read-only import principle
-- Explicit sheet schema and validation
-- No brokerage or automatic transaction synchronization
+GitHub Actions runs scheduled Python ingestion jobs. Concurrency controls prevent overlapping runs for the same dataset. Runs record commit SHA, provider, dataset, cutoff, counts, warnings, failures, and final status.
 
 ## Data Flow
 
-1. A scheduled job retrieves raw observations from provider adapters.
-2. Inputs are validated, timestamped, and normalized.
-3. Normalized observations are persisted with source metadata.
-4. Analysis Engine produces versioned derived metrics and regime snapshots.
-5. Portfolio Engine imports and normalizes authorized user holdings.
-6. Recommendation Engine combines eligible assets with analysis outputs and policy rules.
-7. The web app reads authorized snapshots and renders explanations.
+1. A scheduled job creates an ingestion-run record with an explicit cutoff.
+2. The provider adapter retrieves a bounded dataset.
+3. The response is schema-validated and mapped into canonical records.
+4. Quality and freshness states are calculated from the dataset policy.
+5. Normalized observations and source metadata are persisted idempotently.
+6. A source snapshot is published only when required validation succeeds.
+7. Downstream analysis consumes a specific successful source snapshot.
+8. The UI reads normalized data and displays source, cutoff, and freshness information.
 
-## Boundaries
+## Failure Boundaries
 
-- Provider schemas stop at adapter boundaries.
-- Financial calculations stop at engine boundaries.
-- Public client configuration is distinct from server-side secrets.
-- User-owned data is protected in database policies.
-- The UI never becomes the sole source of calculation logic.
-
-## Reliability
-
-- Jobs must be idempotent for the same dataset and observation period.
-- Writes should be transactional where partial state would mislead users.
-- Stale data remains visible only with an explicit stale status.
-- Provider failures must not silently reuse old values as current.
-- Derived outputs reference their input timestamps and calculation version.
+- Provider failures never create successful snapshots.
+- Partial datasets are marked `partial` and are not promoted when the dataset policy requires completeness.
+- Retry exhaustion produces a stable failure category.
+- Prior good observations remain intact but are never relabeled as current.
+- Required-input failure blocks dependent analysis.
+- Fallback providers require a separate accepted decision and comparison tests.
 
 ## Security
 
-- No service-role key in the frontend.
-- Row Level Security enabled before user data tables are exposed.
-- Logs redact tokens, spreadsheet content, and personal holdings.
-- External inputs are schema-validated and size-limited.
-- Dependencies and workflows use pinned or reviewed versions where practical.
+- Provider credentials are available only to trusted jobs.
+- No service-role or provider secret enters the frontend bundle.
+- Logs redact credentials and sensitive request parameters.
+- User-owned data requires default-deny Row Level Security before exposure.
+- Public market data and private portfolio data remain separate authorization domains.
 
 ## Deployment
 
-- Frontend: static build deployed to GitHub Pages.
-- Database/Auth: Supabase managed services.
-- Scheduled backend: GitHub Actions Python workflows.
+- Frontend: GitHub Pages
+- Database and Auth: Supabase
+- Scheduled backend: GitHub Actions Python workflows
+- No continuously running custom API service is required for Phase 2
 
-The initial design avoids a continuously running custom backend. A dedicated API service requires a future decision if job-based and Supabase interfaces become insufficient.
-
-## Current Deployment Limitations
-
-- PR validation confirms the application builds, but does not deploy.
-- Actual Pages deployment must be verified after merge to `main`.
-- The repository does not yet contain `package-lock.json`; CI currently uses `npm install` rather than `npm ci`.
-- PWA installation and offline behavior require browser-level validation.
-
-## Architectural Quality Attributes
+## Quality Attributes
 
 - Auditability
 - Explainability
 - Reproducibility
-- Security and privacy
+- Explicit freshness
+- Fail-safe degradation
+- Provider replaceability
 - Low operational cost
-- Replaceable data providers
-- AI and contributor maintainability
+- Security and privacy
+
+## Current Limitations
+
+- Provider adapters and scheduled ingestion are not implemented.
+- Database migrations for the Phase 2 model are not created.
+- Provider terms, rate limits, and identifiers require implementation-time verification.
+- PWA installation and offline behavior remain unverified.
+- `package-lock.json` is not committed; frontend CI still uses `npm install`.
