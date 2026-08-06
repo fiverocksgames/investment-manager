@@ -2,7 +2,7 @@
 
 ## Current State
 
-Phase 1 application infrastructure is complete with residual PWA and data-isolation validation work. Phase 2 includes the canonical Python data model, provider contract, FRED adapter with verified live connectivity, and an active Yahoo daily market-data adapter implementation.
+Phase 1 application infrastructure is complete with residual PWA and data-isolation validation work. Phase 2 includes the canonical Python data model, provider contract, FRED adapter with verified live connectivity, and a Yahoo daily market-data adapter that has passed fixture-based Python and Documentation CI in PR #29.
 
 ## Repository and Active Work
 
@@ -10,7 +10,7 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 - Default branch: `main`
 - Active branch: `agent/yahoo-market-adapter`
 - Issue: #28 — `feat: implement Yahoo market-data adapter`
-- PR: pending creation
+- PR: #29 — `feat: implement Yahoo market-data adapter`
 
 ## Implemented on the Active Branch
 
@@ -22,6 +22,12 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 - Partial results when some symbols succeed and others fail.
 - `tests/test_yahoo_provider.py` with deterministic fixtures and no live network dependency.
 - `docs/YAHOO_ADAPTER.md` with contract, normalization, failure, test, and operational boundaries.
+
+## Validation Evidence
+
+- Python run #10 passed for commit `3444d9381c8924902414742fdeb6c1c5772db08b`.
+- Documentation run #58 passed for commit `3444d9381c8924902414742fdeb6c1c5772db08b`.
+- Any documentation commit after that SHA requires fresh Python and Documentation CI before PR #29 is marked Ready for Review.
 
 ## Verified Completed Work
 
@@ -44,7 +50,7 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 
 ## Known Limitations
 
-- Yahoo implementation has not yet passed PR CI or live validation.
+- Yahoo live connectivity and production availability have not been validated.
 - No ECOS adapter, cache executor, retry executor, persistence, migration, scheduled ingestion, analysis, portfolio, recommendation, or backtest logic exists.
 - PWA install/offline validation, user-owned tables, RLS, and cross-user isolation remain pending.
 - Frontend CI still lacks a committed package lockfile.
@@ -63,4 +69,4 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 
 ## Exact Next Recommended Task
 
-Create the Yahoo Adapter Draft PR, run Python and Documentation CI, fix any failures, and keep the PR unmerged until explicit user approval. After merge, create a separately scoped protected live smoke test before claiming production connectivity.
+Confirm fresh Python and Documentation CI on the latest PR #29 head, then mark PR #29 Ready for Review if both pass. Keep the PR unmerged until explicit user approval. After merge, create a separately scoped protected Yahoo live smoke test before claiming production connectivity.
