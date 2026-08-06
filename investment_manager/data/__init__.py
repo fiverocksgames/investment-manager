@@ -18,6 +18,7 @@ from .models import (
     SourceSnapshot,
 )
 from .providers import DataProvider, FetchRequest, FetchResult, ProviderCapability
+from .yahoo import YahooProvider, YahooSymbolBinding
 
 __all__ = [
     "Asset",
@@ -40,4 +41,6 @@ __all__ = [
     "ProviderCapability",
     "ProviderMetadata",
     "SourceSnapshot",
+    "YahooProvider",
+    "YahooSymbolBinding",
 ]
