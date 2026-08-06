@@ -46,12 +46,12 @@
 |---|---|---:|---|---|---|---|
 | REQ-DATA-001 | Provider-independent assets, series, observations, runs, failures, and snapshots | 2 | Done | `docs/DATA_MODEL.md`, `investment_manager/data/models.py` | Python run #1 | #16, #18 |
 | REQ-DATA-002 | Preserve source, revision, quality, cutoff, and freshness metadata | 2 | Done | Canonical metadata, policies, and snapshots | Python run #1 | #16, #18 |
-| REQ-PROVIDER-001 | Common provider adapter contract | 2 | In Validation | `DataProvider`, `FredProvider`, `docs/FRED_ADAPTER.md` | `tests/test_providers.py`, `tests/test_fred_provider.py`; CI pending | #18; current PR TBD |
-| REQ-PROVIDER-002 | Explicit validation and failure classification | 2 | In Validation | Canonical failures plus FRED configuration, HTTP, payload, binding, missing, parsing, and range classes | Deterministic FRED failure tests; CI pending | #18; current PR TBD |
+| REQ-PROVIDER-001 | Common provider adapter contract | 2 | In Validation | `DataProvider`, `FredProvider`, `YahooProvider` | Provider, FRED, and Yahoo fixture tests; Python run #10 | #18, #20, #29 |
+| REQ-PROVIDER-002 | Explicit validation and failure classification | 2 | In Validation | Canonical failures plus FRED and Yahoo failure classes | Deterministic provider failure tests; Python run #10 | #18, #20, #29 |
 | REQ-OPS-002 | Idempotent ingestion and immutable snapshots | 2 | In Design | `docs/OPERATIONS.md`, `SourceSnapshot` | Executor and transaction tests not implemented | #16 |
-| REQ-MKT-001 | Collect and normalize market, macro, and FX data | 2 | In Development | FRED economic observations implemented; market and FX adapters pending | FRED fixture tests pending CI | Current PR TBD |
-| REQ-MKT-002 | Expose source, retrieval time, and freshness | 2 | In Development | FRED source ID, retrieval time, revision metadata, and canonical freshness included; API/UI pending | Metadata tests pending CI | Current PR TBD |
-| REQ-OPS-001 | Run scheduled data and analysis jobs | 2 | Planned | Python test CI only; ingestion schedule absent | Workflow tests planned | TBD |
+| REQ-MKT-001 | Collect and normalize market, macro, and FX data | 2 | In Validation | FRED macro data plus Yahoo daily market and FX adapters | FRED fixtures and Yahoo fixtures; Python run #10 | #20, #29 |
+| REQ-MKT-002 | Expose source, retrieval time, and freshness | 2 | In Validation | FRED revision metadata and Yahoo currency, interval, OHLCV, adjustment metadata | Metadata tests; Python run #10 | #20, #29 |
+| REQ-OPS-001 | Run scheduled data and analysis jobs | 2 | Planned | Python test CI and manual FRED smoke only | Workflow tests planned | TBD |
 
 ## Later MVP Requirements
 
