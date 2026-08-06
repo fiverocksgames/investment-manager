@@ -1,69 +1,60 @@
 # Worklog
 
-## 2026-08-06 — FRED Smoke Partial-Result Fix
+## 2026-08-06 — Roadmap and Release History
 
-### Fix Work
+### Documentation Work
+
+- Created Issue #25 and branch `agent/roadmap-release-history`.
+- Converted the existing roadmap into a release-oriented living plan.
+- Recorded Release 0.1 as the application foundation and Release 0.2 as the active data-platform release.
+- Added `RELEASES.md` with curated Added, Changed, Fixed, Security, Validation, and remaining-work sections.
+- Added a project Definition of Done aligned with `PROJECT_POLICY.md`.
+- Corrected stale FRED status in `AI_HANDOFF.md` and `CHANGELOG.md`.
+
+### Verified FRED Completion
+
+- PR #20 implemented the FRED economic-series adapter.
+- PR #22 added the protected manual live smoke workflow.
+- PR #24 corrected expected partial-result handling and merged after explicit user approval.
+- Python run #7 and Documentation run #52 passed before PR #24 merge.
+- Protected FRED live connectivity was successfully validated with repository secret `FRED_API_KEY`.
+
+### Current Documentation Status
+
+- Issue: #25 — `docs: establish roadmap and release history`
+- Branch: `agent/roadmap-release-history`
+- Draft PR and Documentation CI are pending.
+
+## 2026-08-06 — FRED Smoke Partial-Result Fix
 
 - Investigated live Actions run `31078092784` and confirmed the API key, package installation, network path, and FRED response were working.
 - Identified a false-negative policy: valid DGS10 observations were accompanied by expected `MISSING_VALUE` and `OUT_OF_RANGE` conditions.
 - Added a pure smoke-result validator that tolerates only those two warning codes when at least one valid observation exists.
 - Preserved fatal handling for empty results and all configuration, authentication, HTTP, transport, binding, payload, and parsing failures.
 - Added deterministic unit tests for tolerated partial results, fatal mixed results, and empty partial results.
-- Updated `docs/FRED_LIVE_SMOKE.md` with the corrected validation contract and run evidence.
-
-### Fix Validation Status
-
-- Issue: #23 — `fix: tolerate expected FRED smoke partial results`
-- Branch: `agent/fred-smoke-partial-fix`
-- Python and Documentation CI pending Draft PR creation.
-- A new live smoke run must succeed before merge approval is requested.
+- Updated `docs/FRED_LIVE_SMOKE.md` with the corrected validation contract.
+- Python run #7 and Documentation run #52 passed.
+- A protected live smoke run succeeded from the fix branch.
+- PR #24 merged as commit `26cc2fdd6a2faa5fb542384c15aa72d39c00bbac` after explicit user approval.
 
 ## 2026-08-06 — Protected FRED Live Smoke Test
 
-### Live Validation Work
-
 - Created Issue #21 and branch `agent/fred-live-smoke`.
 - Added a manual `FRED Live Smoke` workflow using repository secret `FRED_API_KEY`.
-- Added `tools/fred_smoke.py` to query the bounded `DGS10` fixture through the merged `FredProvider`.
+- Added `tools/fred_smoke.py` to query bounded `DGS10` observations through the merged `FredProvider`.
 - Added `docs/FRED_LIVE_SMOKE.md` with setup, execution, evidence, rotation, and security rules.
-
-### Live Validation Boundaries
-
-- The workflow is manual only and never runs on pull requests, pushes, or schedules.
-- The API key must exist only as an encrypted Actions secret.
-- Logs contain only safe summary metadata and never the key or raw request URL.
-- No live run is claimed until the user registers the secret and a workflow run succeeds.
-
-### Live Validation Remaining Work
-
-- Create a Draft PR and pass Python and Documentation CI.
-- Ask the user to register `FRED_API_KEY` without sharing its value.
-- Run the manual workflow and retain the run number as validation evidence.
-- Request explicit approval before merge.
+- Python run #5 and Documentation run #50 passed.
+- PR #22 merged as commit `deb62203e473a5c28613020fc0e8607923084133` after explicit user approval.
 
 ## 2026-08-06 — FRED Economic Series Adapter
 
-### FRED Adapter Work
-
 - Created Issue #19 and branch `agent/fred-adapter`.
-- Verified the current official FRED Version 1 observations contract before implementation.
+- Verified the official FRED Version 1 observations contract before implementation.
 - Added `FredProvider`, `FredSeriesBinding`, injectable HTTPS transport, deterministic observation IDs, and explicit failure classification.
 - Added fixture-based tests for request construction, successful parsing, missing values, invalid payloads, HTTP errors, unknown bindings, unsupported datasets, and partial results.
 - Added `docs/FRED_ADAPTER.md` with API-key, normalization, revision, missing-data, and testing boundaries.
-
-### FRED Adapter Boundaries
-
-- The FRED API key is runtime-only and must never enter the repository, frontend, logs, or failure values.
-- FRED `.` values become `MISSING_VALUE` failures and never trusted observations.
-- Canonical subject IDs and units come only from explicit bindings.
-- CI performs no live FRED requests and requires no credential.
-- Cache, retry execution, persistence, scheduling, and production series selection remain separate work.
-
-### FRED Adapter Validation Status
-
 - Python run #3 and Documentation run #47 passed.
-- PR #20 merged and Issue #19 closed as completed.
-- No live FRED integration is claimed yet.
+- PR #20 merged as commit `510e7ad1bb801e4d3e9a220bca1c4d809033f6e2`.
 
 ## 2026-08-06 — Canonical Data Model and Provider Abstraction
 

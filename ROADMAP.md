@@ -1,162 +1,147 @@
 # Roadmap
 
-## Principles
+## Operating Principles
 
 - Documentation and requirements precede implementation.
-- Each phase has explicit entry and exit criteria.
-- MVP scope is protected from advanced-feature expansion.
-- Phase completion requires traceability, validation, and handoff updates.
+- Every milestone follows `PROJECT_POLICY.md`.
+- Status must reflect verified evidence, not intent.
+- No provider, feature, or release is called complete without tests and required validation.
+- Explicit user approval is required before merge.
 
-## Phase 0 — Foundation
+## Release 0.1 — Application Foundation
 
-**Status:** Complete
+**Status:** Complete with residual validation work
 
-**Objective:** establish durable project governance.
+Completed:
 
-Deliverables:
-
-- Required project and specification documents
-- Requirement ID and feature traceability conventions
-- Issue and PR templates
-- GitHub Actions documentation checks
-- Contribution, decision, worklog, and AI handoff processes
-
-Exit criteria:
-
-- `GOV-BOOT-001`, `GOV-TRACE-001`, `GOV-AI-001`, and `GOV-DOC-001` documented
-- Bootstrap PR reviewed and merged
-
-## Phase 1 — Infrastructure
-
-**Status:** Complete, except PWA offline validation remains tracked separately
-
-**Objective:** deploy a secure application shell.
-
-Deliverables:
-
-- React, TypeScript, Vite, TailwindCSS
-- PWA manifest and service worker baseline
+- React, TypeScript, Vite, and Tailwind CSS application shell
+- PWA manifest and service-worker baseline
 - GitHub Pages deployment
-- Supabase project integration
-- Google login
-- Environment and secret handling
+- Supabase integration
+- Google OAuth login
+- Session persistence and sign-out validation
+- Separation of public frontend configuration from privileged credentials
 
-Exit evidence:
+Remaining:
 
-- Authenticated user reached the deployed shell
-- GitHub Pages deployment succeeded
-- Google OAuth callback succeeded
-- Session persisted after refresh and browser restart
-- Sign-out succeeded
-- Public frontend identifiers were separated from privileged credentials
+- Browser-level PWA installation and offline validation
+- User-owned tables, RLS policies, and cross-user isolation tests
+- Reproducible frontend dependency lockfile
 
-Remaining validation:
+## Release 0.2 — Data Platform
 
-- Browser-level PWA installation and offline behavior
+**Status:** In progress
 
-## Phase 2 — Data Platform
+### Completed
 
-**Status:** Next
+- Phase 2 architecture and data-platform design
+- Canonical provider-independent data models
+- Provider capability, request, result, and protocol contracts
+- Python 3.12 package and CI baseline
+- Official FRED Version 1 economic-series adapter
+- Protected runtime-only FRED API-key handling
+- Fixture-based FRED adapter tests
+- Manual protected FRED live smoke workflow
+- Successful live FRED connectivity validation
+- Smoke policy that tolerates expected `DGS10` missing-value and date-boundary warnings only when valid observations exist
 
-**Objective:** collect, normalize, validate, and timestamp free market and macro data.
+### Active Next Milestones
 
-Deliverables:
+1. Yahoo market-data adapter contract verification and implementation
+2. ECOS economic-statistics adapter
+3. FX normalization provider
+4. Normalization and immutable source-snapshot integration
+5. Cache executor with preserved provenance
+6. Bounded retry executor
+7. Scheduled ingestion and operational status reporting
+8. Dataset and snapshot versioning
 
-- Provider-independent asset and observation schemas
-- Yahoo Finance market adapters
-- FRED macro adapters
-- ECOS macro adapters
-- FX normalization
-- Source metadata and retrieval timestamps
-- Data freshness, caching, retries, and status reporting
-- Scheduled GitHub Actions jobs
+### Exit Criteria
 
-Exit criteria:
+- Market and macro providers map into provider-independent canonical records.
+- Source identity, observation time, retrieval time, revision, quality, and freshness are preserved.
+- Missing, stale, partial, and failed data never silently become trusted analysis inputs.
+- Cache and retries cannot misrepresent freshness or provenance.
+- Scheduled jobs fail safely and expose operational evidence.
 
-- Source metadata and timestamps are visible
-- Missing and stale data fail safely
-- Normalized schemas are provider-independent
-- Provider failures do not silently produce investment signals
+## Release 0.3 — Portfolio Engine
 
-## Phase 3 — Analysis Engine
+**Status:** Planned
 
-**Objective:** produce reproducible market metrics and regimes.
-
-Deliverables:
-
-- Moving averages
-- RSI
-- MACD
-- Momentum
-- Volatility
-- Risk-on / neutral / risk-off regime classification
-
-Exit criteria:
-
-- Formula specifications and unit tests agree
-- Outputs include input period and data timestamp
-- UI contains no duplicate calculation logic
-
-## Phase 4 — Portfolio Engine
-
-**Objective:** analyze user holdings without executing trades.
-
-Deliverables:
+Planned:
 
 - Google Sheets portfolio import
 - Holdings normalization
-- Asset-class and geography classification
-- Target allocation comparison
-- Rebalancing suggestions
-- Portfolio snapshots and performance foundations
+- Asset-class, geography, and currency classification
+- Portfolio snapshots and daily asset-value history
+- Target-allocation comparison
+- Explainable rebalancing suggestions
+- Authorization, RLS, and cross-user isolation
 
-Exit criteria:
+## Release 0.4 — Strategy and Analysis Engine
 
-- Invalid rows are reported clearly
-- Rebalancing output is explainable and non-executing
-- User data is isolated through authorization and RLS
+**Status:** Planned
 
-## Phase 5 — Recommendation Engine
+Planned:
 
-**Objective:** rank conservative ETF candidates with transparent evidence.
+- Daily and weekly indicator windows
+- Moving averages
+- RSI
+- MACD
+- Momentum and volatility
+- Risk-on, neutral, and risk-off regimes
+- Conservative multi-asset allocation logic
+- Reproducible input snapshot and cutoff metadata
 
-Deliverables:
+## Release 0.5 — Backtest and Reporting
 
-- Eligibility filters
-- Multi-factor scoring
-- Recommendation explanations
-- Risk factors and exclusions
-- Data confidence and freshness indicators
+**Status:** Planned
 
-Exit criteria:
+Planned:
 
-- Every score maps to documented inputs and weights
-- Recommendations disclose assumptions and limitations
-- Unsupported assets remain excluded
-
-## Phase 6 — Notification and Automation
-
-**Objective:** deliver scheduled summaries safely.
-
-Deliverables:
-
-- Daily and weekly reports
+- Strategy backtesting
+- Benchmark comparison
+- Transaction-cost and slippage assumptions
+- Drawdown and risk reporting
+- Daily and weekly summaries
 - Telegram notification integration
-- Job monitoring and failure reporting
 
-Exit criteria:
+## Release 1.0 — Stable Investment Manager
 
-- Notifications contain timestamps and source status
-- Duplicate delivery and secret exposure controls are tested
+**Status:** Future
 
-## Phase 7 — Advanced
+Target characteristics:
 
-Potential post-MVP work:
+- Stable provider and canonical-data contracts
+- Reproducible portfolio and strategy outputs
+- Clear confidence, freshness, and limitation disclosures
+- Documented operations and recovery procedures
+- No trade execution; analysis and decision support only
 
-- Backtesting and strategy comparison
+## Definition of Done
+
+A functional milestone is complete only when all applicable items are satisfied:
+
+1. A scoped Issue exists with acceptance criteria and exclusions.
+2. Design and provider contracts are verified before implementation.
+3. Work occurs on a dedicated branch, never directly on `main`.
+4. Implementation preserves architecture, security, and data-integrity rules.
+5. Deterministic tests cover success, failure, and partial-result behavior.
+6. Required technical and living documentation is updated.
+7. Python, frontend, documentation, and other applicable CI checks pass.
+8. Live validation is completed when safe and materially necessary.
+9. A substantial pull request begins as Draft.
+10. The pull request is marked Ready for Review only after evidence is complete.
+11. Explicit user approval is received before merge.
+12. Merge and Issue closure are verified.
+13. `WORKLOG.md`, `AI_HANDOFF.md`, `CHANGELOG.md`, roadmap, release history, and traceability are current.
+
+## Post-MVP Candidates
+
+The following require separate decisions and must not enter MVP implicitly:
+
 - News and disclosure analysis
-- Multi-user collaboration
-- OTP and stronger authentication
 - Additional portfolio sources
-
-These items require separate decisions and must not enter MVP implicitly.
+- Multi-user collaboration
+- Stronger authentication methods
+- Automated order execution
