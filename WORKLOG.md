@@ -1,43 +1,41 @@
 # Worklog
 
-## 2026-08-06 — Canonical Data Model and Provider Abstraction
+## 2026-08-06 — FRED Economic Series Adapter
 
-### Implementation Work
+### FRED Adapter Work
 
-- Created Issue #17 and branch `agent/canonical-data-provider`.
-- Added a Python 3.12 package baseline with no runtime third-party dependencies.
-- Implemented canonical assets, aliases, economic series, observations, provider metadata, dataset policies, ingestion runs, failures, and source snapshots.
-- Implemented provider capabilities, fetch requests, fetch results, and the `DataProvider` protocol.
-- Added deterministic `unittest` coverage and a Python GitHub Actions workflow.
+- Created Issue #19 and branch `agent/fred-adapter`.
+- Verified the current official FRED Version 1 observations contract before implementation.
+- Added `FredProvider`, `FredSeriesBinding`, injectable HTTPS transport, deterministic observation IDs, and explicit failure classification.
+- Added fixture-based tests for request construction, successful parsing, missing values, invalid payloads, HTTP errors, unknown bindings, unsupported datasets, and partial results.
+- Added `docs/FRED_ADAPTER.md` with API-key, normalization, revision, missing-data, and testing boundaries.
 
-### Implementation Boundaries
+### FRED Adapter Boundaries
 
-- Canonical numeric values use `Decimal`.
-- Datetimes are timezone-aware and normalized to UTC.
-- Provider-specific payloads remain outside domain contracts.
-- Invalid or unavailable data cannot be represented as trusted observations.
-- Partial provider results are explicit and cannot be mistaken for complete success.
+- The FRED API key is runtime-only and must never enter the repository, frontend, logs, or failure values.
+- FRED `.` values become `MISSING_VALUE` failures and never trusted observations.
+- Canonical subject IDs and units come only from explicit bindings.
+- CI performs no live FRED requests and requires no credential.
+- Cache, retry execution, persistence, scheduling, and production series selection remain separate work.
 
-### Validation Status
+### FRED Adapter Validation Status
 
-- Local execution is not claimed.
-- Python compile and unit-test checks will run in the Draft PR.
-- Documentation CI must also pass before Ready for Review.
+- Implementation and deterministic tests are committed on `agent/fred-adapter`.
+- Python and Documentation CI are pending Draft PR creation.
+- No live FRED integration is claimed.
 
-### Remaining Work
+### FRED Adapter Issue, Branch, and PR
 
-- Update traceability and Changelog.
-- Create Draft PR.
-- Fix any Python or documentation CI failures.
-- Request explicit user approval before merge.
-- Implement provider adapters only in separate Issues after current-source verification.
-
-### Current Issue, Branch, and PR
-
-- Issue: #17 — `feat: implement canonical data model and provider abstraction`
-- Branch: `agent/canonical-data-provider`
+- Issue: #19 — `feat: implement FRED economic series adapter`
+- Branch: `agent/fred-adapter`
 - PR: not yet created
 - Status: implementation and documentation in progress
+
+## 2026-08-06 — Canonical Data Model and Provider Abstraction
+
+- Issue #17 and PR #18 added the Python canonical model, provider contracts, unit tests, and Python CI.
+- Python run #1 and Documentation run #45 passed.
+- PR #18 merged and Issue #17 closed as completed.
 
 ## 2026-08-06 — Phase 2 Data Platform Design
 

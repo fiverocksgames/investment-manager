@@ -1,5 +1,6 @@
 """Provider-independent data-platform contracts."""
 
+from .fred import FredProvider, FredSeriesBinding
 from .models import (
     Asset,
     AssetAlias,
@@ -16,20 +17,27 @@ from .models import (
     ProviderMetadata,
     SourceSnapshot,
 )
+from .providers import DataProvider, FetchRequest, FetchResult, ProviderCapability
 
 __all__ = [
     "Asset",
     "AssetAlias",
     "AssetClass",
+    "DataProvider",
     "DataQualityState",
     "DatasetPolicy",
     "EconomicSeries",
+    "FetchRequest",
+    "FetchResult",
+    "FredProvider",
+    "FredSeriesBinding",
     "FreshnessState",
     "IngestionFailure",
     "IngestionRun",
     "IngestionStatus",
     "Observation",
     "ObservationKind",
+    "ProviderCapability",
     "ProviderMetadata",
     "SourceSnapshot",
 ]
