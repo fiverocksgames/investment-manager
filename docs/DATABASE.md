@@ -2,62 +2,91 @@
 
 ## Purpose
 
-Define the initial Supabase PostgreSQL data model, ownership rules, audit requirements, and migration discipline.
+Define the Supabase PostgreSQL model, ownership rules, audit requirements, and migration discipline for the data platform and later product engines.
 
 ## Principles
 
-- PostgreSQL is the system of record for application metadata, normalized observations, analysis outputs, preferences, and snapshots.
-- Google Sheets remains an approved portfolio input, not the authoritative application database.
-- Every user-owned row must be protected by Row Level Security.
-- Schema changes require versioned migrations and rollback notes.
-- Raw provider payloads should be retained only when licensing, privacy, and storage policy permit.
+- PostgreSQL is the system of record for normalized observations, ingestion metadata, derived outputs, preferences, and snapshots.
+- Provider payloads do not become application contracts.
+- Observation provenance and revisions are preserved.
+- Every user-owned row uses default-deny Row Level Security.
+- Schema changes require immutable versioned migrations and validation evidence.
+- Fixed-precision numeric types are used for money, quantities, rates, and observations.
 
-## Core Entities
+## Phase 2 Reference Tables
 
-### Identity and preferences
+### `data_providers`
 
-- `profiles`: Supabase user identifier, display settings, reporting currency, timezone, timestamps.
-- `investment_policies`: user-approved allocation constraints and policy version.
-- `data_connections`: metadata for external connections; no plaintext secrets.
+Provider identity, adapter version, terms reference, enabled state, and health metadata.
 
-### Reference data
+### `assets`
 
-- `instruments`: canonical identifier, ticker, exchange, asset class, currency, active status.
-- `instrument_aliases`: provider-specific symbols and effective dates.
-- `data_sources`: provider identity, terms reference, cadence, and health metadata.
+Canonical asset identifier, display name, asset class, instrument type, currency, exchange, timezone, and active dates.
 
-### Market and economic data
+### `asset_aliases`
 
-- `market_prices`: instrument, observation time, open/high/low/close/adjusted close/volume, source, retrieval time.
-- `fx_rates`: base currency, quote currency, observation time, rate, source.
-- `economic_observations`: series identifier, observation date, value, vintage metadata, source.
+Provider-specific symbol, canonical asset, effective dates, and alias status. Unique by provider, symbol, and effective range.
 
-### Analysis
+### `economic_series`
 
-- `analysis_runs`: model version, parameter set, input cutoff, status, timestamps.
-- `indicator_values`: run, instrument, indicator identifier, value, observation time.
-- `market_regimes`: run, regime, confidence or evidence score, factor evidence.
-- `candidate_scores`: run, instrument, total score and component contributions.
+Canonical series identifier, title, category, frequency, units, seasonal-adjustment status, geography, and active dates.
 
-### Portfolio
+### `dataset_policies`
 
-- `portfolios`: owner, name, reporting currency, source metadata.
-- `portfolio_holdings`: normalized holding state linked to an import or snapshot.
-- `portfolio_snapshots`: valuation time, input versions, total value, policy version.
-- `rebalance_runs`: snapshot, target allocation, constraints, recommendations, status.
+Expected cadence, calendar, soft and hard stale thresholds, partial-data policy, cache policy version, and retry policy version.
 
-## Keys and Constraints
+## Phase 2 Observation Tables
 
-Use UUID primary keys for user-owned and run entities. Reference observations require uniqueness across canonical entity, observation time, and source/version dimensions. Monetary and quantity fields must use appropriate fixed-precision numeric types rather than floating point.
+### `market_observations`
+
+Canonical asset, observation time, OHLC values where applicable, adjusted close, volume, currency, provider, source identifier, retrieval time, quality state, and source revision.
+
+### `fx_observations`
+
+Base currency, quote currency, observation time, rate, provider, source identifier, retrieval time, quality state, and source revision.
+
+### `economic_observations`
+
+Canonical series, observation period, value, unit, provider, source identifier, retrieval time, vintage or revision metadata, and quality state.
+
+### `source_snapshots`
+
+Immutable publication unit identifying a coherent successful or partial dataset, cutoff, provider, policy version, row counts, quality summary, and publication time.
+
+## Phase 2 Operational Tables
+
+### `ingestion_runs`
+
+Run identifier, dataset, provider, adapter version, commit SHA, cutoff, start and end time, status, requested and received counts, normalized and rejected counts, warning count, and snapshot identifier.
+
+### `ingestion_failures`
+
+Run identifier, stable category, retryable flag, safe message, provider code where non-sensitive, attempt number, occurrence time, and affected source identifier.
+
+### `cache_entries`
+
+Dataset key, content identity, provider retrieval time, stored time, expiry time, policy version, and status. Sensitive provider responses are not stored unless explicitly approved.
+
+## Keys and Idempotency
+
+- User-owned and run entities use UUID primary keys.
+- Reference entities use stable canonical identifiers plus surrogate keys where useful.
+- Observation uniqueness includes canonical subject, observation period, provider, source identifier, and revision dimension.
+- Reprocessing the same provider payload and revision must not create duplicate trusted observations.
+- Corrected provider values create a new revision or update through an auditable rule; history is not silently erased.
+
+## Publication Transactions
+
+A source snapshot is published only after required validation succeeds. Observation writes, run counts, and snapshot publication must be transactional where partial visibility would mislead consumers. Failed runs never point to a successful snapshot.
 
 ## Security
 
-RLS must default to deny. Policies must scope rows through `auth.uid()`. Service-role access is limited to trusted scheduled ingestion and maintenance jobs. Secrets must use platform secret storage and must never appear in tables intended for client access.
+Public market and macro observations may eventually be readable through constrained views. Ingestion tables and provider details remain server-controlled. Service-role access is limited to trusted jobs. User portfolios and preferences remain separate and require `auth.uid()`-scoped RLS.
 
 ## Migrations
 
-Migrations are immutable after merge. Each migration must include purpose, linked Requirement IDs, forward validation, compatibility notes, and rollback or corrective migration guidance.
+Phase 2 implementation will introduce focused migrations only after this design is approved. Each migration includes Requirement IDs, forward validation, compatibility notes, rollback or corrective guidance, and RLS impact.
 
-## Retention and Recovery
+## Retention
 
-Retention periods will be documented per dataset. Portfolio snapshots and decision evidence require durable retention. Backup and restore procedures must be tested before production use.
+Observation and revision retention is dataset-specific. Source snapshots and run metadata are retained long enough to reproduce investment-decision inputs. Raw payload retention requires a separate licensing, privacy, storage, and security decision.
