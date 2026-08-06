@@ -44,13 +44,13 @@
 
 | Requirement ID | Requirement | Phase | Status | Design / Implementation | Test | PR |
 |---|---|---:|---|---|---|---|
-| REQ-DATA-001 | Provider-independent assets, series, observations, runs, failures, and snapshots | 2 | In Development | Issue #17, `docs/DATA_MODEL.md`, `investment_manager/data/models.py` | `tests/test_data_models.py`; Python CI pending | #16 design; current PR TBD |
-| REQ-DATA-002 | Preserve source, revision, quality, cutoff, and freshness metadata | 2 | In Development | `ProviderMetadata`, `Observation`, `DatasetPolicy`, `SourceSnapshot` | UTC, Decimal, metadata, freshness tests pending CI | Current PR TBD |
-| REQ-PROVIDER-001 | Common provider adapter contract | 2 | In Development | `investment_manager/data/providers.py`, `DataProvider` protocol | `tests/test_providers.py`; Python CI pending | Current PR TBD |
-| REQ-PROVIDER-002 | Explicit validation and failure classification | 2 | In Development | Constructor validation, `FetchResult`, `IngestionFailure` | Invalid, empty, duplicate, partial-result tests pending CI | Current PR TBD |
-| REQ-OPS-002 | Idempotent ingestion and immutable snapshots | 2 | In Design | `docs/OPERATIONS.md`, `SourceSnapshot` value object | Executor and transaction tests not implemented | #16 design |
-| REQ-MKT-001 | Collect and normalize market, macro, and FX data | 2 | Planned | Provider adapters not implemented | Provider and integration tests planned | TBD |
-| REQ-MKT-002 | Expose source, retrieval time, and freshness | 2 | Planned | Canonical metadata implemented; API/UI pending | Freshness tests partially added | TBD |
+| REQ-DATA-001 | Provider-independent assets, series, observations, runs, failures, and snapshots | 2 | Done | `docs/DATA_MODEL.md`, `investment_manager/data/models.py` | Python run #1 | #16, #18 |
+| REQ-DATA-002 | Preserve source, revision, quality, cutoff, and freshness metadata | 2 | Done | Canonical metadata, policies, and snapshots | Python run #1 | #16, #18 |
+| REQ-PROVIDER-001 | Common provider adapter contract | 2 | In Validation | `DataProvider`, `FredProvider`, `docs/FRED_ADAPTER.md` | `tests/test_providers.py`, `tests/test_fred_provider.py`; CI pending | #18; current PR TBD |
+| REQ-PROVIDER-002 | Explicit validation and failure classification | 2 | In Validation | Canonical failures plus FRED configuration, HTTP, payload, binding, missing, parsing, and range classes | Deterministic FRED failure tests; CI pending | #18; current PR TBD |
+| REQ-OPS-002 | Idempotent ingestion and immutable snapshots | 2 | In Design | `docs/OPERATIONS.md`, `SourceSnapshot` | Executor and transaction tests not implemented | #16 |
+| REQ-MKT-001 | Collect and normalize market, macro, and FX data | 2 | In Development | FRED economic observations implemented; market and FX adapters pending | FRED fixture tests pending CI | Current PR TBD |
+| REQ-MKT-002 | Expose source, retrieval time, and freshness | 2 | In Development | FRED source ID, retrieval time, revision metadata, and canonical freshness included; API/UI pending | Metadata tests pending CI | Current PR TBD |
 | REQ-OPS-001 | Run scheduled data and analysis jobs | 2 | Planned | Python test CI only; ingestion schedule absent | Workflow tests planned | TBD |
 
 ## Later MVP Requirements
