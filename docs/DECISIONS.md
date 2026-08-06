@@ -100,5 +100,38 @@ Material technical, product, data, and investment-policy choices are recorded he
 - Context: The project is intended to be easy to inspect, reuse, modify, and extend while retaining a clear warranty disclaimer.
 - Decision: License the repository under the MIT License.
 - Alternatives: Apache License 2.0, GPL family licenses, no explicit license.
-- Consequences: Broad reuse is permitted with preservation of the copyright and license notice; the license does not provide an explicit patent grant beyond its terms.
-- Follow-up: Revisit only through a documented legal and governance decision before external contributions create relicensing complexity.
+- Consequences: Broad reuse is permitted with preservation of the copyright and license notice.
+- Follow-up: Revisit only through a documented legal and governance decision.
+
+## DEC-009 — Use a provider-independent canonical observation model
+
+- Status: Accepted
+- Date: 2026-08-06
+- Requirement IDs: REQ-DATA-001, REQ-PROVIDER-001
+- Context: Yahoo Finance, FRED, ECOS, and FX sources use incompatible identifiers, timestamps, units, revisions, and error models.
+- Decision: Isolate provider formats behind adapters and normalize all accepted records into canonical assets, series, observations, ingestion runs, failures, and source snapshots defined in `docs/DATA_MODEL.md`.
+- Alternatives: Persist provider payloads directly, create provider-specific downstream models, or normalize in the UI.
+- Consequences: Initial adapter work is larger, but analysis and UI remain provider-independent and auditable.
+- Follow-up: Implement typed Python domain models and adapter contracts before provider-specific code.
+
+## DEC-010 — Publish immutable source snapshots
+
+- Status: Accepted
+- Date: 2026-08-06
+- Requirement IDs: REQ-DATA-002, REQ-OPS-002
+- Context: Downstream analysis must know exactly which coherent data inputs, cutoff, revisions, and quality states were used.
+- Decision: Successful ingestion publishes an immutable source snapshot. Failed runs never publish a successful snapshot, and prior good data keeps its original timestamps.
+- Alternatives: Read mutable latest rows directly or treat ingestion completion time as the only cutoff.
+- Consequences: Additional metadata and transactional publication are required, but reproducibility and failure safety improve.
+- Follow-up: Add database constraints and integration tests for snapshot publication.
+
+## DEC-011 — Use policy-driven freshness, cache, and retries
+
+- Status: Accepted
+- Date: 2026-08-06
+- Requirement IDs: REQ-DATA-002, REQ-PROVIDER-002, REQ-OPS-002
+- Context: Market, FX, and macro datasets have different calendars, publication delays, revision behavior, and rate limits.
+- Decision: Define versioned dataset policies containing cadence, stale thresholds, partial-data rules, cache behavior, and bounded retry behavior.
+- Alternatives: Apply one global TTL and retry count or let each adapter make undocumented choices.
+- Consequences: Policies require maintenance, but stale and degraded states become consistent and testable.
+- Follow-up: Approve initial policies with each provider implementation PR.
