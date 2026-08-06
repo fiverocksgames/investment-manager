@@ -10,7 +10,7 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 - Default branch: `main`
 - Active branch: `agent/yahoo-live-smoke`
 - Issue: #30 — `feat: add Yahoo live smoke validation`
-- Draft PR: pending creation
+- Draft PR: #31 — `feat: add Yahoo live smoke validation`
 
 ## Implemented on the Active Branch
 
@@ -23,8 +23,8 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 
 ## Validation Status
 
-- Python CI pending.
-- Documentation CI pending.
+- Python CI pending on the latest head.
+- Documentation CI pending on the latest head.
 - Manual Yahoo Live Smoke run pending.
 - Do not claim Yahoo live connectivity until an actual successful workflow run is recorded.
 
@@ -66,4 +66,4 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 
 ## Exact Next Recommended Task
 
-Open the Draft PR for Issue #30, confirm Python and Documentation CI, fix any failures, then manually run `Yahoo Live Smoke`. Record the actual result without overstating provider stability. Mark Ready for Review only after required checks pass, and do not merge without explicit user approval.
+Confirm Python and Documentation CI on the latest PR #31 head, fix any failures, then manually run `Yahoo Live Smoke`. Record the actual result without overstating provider stability. Mark Ready for Review only after required validation passes, and do not merge without explicit user approval.
