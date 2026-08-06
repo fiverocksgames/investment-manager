@@ -5,16 +5,20 @@ on:
     paths:
       - "investment_manager/**"
       - "tests/**"
+      - "tools/**"
       - "pyproject.toml"
       - ".github/workflows/python.yml"
+      - ".github/workflows/fred-smoke.yml"
   push:
     branches:
       - main
     paths:
       - "investment_manager/**"
       - "tests/**"
+      - "tools/**"
       - "pyproject.toml"
       - ".github/workflows/python.yml"
+      - ".github/workflows/fred-smoke.yml"
 
 permissions:
   contents: read
@@ -32,7 +36,7 @@ jobs:
           cache: pip
       - name: Install package
         run: python -m pip install --disable-pip-version-check -e .
-      - name: Compile package
-        run: python -m compileall -q investment_manager tests
+      - name: Compile package and tools
+        run: python -m compileall -q investment_manager tests tools
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
