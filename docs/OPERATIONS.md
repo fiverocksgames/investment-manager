@@ -6,40 +6,78 @@ Define how Investment Manager is built, deployed, scheduled, monitored, recovere
 
 ## Environments
 
-Use separate local, preview, and production configurations. Production data and credentials must not be used in local development. Environment-specific values must be documented without exposing secrets.
+Use separate local, preview, and production configurations. Production data and credentials must not be used in local development. Environment-specific values are documented without exposing secrets.
 
 ## Deployment
 
-The React PWA is built by GitHub Actions and deployed to GitHub Pages. Deployments must be reproducible from a tagged or identified commit. Build failures block deployment. Rollback uses a previously verified artifact or commit.
+The React PWA is built by GitHub Actions and deployed to GitHub Pages. Build failures block deployment. Rollback uses a previously verified commit or artifact.
 
-## Scheduled Jobs
+## Phase 2 Scheduled Jobs
 
-Python jobs may collect market prices, economic indicators, and exchange rates and may run analysis after successful ingestion. Jobs must be idempotent, use explicit data cutoffs, enforce timeouts and retry limits, and avoid overlapping runs for the same dataset.
+Python ingestion jobs run through GitHub Actions. Each workflow invocation must specify provider, dataset, cutoff, and adapter version. Scheduled jobs are initially expected to run daily for market and FX data and according to publication cadence for macroeconomic series; exact schedules are approved per dataset policy.
+
+## Concurrency and Idempotency
+
+- Only one active run per provider and dataset is allowed.
+- Re-running the same cutoff and source revision must not create duplicate trusted observations.
+- A run may resume or restart only through a documented idempotent path.
+- Analysis jobs depend on a published source snapshot rather than an in-progress ingestion run.
+
+## Timeouts and Retries
+
+Every provider call and job has an explicit timeout. Retries are bounded, use exponential backoff with jitter, and apply only to retryable categories. Rate-limit responses respect available retry guidance. Deterministic validation, authentication, unsupported-symbol, and schema errors stop immediately.
+
+## Cache Operations
+
+Cache policies are dataset-specific. Cache hits retain source retrieval and expiry metadata. Cache expiry does not automatically trigger stale publication; the dataset policy determines whether stale data can be shown. Cache invalidation occurs on policy change, source revision, identifier correction, or adapter incompatibility.
+
+## Freshness
+
+Each dataset defines expected cadence, market or publication calendar, soft stale threshold, hard stale threshold, partial-data policy, and whether stale reads are allowed. Freshness is calculated during ingestion and again when data is served.
 
 ## Observability
 
-Record job identifier, commit, model version, start and end times, status, row counts, source status, data cutoff, warnings, and error category. Logs must not contain credentials or sensitive portfolio values unless explicitly required and protected.
+Record:
 
-## Data Freshness
+- run identifier
+- commit SHA
+- workflow run identifier
+- provider and adapter version
+- dataset and cutoff
+- start and end time
+- requested, received, normalized, rejected, and published counts
+- cache hits and misses
+- retry count
+- quality and freshness summary
+- final status and safe error categories
 
-Each dataset requires an expected cadence and stale threshold. The UI and API must display degraded or stale states instead of silently presenting old results as current.
+Logs never contain credentials, tokens, full sensitive payloads, or personal holdings.
+
+## Run States
+
+Canonical ingestion states are `queued`, `running`, `succeeded`, `partial`, `failed`, and `cancelled`. Only `succeeded`, or `partial` where explicitly allowed, may publish a source snapshot.
 
 ## Failure Handling
 
-Provider outages must not corrupt prior good data. Partial failures are recorded by source and dataset. Repeated failures should disable unsafe retries and surface an operational alert. Analysis must not run when required inputs fail validation.
+- Provider outages leave prior good data unchanged.
+- Failed runs never publish successful snapshots.
+- Partial failures are recorded per source identifier.
+- Repeated failure opens an operational task or alert rather than retrying indefinitely.
+- Required-input failure blocks dependent analysis.
+- Prior good data may remain visible only with original timestamp and explicit stale status.
 
-## Backup and Recovery
+## Manual Recovery
 
-Database backup, restore, and recovery-point expectations must be defined before production. Portfolio snapshots and policy versions require durable recovery. Recovery exercises must be documented.
+A maintainer may re-run a bounded failed dataset after confirming provider health, credentials, and policy. Manual recovery records the triggering user, reason, cutoff, and resulting workflow run. Data deletion or correction requires a separate reviewed procedure.
 
 ## Change Management
 
-Every production-affecting change requires an Issue, Requirement IDs, documentation, validation evidence, and a PR. Database migrations and workflow-permission changes require focused review.
+Every production-affecting change requires an Issue, Requirement IDs, documentation, tests, a Draft PR, successful CI, and explicit approval. Provider schema changes, workflow permissions, schedules, and database migrations receive focused review.
 
 ## Runbooks
 
-Future runbooks must cover failed deployment, failed ingestion, stale data, authentication outage, database recovery, credential rotation, and provider schema change.
+Implementation work must add runbooks for provider outage, rate limiting, source schema change, stale data, failed snapshot publication, credential rotation, database recovery, and rollback.
 
-## Service Objectives
+## Service Priorities
 
-Initial service objectives are informational until usage is established. The project prioritizes correctness, data freshness transparency, and recoverability over high availability or low latency.
+Correctness, provenance, and freshness transparency take priority over low latency or high availability. It is preferable to show `insufficient_data` than to publish an unverified current value.
