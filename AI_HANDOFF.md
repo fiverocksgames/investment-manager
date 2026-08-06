@@ -2,17 +2,17 @@
 
 ## Current State
 
-Investment Manager has completed Phase 1 infrastructure and authentication. The canonical development repository is now `fiverocksgames/investment-manager`. Phase 2 Data Platform design is the next product-development objective after Project Development Policy v1 is merged.
+Investment Manager has completed Phase 1 infrastructure and authentication and adopted Project Development Policy v1. Phase 2 Data Platform design is active in the canonical repository.
 
 ## Repository and Active Work
 
 - Canonical repository: `fiverocksgames/investment-manager`
 - Default branch: `main`
-- Active branch: `agent/project-policy-v1`
-- Issue: #13 — `docs: establish project development policy v1`
+- Active branch: `agent/phase-2-data-platform-design`
+- Issue: #15 — `docs: design Phase 2 data platform`
 - PR: not yet created
 
-All Issues, branches, pull requests, CI evidence, reviews, merges, and project records are maintained in the canonical repository. External repositories are not part of the normal development workflow.
+All Issues, branches, pull requests, CI evidence, reviews, merges, and project records remain in the canonical repository.
 
 ## Governing Documents
 
@@ -26,68 +26,77 @@ Read these before changing behavior:
 - `WORKLOG.md`
 - `docs/FEATURE_MATRIX.md`
 
-The repository is the single source of truth. Important decisions must not exist only in conversation history.
+The repository is the single source of truth.
 
-## Completed Phase 1 Baseline
+## Completed Baseline
 
-- React 19, TypeScript, and Vite application shell.
-- Tailwind CSS and PostCSS configuration.
-- PWA registration and generated manifest.
-- GitHub Pages build and deployment workflow.
-- Supabase browser client using public Vite variables.
-- Authentication context with initial session restoration and auth-state subscription.
-- Google sign-in and sign-out.
-- Safe missing-configuration UI state.
-- GitHub Actions Variables wiring for `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.
-- Supabase setup, security, traceability, Worklog, and Changelog documentation.
+- React, TypeScript, Vite, Tailwind CSS, and PWA shell.
+- GitHub Pages build and deployment.
+- Supabase Auth with Google OAuth.
+- Session restoration after refresh and browser restart.
+- Sign-out and safe missing-configuration behavior.
+- Project Development Policy v1 in PR #14 with Documentation run #41.
 
-## Validation Evidence
+## Active Phase 2 Design
 
-The deployed application has been manually verified for:
+Issue #15 defines the provider-independent Data Platform before implementation. The branch currently contains:
 
-- Successful GitHub Pages deployment.
-- Supabase configuration detection after repository Variables were added and a new build was deployed.
-- Successful Google OAuth sign-in and callback.
-- Session persistence after page refresh.
-- Session persistence after closing and reopening the browser.
-- Successful sign-out.
+- `docs/DATA_MODEL.md` with canonical assets, aliases, series, observations, dataset policies, cache policies, retry policies, ingestion runs, failures, quality states, freshness states, and source snapshots.
+- `docs/ARCHITECTURE.md` with provider adapter, validation, normalization, cache, persistence, operations, and snapshot boundaries.
+- `docs/DATA_SOURCES.md` with Yahoo Finance, FRED, ECOS, FX, freshness, cache, retry, and fallback rules.
+- `docs/DATABASE.md` with planned Phase 2 reference, observation, operational, and snapshot tables.
+- `docs/API_SPEC.md` with internal provider contracts and canonical read envelopes.
+- `docs/OPERATIONS.md` with concurrency, idempotency, retries, observability, run states, and recovery rules.
+- `docs/TEST_PLAN.md` with deterministic provider contract, integration, cache, freshness, revision, and failure tests.
+- `docs/DECISIONS.md` with accepted canonical model, immutable snapshot, and policy-driven freshness decisions.
+- `docs/FEATURE_MATRIX.md` with Phase 2 Requirement IDs and traceability.
 
-PWA installation and offline behavior have not been browser-verified.
+## Phase 2 Requirements
 
-## Current Policy Work
+- `REQ-DATA-001`
+- `REQ-DATA-002`
+- `REQ-PROVIDER-001`
+- `REQ-PROVIDER-002`
+- `REQ-OPS-002`
 
-Issue #13 establishes:
+Legacy `REQ-MKT-001`, `REQ-MKT-002`, and `REQ-OPS-001` remain planned implementation requirements.
 
-- `fiverocksgames/investment-manager` as the canonical repository.
-- Issue → Design → Documentation → Branch → Implementation → Test → Draft PR → CI → Review → User Approval → Merge → Issue Close.
-- No direct commits to `main`.
-- Draft PR and explicit user-approval requirements.
-- Constitution and living-document classifications.
-- Requirement traceability and AI handoff requirements.
+## Key Design Rules
+
+1. Provider payloads stop at adapter boundaries.
+2. Canonical observations preserve provider, source identifier, observation time, retrieval time, unit, currency, quality, freshness, and revision metadata.
+3. Failed runs never publish successful source snapshots.
+4. Prior good data retains its original timestamps and may appear only with explicit stale state.
+5. Cache entries preserve provenance and cannot imply freshness.
+6. Retries are bounded and apply only to retryable failure categories.
+7. Analysis consumes an immutable source snapshot identifier and cutoff.
+8. The UI performs no provider normalization or financial calculations.
 
 ## Security Boundaries
 
-- Only `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` may enter the frontend build.
-- Never commit service-role keys, database passwords, Google client secrets, JWT secrets, or personal portfolio data.
-- Authentication proves identity but does not authorize user data access.
-- User-owned tables require default-deny Row Level Security and cross-user isolation tests before use.
+- Provider and service-role credentials remain server-side in trusted jobs.
+- No secret enters the frontend bundle or repository.
+- Public observations and private portfolio data remain separate authorization domains.
+- User-owned tables require default-deny RLS and cross-user isolation tests before use.
 
 ## Known Limitations
 
+- Phase 2 is design-only; no provider adapter or ingestion workflow exists.
+- No database migration has been created for the Phase 2 model.
+- Current provider access methods, terms, identifiers, and rate limits require implementation-time verification.
 - No protected routes or user-owned application tables exist.
 - No RLS policies or cross-user isolation tests exist.
-- No `package-lock.json` is committed; CI uses `npm install`.
+- No `package-lock.json` is committed; frontend CI uses `npm install`.
 - PWA installation and offline behavior remain unverified.
-- Market data, macro data, FX data, portfolio analysis, indicators, and recommendation capabilities are not implemented.
 
 ## Development Rules
 
 1. Follow `PROJECT_POLICY.md`.
-2. Work from an Issue and stable Requirement IDs for substantial changes.
-3. Preserve Requirement IDs and update `docs/FEATURE_MATRIX.md` when requirements or evidence change.
-4. Keep financial calculations outside the UI.
+2. Work from an Issue and stable Requirement IDs.
+3. Update specifications before implementation.
+4. Keep provider formats and financial calculations out of the UI.
 5. Never commit secrets or personal portfolio data.
-6. Update Worklog, Handoff, and Changelog in every substantial PR.
+6. Update Worklog, Handoff, Changelog, and Feature Matrix in substantial PRs.
 7. Never claim validation without evidence.
 8. Never merge without explicit user approval.
 
@@ -99,8 +108,8 @@ npm run dev
 npm run build
 ```
 
-For local authentication, copy `.env.example` to `.env.local`, use only the browser-safe project URL and publishable key, and follow `docs/SUPABASE_SETUP.md`.
+Phase 2 Python commands do not yet exist and must not be invented before the implementation baseline is added.
 
 ## Exact Next Recommended Task
 
-Complete Issue #13 by creating a Draft PR, verifying Documentation CI, and requesting user approval before merge. After merge, create the Phase 2 Data Platform design Issue and define provider-independent schemas for assets, observations, source metadata, retrieval timestamps, freshness status, and ingestion failures before implementing provider adapters.
+Complete Issue #15 by updating the living documents, creating a Draft PR, and passing Documentation CI. After approval and merge, create a focused Issue for the Python provider abstraction and canonical domain-model implementation before adding Yahoo Finance, FRED, ECOS, or FX adapters.
