@@ -1,5 +1,56 @@
 # Worklog
 
+## 2026-08-06 — Phase 2 Data Platform Design
+
+### Data Platform Work
+
+- Created Issue #15 and branch `agent/phase-2-data-platform-design`.
+- Added `docs/DATA_MODEL.md` as the canonical Phase 2 domain model.
+- Defined provider-independent assets, aliases, economic series, observations, quality states, freshness states, dataset policies, cache policies, retry policies, ingestion runs, failures, and source snapshots.
+- Updated architecture, source, database, API, operations, testing, decision, and traceability documents.
+- Preserved Yahoo Finance, FRED, ECOS, and FX behind a common provider boundary.
+
+### Data Platform Decisions
+
+- Provider payloads stop at adapter boundaries.
+- Normalized observations preserve source, timestamps, units, currency, quality, freshness, and revision metadata.
+- Successful ingestion publishes an immutable source snapshot.
+- Failed ingestion cannot publish a successful snapshot or relabel prior data as current.
+- Cache, stale thresholds, partial-data behavior, and retries are controlled by versioned dataset policies.
+- Analysis must reference a specific source snapshot and cutoff.
+
+### Data Platform Completion
+
+- `REQ-DATA-001`, `REQ-DATA-002`, `REQ-PROVIDER-001`, `REQ-PROVIDER-002`, and `REQ-OPS-002` are documented as `In Design`.
+- Database and API boundaries align with `docs/DATA_MODEL.md`.
+- Test scenarios cover normalization, duplicate handling, revisions, stale data, cache behavior, bounded retries, schema changes, and snapshot publication failure.
+- Decision records DEC-009 through DEC-011 were added.
+
+### Data Platform Remaining Work
+
+- Create a Draft PR for Issue #15.
+- Pass Documentation CI and address any Markdown or link failures.
+- Request explicit user approval before merge.
+- After merge, implement the Python canonical domain model and provider abstraction.
+- Verify current provider access methods, identifiers, rate limits, and terms during each adapter implementation.
+- Create migrations only after the domain-model implementation contract is approved.
+
+### Data Platform Cautions
+
+- This PR is design-only and must not claim live provider integration.
+- Free-provider availability and schemas can change; implementation must verify current primary sources.
+- Stale or cached data must never be presented as current without explicit metadata.
+- Provider credentials, service-role keys, and raw sensitive payloads must not enter the frontend or logs.
+- Partial data may publish only when the dataset policy explicitly permits it.
+
+### Data Platform Issue, Branch, and PR
+
+- Repository: `fiverocksgames/investment-manager`
+- Issue: #15 — `docs: design Phase 2 data platform`
+- Branch: `agent/phase-2-data-platform-design`
+- PR: not yet created
+- Status: design documentation in progress
+
 ## 2026-08-06 — Project Development Policy v1
 
 ### Policy Work
@@ -9,111 +60,38 @@
 - Added `PROJECT_POLICY.md` as the durable development-policy document.
 - Standardized the Issue, documentation-first, branch, Draft PR, CI, approval, merge, and Issue-close workflow.
 - Separated constitution documents from living operational documents.
-- Updated contributor guidance to preserve Requirement traceability and AI handoff quality.
 
 ### Policy Completion
 
 - Canonical repository decision documented.
-- Project workflow documented as: Issue → Design → Documentation → Branch → Implementation → Test → Draft PR → CI → Review → User Approval → Merge → Issue Close.
 - Direct commits to `main` prohibited.
 - Draft PR and explicit user-approval requirements documented.
-- Security, architecture, data-integrity, and investment-safety priorities retained.
-
-### Policy Validation
-
-- Documentation changes are committed on `agent/project-policy-v1`.
-- Draft PR #14 was created.
-- Documentation run #40 failed only because the new Worklog entry reused headings from the previous entry.
-- This follow-up commit gives the new entry unique headings so Markdownlint can pass.
-
-### Policy Remaining Work
-
-- Verify the new Documentation CI run.
-- Mark PR #14 ready for review only after CI succeeds.
-- Merge only after explicit user approval.
-- Begin Phase 2 Data Platform design after policy adoption.
-- Validate PWA installation and offline behavior separately.
-- Generate `package-lock.json` and change CI from `npm install` to `npm ci`.
-- Create user-owned database tables, default-deny RLS policies, and cross-user isolation tests.
-
-### Policy Next Steps
-
-1. Verify the replacement Documentation run.
-2. Record the exact successful run evidence.
-3. Mark PR #14 ready for review.
-4. Request user approval before merge.
-5. After merge, create the Phase 2 Data Platform design Issue.
+- PR #14 merged after Documentation run #41 succeeded.
+- Issue #13 closed as completed.
 
 ### Policy Cautions
 
-- The canonical-repository decision does not move or synchronize external repositories.
 - Tool limitations must not weaken Issue, CI, review, or approval controls.
 - Authentication proves identity but does not authorize access to future user-owned tables.
-- PWA offline behavior has not yet been validated and must not be described as complete.
-
-### Policy Issue, Branch, and PR
-
-- Repository: `fiverocksgames/investment-manager`
-- Issue: #13 — `docs: establish project development policy v1`
-- Branch: `agent/project-policy-v1`
-- PR: #14 — `docs: establish project development policy v1`
-- Status: Draft PR; documentation fix pushed after run #40 failure
 
 ## 2026-08-06 — Phase 1 Closure
 
-### Today’s Work
+### Phase 1 Completion
 
-- Synchronized the Phase 1 implementation into `e20cboy/investment-manager`.
-- Verified GitHub Pages deployment succeeded in the upstream repository.
-- Registered `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` as upstream repository Variables.
-- Verified the deployed app detected the Supabase configuration.
-- Completed Google OAuth sign-in against the deployed application.
-- Verified session persistence after page refresh and browser restart.
-- Verified sign-out completed successfully.
-- Created Issue #11 and branch `agent/phase-1-closeout` to record Phase 1 completion and prepare Phase 2.
+- React, TypeScript, Vite, Tailwind CSS, PWA manifest, and GitHub Pages baseline completed.
+- Supabase browser client and Google OAuth completed.
+- Session persistence after refresh and browser restart verified.
+- Sign-out and safe missing-configuration behavior verified.
+- PWA installation and offline behavior remain unverified.
 
-### Completed
+### Phase 1 Remaining Work
 
-- React, TypeScript, Vite, Tailwind CSS, PWA manifest, and GitHub Pages baseline.
-- Supabase browser client and authentication context.
-- Google OAuth sign-in and sign-out.
-- Session restoration and auth-state subscription.
-- Safe missing-configuration behavior.
-- GitHub Actions Variables wiring for public Supabase configuration.
-- Production deployment and browser-level authentication validation.
-
-### Validation Evidence
-
-- Upstream GitHub Pages deployment completed successfully.
-- Deployed application displayed Google sign-in after repository Variables were included in a new build.
-- Google sign-in returned to the deployed application successfully.
-- Authentication remained active after page refresh.
-- Authentication remained active after browser restart.
-- Sign-out returned the application to the signed-out state.
-
-### Incomplete
-
-- Validate PWA installation and offline behavior in a browser.
 - Generate `package-lock.json` and change CI from `npm install` to `npm ci`.
 - Create user-owned database tables, default-deny RLS policies, and cross-user isolation tests.
-- Implement Phase 2 market, macro, and FX data collection.
-
-### Next Work
-
-1. Establish the canonical-repository development policy.
-2. Create the Phase 2 Data Platform design issue and provider-independent data model.
-3. Define freshness, source metadata, caching, retry, and failure-state rules before implementation.
-
-### Cautions
-
-- Authentication proves identity but does not authorize access to future user-owned tables.
-- Default-deny RLS and isolation tests are required before storing personal portfolio data.
-- Browser-visible publishable keys are not privileged credentials.
-- PWA offline behavior has not yet been validated and must not be described as complete.
 
 ## 2026-08-06 — Upstream Synchronization
 
-The Phase 1 frontend and Supabase authentication baseline was copied into the upstream repository through `agent/import-phase-1` and merged in upstream PR #4.
+The Phase 1 frontend and Supabase authentication baseline was copied into the external upstream repository through a one-time synchronization. Ongoing development now uses only the canonical repository.
 
 ## 2026-08-05 — Supabase Authentication Bootstrap
 

@@ -2,52 +2,86 @@
 
 ## Purpose
 
-Define the validation strategy for documentation, frontend, data ingestion, analysis, portfolio calculations, authentication, database policies, and deployment.
+Define validation for documentation, frontend, data ingestion, analysis, portfolio calculations, authentication, database policies, and deployment.
 
 ## Test Levels
 
 ### Documentation
 
-Validate required files, Requirement ID references, internal links, decision records, Markdown rendering, and consistency among charter, specifications, feature matrix, worklog, and handoff.
+Validate required files, Requirement ID references, internal links, decision records, Markdown rendering, and consistency among specifications, feature matrix, worklog, and handoff.
 
-### Unit tests
+### Unit Tests
 
-Cover pure calculations, normalization, validation, scoring components, allocation drift, currency conversion, error mapping, and policy constraints. Tests must be deterministic and include boundary cases.
+Cover canonical model validation, symbol and series normalization, timestamp conversion, unit and currency mapping, quality classification, freshness thresholds, cache expiry, retry classification, idempotency keys, and safe error mapping.
 
-### Contract tests
+### Provider Contract Tests
 
-Verify provider adapters, API response envelopes, Google Sheets schema, Supabase database functions, and model-version metadata. External calls should use controlled fixtures for routine CI.
+Each adapter uses recorded or synthetic fixtures to verify:
 
-### Integration tests
+- request bounds
+- expected schema parsing
+- missing and renamed fields
+- provider error mapping
+- rate-limit handling
+- timezone and calendar behavior
+- revisions and corrections
+- unsupported identifiers
+- normalization into canonical batches
 
-Verify ingestion through normalized storage, analysis from a fixed cutoff, portfolio imports, snapshot creation, rebalance guidance, authentication, and Row Level Security isolation.
+Routine CI must not depend on live provider availability.
 
-### End-to-end tests
+### Integration Tests
 
-Verify the primary user journey: sign in, view data freshness, inspect market analysis, import or select a portfolio, review allocation and drift, generate guidance, and see limitations. No test should place an order.
+Verify provider fixture through normalization, persistence, ingestion-run counts, source-snapshot publication, cache behavior, and failure recording. Tests confirm failed or disallowed partial runs do not publish trusted snapshots.
 
-## Required Scenarios
+### End-to-End Tests
 
-- Missing, stale, duplicate, revised, malformed, and partial data.
-- Market holidays, timezone boundaries, split-adjusted prices, and currency conversion.
-- Indicator and regime threshold boundaries.
-- Unsupported instruments and policy violations.
-- Multi-user isolation and unauthenticated access.
-- Provider outage, retry exhaustion, job overlap, and recovery from a prior good state.
-- PWA build, routing under GitHub Pages, offline shell behavior, and update handling.
+After implementation, verify scheduled or manually dispatched ingestion produces observable run status and normalized data with source and freshness metadata. No test places an order.
+
+## Required Phase 2 Scenarios
+
+- duplicate provider records
+- repeated idempotent ingestion
+- revised macro observations
+- corrected market observations
+- missing timestamps, units, currencies, and identifiers
+- daylight-saving and exchange-timezone boundaries
+- market holidays and publication delays
+- stale and hard-expired datasets
+- allowed and disallowed partial datasets
+- cache hit, miss, expiry, and invalidation
+- transient timeout and bounded retry success
+- retry exhaustion
+- rate limiting
+- authentication and validation failures that must not retry
+- provider schema change
+- snapshot transaction failure
+- prior good snapshot preserved after failure
+
+## Golden Fixtures
+
+Fixtures include known source payloads, canonical expected records, rejected rows, warnings, quality states, and content identities. Fixtures are versioned with adapter behavior and contain no secrets or personal data.
+
+## Database Validation
+
+Migration tests verify table constraints, numeric precision, uniqueness dimensions, foreign keys, transactional snapshot publication, and server-only access to ingestion metadata. RLS tests are required before any user-owned table is exposed.
 
 ## Numeric Validation
 
-Indicator and portfolio calculations require documented formulas, golden fixtures, expected results, and explicit tolerances. Floating-point comparisons must not rely on exact binary equality.
+Financial calculations use documented formulas, golden fixtures, expected results, and explicit tolerances. Phase 2 observations use decimal-safe representations and do not rely on exact binary floating-point equality.
 
 ## CI Gates
 
-A PR may require formatting, linting, type checking, unit tests, contract tests, documentation checks, build verification, migration validation, secret scanning, and dependency review as those capabilities are introduced.
+The Phase 2 implementation pipeline will progressively add Python formatting, linting, type checking, unit tests, provider contract tests, migration validation, documentation checks, secret scanning, and frontend build verification.
+
+## Live Smoke Tests
+
+Live provider tests are optional, manually triggered, rate-limited, and non-blocking unless specifically designated for release validation. They verify current access and schema without replacing deterministic fixture tests.
 
 ## Test Evidence
 
-Every PR must list commands or automated checks run, results, untested areas, and known limitations. Failed or skipped required checks prevent completion unless an explicit risk acceptance is documented.
+Every PR lists exact automated checks, commands or workflow runs, results, skipped areas, and known limitations. Failed required checks prevent completion unless an explicit risk acceptance is recorded.
 
 ## Release Acceptance
 
-Before an MVP production release, all critical requirements in `FEATURE_MATRIX.md` must link to passing validation evidence, security isolation tests must pass, restore readiness must be demonstrated, and outstanding high-severity defects must be resolved or explicitly accepted.
+Before Phase 2 implementation is complete, all provider adapters must pass contract tests, normalized schemas must be consistent, stale and failure states must be observable, duplicate writes must be prevented, and a failed provider must not silently produce a trusted current snapshot.
