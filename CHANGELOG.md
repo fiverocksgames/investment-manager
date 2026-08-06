@@ -27,6 +27,7 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 - Corrected the FRED live smoke false negative caused by normal weekend or holiday gaps and date-boundary normalization.
 - Corrected stale living-document status for completed FRED work.
+- Corrected Yahoo fixture date ranges and FX metadata after strict range validation exposed inconsistent fixtures.
 
 ### Security
 
@@ -36,7 +37,8 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Validation
 
-- Yahoo Python and Documentation CI are pending.
+- Yahoo Python run #10 and Documentation run #58 passed for commit `3444d9381c8924902414742fdeb6c1c5772db08b`.
+- Documentation updates after that commit require fresh CI before PR #29 is marked Ready for Review.
 - Protected FRED live connectivity was successfully validated against the official endpoint.
 - Prior frontend, documentation, Python, authentication, and deployment validations remain recorded in merged PR history.
 
