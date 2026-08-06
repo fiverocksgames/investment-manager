@@ -1,5 +1,28 @@
 # Worklog
 
+## 2026-08-06 — Protected FRED Live Smoke Test
+
+### Live Validation Work
+
+- Created Issue #21 and branch `agent/fred-live-smoke`.
+- Added a manual `FRED Live Smoke` workflow using repository secret `FRED_API_KEY`.
+- Added `tools/fred_smoke.py` to query the bounded `DGS10` fixture through the merged `FredProvider`.
+- Added `docs/FRED_LIVE_SMOKE.md` with setup, execution, evidence, rotation, and security rules.
+
+### Live Validation Boundaries
+
+- The workflow is manual only and never runs on pull requests, pushes, or schedules.
+- The API key must exist only as an encrypted Actions secret.
+- Logs contain only safe summary metadata and never the key or raw request URL.
+- No live run is claimed until the user registers the secret and a workflow run succeeds.
+
+### Live Validation Remaining Work
+
+- Create a Draft PR and pass Python and Documentation CI.
+- Ask the user to register `FRED_API_KEY` without sharing its value.
+- Run the manual workflow and retain the run number as validation evidence.
+- Request explicit approval before merge.
+
 ## 2026-08-06 — FRED Economic Series Adapter
 
 ### FRED Adapter Work
@@ -20,16 +43,9 @@
 
 ### FRED Adapter Validation Status
 
-- Implementation and deterministic tests are committed on `agent/fred-adapter`.
-- Python and Documentation CI are pending Draft PR creation.
-- No live FRED integration is claimed.
-
-### FRED Adapter Issue, Branch, and PR
-
-- Issue: #19 — `feat: implement FRED economic series adapter`
-- Branch: `agent/fred-adapter`
-- PR: not yet created
-- Status: implementation and documentation in progress
+- Python run #3 and Documentation run #47 passed.
+- PR #20 merged and Issue #19 closed as completed.
+- No live FRED integration is claimed yet.
 
 ## 2026-08-06 — Canonical Data Model and Provider Abstraction
 
