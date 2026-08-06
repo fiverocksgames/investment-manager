@@ -5,6 +5,7 @@
 ### Adapter Work
 
 - Created Issue #28 and branch `agent/yahoo-market-adapter` from the latest `main`.
+- Opened Draft PR #29.
 - Added `YahooProvider` and `YahooSymbolBinding` for daily market-price and FX-rate history.
 - Normalized adjusted close into canonical observations while preserving open, high, low, close, volume, currency, interval, timezone, and adjustment metadata.
 - Added deterministic identifiers, `Decimal` conversion, UTC timestamps, explicit failures, and partial-result behavior.
@@ -20,8 +21,9 @@
 
 ### Adapter Validation Status
 
-- Draft PR creation pending.
-- Python and Documentation CI pending.
+- Python run #10 passed for commit `3444d9381c8924902414742fdeb6c1c5772db08b`.
+- Documentation run #58 passed for commit `3444d9381c8924902414742fdeb6c1c5772db08b`.
+- Living-document updates after that commit require fresh Python and Documentation CI before Ready for Review.
 - Explicit user approval remains required before merge.
 
 ## 2026-08-06 — Roadmap and Release History
