@@ -9,6 +9,7 @@ on:
       - "pyproject.toml"
       - ".github/workflows/python.yml"
       - ".github/workflows/fred-smoke.yml"
+      - ".github/workflows/yahoo-smoke.yml"
   push:
     branches:
       - main
@@ -19,6 +20,7 @@ on:
       - "pyproject.toml"
       - ".github/workflows/python.yml"
       - ".github/workflows/fred-smoke.yml"
+      - ".github/workflows/yahoo-smoke.yml"
 
 permissions:
   contents: read
