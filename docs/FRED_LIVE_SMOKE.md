@@ -26,7 +26,7 @@ The workflow is intentionally manual and is never triggered by a pull request, p
 1. Open the repository **Actions** tab.
 2. Select **FRED Live Smoke**.
 3. Select **Run workflow**.
-4. Run it from the branch containing the workflow during review, or from `main` after merge.
+4. Run it from `main`.
 
 ## Validation Contract
 
@@ -37,9 +37,18 @@ The smoke test:
 - sends the key only through the encrypted `FRED_API_KEY` environment value;
 - reports provider, series, observation count, first and last observation dates, quality, and freshness;
 - does not print the API key or raw request URL;
-- fails when the secret is absent, FRED reports an error, parsing fails, or no observations are returned.
+- requires at least one valid canonical observation;
+- tolerates only `MISSING_VALUE` and `OUT_OF_RANGE` warnings when valid observations also exist;
+- reports tolerated warning codes without raw provider payloads;
+- fails for missing credentials, empty results, authentication, HTTP, transport, binding, payload, and parsing errors.
+
+`DGS10` legitimately contains missing values for weekends and market holidays. The date-only provider endpoint can also return a boundary date outside an exact timestamp window. These conditions are warnings rather than proof of failed connectivity when valid observations are present.
 
 A successful run proves connectivity and compatibility for this bounded request. It does not prove all FRED series, historical revisions, rate limits, persistence, scheduling, or production readiness.
+
+## Evidence
+
+The first live run, Actions run `31078092784`, authenticated and reached FRED but exposed a false-negative smoke policy: valid data was accompanied by expected `MISSING_VALUE` and `OUT_OF_RANGE` warnings. Issue #23 corrects that policy without weakening fatal error handling.
 
 ## Rotation and Removal
 

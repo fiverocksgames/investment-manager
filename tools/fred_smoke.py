@@ -8,10 +8,20 @@ from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from investment_manager.data.fred import FredProvider, FredSeriesBinding
-from investment_manager.data.providers import FetchRequest, ProviderCapability
+from investment_manager.data.providers import FetchRequest, FetchResult, ProviderCapability
 
 SERIES_ID = "DGS10"
 SUBJECT_ID = UUID("f612b89b-8db7-5c20-9115-2af66f0fdc77")
+TOLERATED_FAILURE_CODES = frozenset({"MISSING_VALUE", "OUT_OF_RANGE"})
+
+
+def validate_result(result: FetchResult) -> tuple[bool, tuple[str, ...]]:
+    """Return whether a live result proves connectivity and its warning/error codes."""
+    codes = tuple(sorted({failure.code for failure in result.failures}))
+    fatal_codes = tuple(code for code in codes if code not in TOLERATED_FAILURE_CODES)
+    if not result.observations or fatal_codes:
+        return False, codes
+    return True, codes
 
 
 def main() -> int:
@@ -39,13 +49,11 @@ def main() -> int:
         end_at=end_at,
     )
     result = provider.fetch(request)
+    valid, codes = validate_result(result)
 
-    if result.failures:
-        codes = ",".join(sorted({failure.code for failure in result.failures}))
-        print(f"FRED smoke test failed safely: failure_codes={codes}", file=sys.stderr)
-        return 1
-    if not result.observations:
-        print("FRED smoke test failed: no observations returned.", file=sys.stderr)
+    if not valid:
+        rendered = ",".join(codes) if codes else "EMPTY_RESULT"
+        print(f"FRED smoke test failed safely: failure_codes={rendered}", file=sys.stderr)
         return 1
 
     first = min(result.observations, key=lambda item: item.observed_at)
@@ -58,6 +66,8 @@ def main() -> int:
     print(f"last_observed_at={last.observed_at.isoformat()}")
     print(f"last_quality={last.quality.value}")
     print(f"last_freshness={last.freshness.value}")
+    if codes:
+        print(f"tolerated_warning_codes={','.join(codes)}")
     return 0
 
 

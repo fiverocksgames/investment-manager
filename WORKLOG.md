@@ -1,5 +1,23 @@
 # Worklog
 
+## 2026-08-06 — FRED Smoke Partial-Result Fix
+
+### Fix Work
+
+- Investigated live Actions run `31078092784` and confirmed the API key, package installation, network path, and FRED response were working.
+- Identified a false-negative policy: valid DGS10 observations were accompanied by expected `MISSING_VALUE` and `OUT_OF_RANGE` conditions.
+- Added a pure smoke-result validator that tolerates only those two warning codes when at least one valid observation exists.
+- Preserved fatal handling for empty results and all configuration, authentication, HTTP, transport, binding, payload, and parsing failures.
+- Added deterministic unit tests for tolerated partial results, fatal mixed results, and empty partial results.
+- Updated `docs/FRED_LIVE_SMOKE.md` with the corrected validation contract and run evidence.
+
+### Fix Validation Status
+
+- Issue: #23 — `fix: tolerate expected FRED smoke partial results`
+- Branch: `agent/fred-smoke-partial-fix`
+- Python and Documentation CI pending Draft PR creation.
+- A new live smoke run must succeed before merge approval is requested.
+
 ## 2026-08-06 — Protected FRED Live Smoke Test
 
 ### Live Validation Work
