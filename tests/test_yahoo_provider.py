@@ -6,12 +6,19 @@ import json
 import unittest
 from datetime import UTC, datetime
 from decimal import Decimal
+from unittest.mock import Mock, patch
 from urllib.error import HTTPError
+from urllib.request import Request
 from uuid import UUID
 
 from investment_manager.data.models import ObservationKind
 from investment_manager.data.providers import FetchRequest, ProviderCapability
-from investment_manager.data.yahoo import YahooProvider, YahooSymbolBinding
+from investment_manager.data.yahoo import (
+    YAHOO_REQUEST_HEADERS,
+    YahooProvider,
+    YahooSymbolBinding,
+    _default_transport,
+)
 
 NOW = datetime(2026, 8, 6, 12, 0, tzinfo=UTC)
 START = datetime(2025, 8, 3, 0, 0, tzinfo=UTC)
@@ -51,6 +58,27 @@ def payload(*, missing_second: bool = False, symbol: str = "SPY", currency: str 
         }
     }
     return json.dumps(body).encode("utf-8")
+
+
+class YahooTransportTests(unittest.TestCase):
+    def test_default_transport_sends_documented_minimal_headers(self) -> None:
+        response = Mock()
+        response.read.return_value = b"{}"
+        context = Mock()
+        context.__enter__ = Mock(return_value=response)
+        context.__exit__ = Mock(return_value=False)
+
+        with patch("investment_manager.data.yahoo.urlopen", return_value=context) as mocked_urlopen:
+            body = _default_transport("https://query1.finance.yahoo.com/test", 7.5)
+
+        self.assertEqual(body, b"{}")
+        request = mocked_urlopen.call_args.args[0]
+        self.assertIsInstance(request, Request)
+        self.assertEqual(mocked_urlopen.call_args.kwargs["timeout"], 7.5)
+        self.assertEqual(request.get_method(), "GET")
+        self.assertEqual(request.get_header("User-agent"), YAHOO_REQUEST_HEADERS["User-Agent"])
+        self.assertEqual(request.get_header("Accept"), "application/json")
+        self.assertEqual(request.get_header("Accept-language"), "en-US,en;q=0.9")
 
 
 class YahooProviderTests(unittest.TestCase):
