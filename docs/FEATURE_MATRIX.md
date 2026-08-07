@@ -45,13 +45,13 @@
 | Requirement ID | Requirement | Phase | Status | Design / Implementation | Test | PR |
 |---|---|---:|---|---|---|---|
 | REQ-DATA-001 | Provider-independent assets, series, observations, runs, failures, snapshots, and ordered FX-pair identity | 2 | Done | `docs/DATA_MODEL.md`, canonical data modules | Python model/normalization CI | #16, #18, #43 |
-| REQ-DATA-002 | Preserve source, revision, quality, cutoff, and freshness metadata | 2 | Done | Canonical metadata, policies, snapshots, FX provenance preservation | Python run #59; FX provenance tests | #16, #18, #43 |
+| REQ-DATA-002 | Preserve source, revision, quality, cutoff, and freshness metadata | 2 | In Validation | Canonical metadata, FX provenance, deterministic snapshot checksum/content identity | Snapshot provenance/ordering tests; Python #65/#73, Documentation #117/#125; latest-head gate via PR #45 | #16, #18, #43, #45 |
 | REQ-PROVIDER-001 | Common provider adapter contract | 2 | Done | `DataProvider`, FRED, Yahoo, ECOS | FRED/Yahoo/ECOS fixture CI and live evidence | #18, #20, #29, #31, #37, #39 |
-| REQ-PROVIDER-002 | Explicit validation and failure classification | 2 | In Validation | Canonical failures, retry, transport diagnostics, typed FX normalization failures | FX invalid/direction tests; Python #59, Documentation #111 | #18, #20, #29, #33, #35, #37, #39, #43 |
-| REQ-OPS-002 | Idempotent ingestion and immutable snapshots | 2 | In Design | `docs/OPERATIONS.md`, `SourceSnapshot` | Executor and transaction tests not implemented | #16 |
+| REQ-PROVIDER-002 | Explicit validation and failure classification | 2 | In Validation | Canonical failures, retry, transport diagnostics, typed FX and snapshot publication failures | FX/snapshot deterministic failure tests; Python #65/#73, Documentation #117/#125 | #18, #20, #29, #33, #35, #37, #39, #43, #45 |
+| REQ-OPS-002 | Idempotent ingestion and immutable snapshots | 2 | In Validation | `SourceSnapshot`, `SourceSnapshotPublisher`, `docs/SOURCE_SNAPSHOTS.md`, operations policy | Deterministic snapshot identity/cutoff/partial-policy tests; persistence transaction tests deferred | #16, #45 |
 | REQ-OPS-003 | Apply bounded retries only to retryable provider failures | 2 | Done | `RetryPolicy`, `RetryExecution`, `BoundedRetryExecutor` | Python run #26; live recovery/exhaustion evidence | #33, #39 |
-| REQ-MKT-001 | Collect and normalize market, macro, and FX data | 2 | In Validation | FRED macro, Yahoo market/FX, ECOS economic series, `FxNormalizer` | Yahoo/ECOS/FRED live evidence; FX direct/inverse tests; Python #59, Documentation #111 | #20, #29, #31, #35, #37, #39, #43 |
-| REQ-MKT-002 | Expose source, retrieval time, freshness, and explicit FX rate direction | 2 | In Validation | Provider metadata plus canonical `FxPair` and FX provenance attributes | FX provenance/directional-unit tests; Python #59, Documentation #111 | #20, #29, #31, #37, #39, #43 |
+| REQ-MKT-001 | Collect and normalize market, macro, and FX data | 2 | In Validation | FRED macro, Yahoo market/FX, ECOS economic series, `FxNormalizer` | Yahoo/ECOS/FRED live evidence; FX direct/inverse tests | #20, #29, #31, #35, #37, #39, #43 |
+| REQ-MKT-002 | Expose source, retrieval time, freshness, FX direction, and reproducible source-set identity | 2 | In Validation | Provider metadata, `FxPair`, snapshot checksum/UUID/cutoff | FX provenance plus snapshot provenance/identity tests; Python #65/#73, Documentation #117/#125 | #20, #29, #31, #37, #39, #43, #45 |
 | REQ-OPS-001 | Run scheduled data and analysis jobs | 2 | Planned | Python CI and manual provider smoke workflows only | Scheduled workflow tests planned | TBD |
 
 ## Later MVP Requirements

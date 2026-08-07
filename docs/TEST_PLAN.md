@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Define validation for documentation, frontend, data ingestion, normalization, analysis, portfolio calculations, authentication, database policies, and deployment.
+Define validation for documentation, frontend, data ingestion, normalization, immutable source snapshots, analysis, portfolio calculations, authentication, database policies, and deployment.
 
 ## Test Levels
 
@@ -12,7 +12,7 @@ Validate required files, Requirement ID references, internal links, decision rec
 
 ### Unit Tests
 
-Cover canonical model validation, symbol/series/FX normalization, timestamp conversion, unit and currency mapping, quality classification, freshness thresholds, retry behavior, idempotency keys, and safe error mapping.
+Cover canonical model validation, symbol/series/FX normalization, timestamp conversion, unit and currency mapping, quality classification, freshness thresholds, retry behavior, deterministic snapshot identity, idempotency keys, and safe error mapping.
 
 ### Provider Contract Tests
 
@@ -22,21 +22,24 @@ ECOS fixture coverage additionally verifies explicit statistic/item/cycle bindin
 
 ### FX Normalization Tests
 
-FX normalization is deterministic and network-free. Required scenarios include:
+FX normalization is deterministic and network-free. Required scenarios include canonical base/quote validation, direct and inverse Decimal normalization, directional units, rejection of invalid rates/non-FX inputs/mismatched subjects/unrelated pairs, deterministic IDs, provenance preservation, and explicit Yahoo `KRW=X` USD/KRW fixture convention. No test may infer FX direction from a ticker string.
 
-- canonical base/quote currency validation
-- direct source direction preserving the exact `Decimal` value
-- reverse source direction using the fixed-precision Decimal reciprocal
-- canonical directional unit such as `KRW_per_USD`
-- rejection of zero and negative rates
-- rejection of non-FX observations
-- rejection of canonical subject mismatch
-- rejection of unrelated or ambiguous source currency pairs
-- deterministic normalized observation identifiers
-- preservation of provider, source identifier, retrieval time, revision, quality/freshness, and source metadata
-- representative Yahoo `KRW=X` fixture normalized only through an explicit USD/KRW convention
+### Source Snapshot Publication Tests
 
-No test may infer FX direction from a ticker string.
+Snapshot publication is deterministic and network-free. Required scenarios include:
+
+- same logical eligible observations in different input orders yielding the same checksum and snapshot ID
+- explicit UTC cutoff filtering
+- duplicate observation-ID rejection
+- provider-boundary mismatch rejection
+- `PARTIAL` quality rejection by default
+- explicit allow-partial policy without quality/freshness promotion
+- empty eligible set rejection
+- publication timestamp validation
+- timezone-aware input normalization to UTC
+- provenance/freshness preservation on source observations
+
+Database transaction behavior is deferred until persistence is implemented.
 
 ### Retry Executor Tests
 
@@ -56,6 +59,8 @@ After implementation, verify scheduled or manually dispatched ingestion produces
 - revised macro observations and corrected market observations
 - missing timestamps, units, currencies, and identifiers
 - explicit FX direction and inverse normalization
+- deterministic source snapshot content identity
+- cutoff exclusion and disallowed partial snapshot publication
 - market holidays and publication delays
 - stale and hard-expired datasets
 - allowed and disallowed partial datasets
@@ -89,7 +94,7 @@ Live provider tests are manually triggered, rate-limited, and do not replace det
 
 FRED, Yahoo, and ECOS each have at least one verified successful live retrieval run. Those runs are bounded evidence and do not guarantee permanent provider availability.
 
-FX normalization itself has no live network dependency; live FX source validation remains provider-specific.
+FX normalization and source snapshot publication have no live network dependency; live source validation remains provider-specific.
 
 ## Test Evidence
 
@@ -97,4 +102,4 @@ Every PR lists exact automated checks/results, skipped areas, and known limitati
 
 ## Release Acceptance
 
-Before Phase 2 is complete, provider adapters and canonical normalization must pass contract tests, stale/failure states must remain observable, duplicate writes must be prevented, and failed providers must not silently produce trusted current snapshots.
+Before Phase 2 is complete, provider adapters and canonical normalization must pass contract tests, stale/failure states must remain observable, duplicate writes must be prevented, deterministic source snapshots must make downstream input sets reproducible, and failed providers must not silently produce trusted current snapshots.

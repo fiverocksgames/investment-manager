@@ -23,6 +23,23 @@ Python ingestion jobs run through GitHub Actions. Each workflow invocation must 
 - A run may resume or restart only through a documented idempotent path.
 - Analysis jobs depend on a published source snapshot rather than an in-progress ingestion run.
 
+## Source Snapshot Publication
+
+Normalized observations are published through `SourceSnapshotPublisher` before downstream analysis may use them as a reproducible source set.
+
+- A snapshot has one explicit dataset, one provider, and one UTC cutoff.
+- Observations after the cutoff are excluded; their timestamps and provenance are never rewritten.
+- Duplicate observation IDs and provider mismatches fail closed.
+- `PARTIAL` quality is rejected by default and requires explicit dataset-policy opt-in.
+- Eligible observations are deterministically ordered before checksum generation.
+- Snapshot checksum is SHA-256 over stable canonical content and source provenance.
+- Snapshot UUID is deterministic from dataset, provider, cutoff, and checksum.
+- Empty eligible sets never publish.
+- Publication timing is explicit and cannot precede the cutoff.
+- Publication validation errors are deterministic policy failures and are not provider-retry candidates.
+
+The current implementation is in-memory only. Database persistence must later enforce the same content identity transactionally and treat a repeated deterministic snapshot ID as idempotent rather than silently replacing different content.
+
 ## Timeouts and Retries
 
 Every provider call and job has an explicit timeout. Retries are bounded, use exponential backoff with jitter, and apply only to retryable categories. Rate-limit responses respect available retry guidance. Deterministic validation, authentication, unsupported-symbol, and schema errors stop immediately.
@@ -50,6 +67,7 @@ Record:
 - dataset and cutoff
 - start and end time
 - requested, received, normalized, rejected, and published counts
+- source snapshot identifier and checksum when publication succeeds
 - cache hits and misses
 - retry count
 - quality and freshness summary
@@ -66,6 +84,7 @@ Canonical ingestion states are `queued`, `running`, `succeeded`, `partial`, `fai
 - Provider outages leave prior good data unchanged.
 - Failed runs never publish successful snapshots.
 - Partial failures are recorded per source identifier.
+- Snapshot validation failure publishes nothing and leaves prior good snapshots unchanged.
 - Repeated failure opens an operational task or alert rather than retrying indefinitely.
 - Required-input failure blocks dependent analysis.
 - Prior good data may remain visible only with original timestamp and explicit stale status.
