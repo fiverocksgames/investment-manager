@@ -6,7 +6,7 @@ import json
 import unittest
 from datetime import UTC, datetime
 from decimal import Decimal
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, patch
 from urllib.error import HTTPError
 from urllib.request import Request
 from uuid import UUID
@@ -62,11 +62,11 @@ def payload(*, missing_second: bool = False, symbol: str = "SPY", currency: str 
 
 class YahooTransportTests(unittest.TestCase):
     def test_default_transport_sends_documented_minimal_headers(self) -> None:
-        response = Mock()
+        response = MagicMock()
         response.read.return_value = b"{}"
-        context = Mock()
-        context.__enter__ = Mock(return_value=response)
-        context.__exit__ = Mock(return_value=False)
+        context = MagicMock()
+        context.__enter__.return_value = response
+        context.__exit__.return_value = False
 
         with patch("investment_manager.data.yahoo.urlopen", return_value=context) as mocked_urlopen:
             body = _default_transport("https://query1.finance.yahoo.com/test", 7.5)
