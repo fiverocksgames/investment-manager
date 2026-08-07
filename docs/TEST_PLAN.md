@@ -12,7 +12,7 @@ Validate required files, Requirement ID references, internal links, decision rec
 
 ### Unit Tests
 
-Cover canonical model validation, symbol and series normalization, timestamp conversion, unit and currency mapping, quality classification, freshness thresholds, cache expiry, retry classification, idempotency keys, and safe error mapping.
+Cover canonical model validation, symbol and series normalization, timestamp conversion, unit and currency mapping, quality classification, freshness thresholds, cache expiry, retry classification, retry bounds, backoff, jitter, idempotency keys, and safe error mapping.
 
 ### Provider Contract Tests
 
@@ -29,6 +29,19 @@ Each adapter uses recorded or synthetic fixtures to verify:
 - normalization into canonical batches
 
 Routine CI must not depend on live provider availability.
+
+### Retry Executor Tests
+
+The common retry executor uses injected sleepers and jitter sources so unit tests do not wait or depend on randomness. Required scenarios include:
+
+- direct success without retry
+- retryable failure followed by recovery
+- retry exhaustion at the configured bound
+- non-retryable failure stopping immediately
+- partial results stopping immediately
+- invalid retry-policy bounds
+
+Whole-request retry is intentionally not used for partial results until identifier-scoped ingestion orchestration exists.
 
 ### Integration Tests
 
@@ -76,7 +89,7 @@ The Phase 2 implementation pipeline will progressively add Python formatting, li
 
 ## Live Smoke Tests
 
-Live provider tests are optional, manually triggered, rate-limited, and non-blocking unless specifically designated for release validation. They verify current access and schema without replacing deterministic fixture tests.
+Live provider tests are optional, manually triggered, rate-limited, and non-blocking unless specifically designated for release validation. They verify current access and schema without replacing deterministic fixture tests. Retry exhaustion is recorded as a live failure, not converted into a success claim.
 
 ## Test Evidence
 
