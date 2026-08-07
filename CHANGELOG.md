@@ -13,13 +13,11 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 - Sanitized ECOS transport diagnostics (`timeout`, `dns`, `tls`, `connection`, `transport`) while preserving canonical `TRANSPORT_ERROR` behavior
 - Deterministic ECOS tests for timeout, DNS, TLS, and connection-reset transport classification
 - Bank of Korea ECOS `StatisticSearch` economic-series adapter with explicit bindings, `Decimal` values, UTC timestamps, deterministic identifiers, and source metadata
-- Deterministic ECOS fixture tests for valid, missing, malformed, range, authentication, HTTP, and cycle behavior
 - Manual secret-based ECOS Live Smoke workflow using `ECOS_API_KEY` and the common bounded retry executor
 - Explicit Yahoo default HTTP request headers with a stable project-specific `User-Agent`, JSON `Accept`, and English `Accept-Language`
 - Provider-independent bounded retry executor with exponential backoff, jitter, attempt evidence, and deterministic tests
 - Yahoo daily market-price and FX-rate adapter with explicit symbol bindings and deterministic fixture tests
 - Official FRED Version 1 economic-series adapter and protected live smoke workflow
-- Python 3.12 canonical data models, provider contracts, and CI
 
 ### Changed
 
@@ -27,7 +25,6 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 - Reverse FX direction uses a fixed 34-digit `Decimal` reciprocal with `ROUND_HALF_EVEN`; direct direction preserves the source `Decimal` exactly.
 - FX normalized observations preserve source provider, source identifier, retrieval time, revision, quality/freshness, and original provider metadata while adding canonical/source direction metadata.
 - ECOS Live Smoke emits only sanitized transport-detail categories when canonical transport failures occur.
-- ECOS annual, quarterly, monthly, and daily period labels normalize to timezone-aware UTC period-start timestamps while preserving the original source period.
 - Retry only provider results with no trusted observations and exclusively retryable failures; partial and deterministic failures stop immediately.
 - Require canonical financial values to use `Decimal` and timezone-aware UTC datetimes.
 
@@ -49,7 +46,8 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Validation
 
-- FX initial implementation head `044e350e9c028eb25944463328a69905c3b1ec73`: Documentation run #103 passed; Python run #51 test job passed. Fresh final-head CI is required after living-document updates.
+- FX initial implementation head `044e350e9c028eb25944463328a69905c3b1ec73`: Documentation run #103 passed; Python run #51 test job passed.
+- FX documentation-complete implementation head `f8cd1785cb3e1e1cac9a5755a7b910f1a6f7de79`: Python run #59 and Documentation run #111 passed. The final living-document evidence head still requires the normal latest-head CI gate before Ready for Review.
 - ECOS Live Smoke run `31182329368` succeeded on merged `main` commit `23bd2ef88ce7ab3f3da2f288ad066089c163f2e8` with 99 trusted observations on attempt 1; this remains bounded live-success evidence.
 - ECOS transport-diagnostic final head `d9bed23781defaa1b389af93fdcf454e7f5fe058`: Python run #49 and Documentation run #99 passed before merge.
 - Yahoo Live Smoke run `31169043266` succeeded with 10 trusted SPY daily observations on attempt 1.
