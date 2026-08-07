@@ -2,112 +2,74 @@
 
 ## Purpose
 
-Document approved free data providers, the fields consumed, known limitations, attribution, freshness expectations, and failure behavior.
+Document approved data providers, the fields consumed, known limitations, freshness expectations, and failure behavior.
 
 ## Provider Principles
 
 - Use only sources whose access method and terms are compatible with the project.
 - Preserve provider, source identifier, observation time, retrieval time, frequency, unit, timezone, and revision metadata.
-- Normalize provider symbols through canonical asset and economic-series identifiers.
-- Never represent delayed, revised, estimated, or cached data as real-time or final.
-- Provider availability is not guaranteed; missing data must fail safely.
+- Normalize provider symbols through canonical asset, economic-series, and FX-pair identifiers.
+- Never represent delayed, revised, estimated, cached, or ambiguous data as current trusted data.
 - Provider payloads are never exposed as public application contracts.
 
 ## Provider Contract
 
-Each adapter must implement the provider-independent contract defined in [`DATA_MODEL.md`](DATA_MODEL.md):
-
-- identify provider and dataset
-- validate request bounds
-- retrieve observations
-- map provider errors into stable categories
-- normalize identifiers, timestamps, units, and currencies
-- return source metadata and quality flags
-- never write directly to analysis or UI models
+Each adapter must implement the provider-independent contract defined in [`DATA_MODEL.md`](DATA_MODEL.md): validate request bounds, retrieve observations, classify failures, normalize timestamps and numeric values, preserve provenance, and never write directly to analysis or UI models.
 
 ## Yahoo Finance
 
-Intended use: historical and latest available prices for approved Korean and US ETFs, benchmark indices, gold proxies, Bitcoin, and suitable exchange-rate series.
+Intended use: historical and latest available prices for approved ETFs, benchmark indices, gold proxies, Bitcoin, and suitable exchange-rate series.
 
-Required fields include provider symbol, observation timestamp, OHLC values where available, adjusted close policy, volume, currency, exchange timezone, retrieval time, and quality state.
+Required metadata includes provider symbol, observation timestamp, OHLC values where available, adjusted-close policy, volume, currency, exchange timezone, retrieval time, and quality state.
 
-Risks include unofficial access patterns, symbol changes, delayed data, incomplete corporate-action adjustments, provider schema changes, and rate limiting. The adapter uses deterministic fixtures, explicit request headers, schema validation, and the common bounded retry executor in live smoke validation.
+Risks include unofficial access patterns, symbol changes, delayed data, incomplete corporate-action adjustments, provider schema changes, and rate limiting. Deterministic fixtures and controlled live smoke validation remain required.
 
-Yahoo Live Smoke run `31169043266` succeeded on merged commit `18dd594a93ca45f966b79a3b612808751c99c112`, returning 10 trusted SPY daily observations on attempt 1. This is evidence that the bounded request succeeded for that run; it is not an availability or schema-stability guarantee.
+Yahoo Live Smoke run `31169043266` succeeded on merged commit `18dd594a93ca45f966b79a3b612808751c99c112`, returning 10 trusted SPY daily observations on attempt 1. This is bounded evidence, not an availability guarantee.
+
+For FX, Yahoo ticker text is not parsed to infer direction. The representative `KRW=X` source convention is explicitly configured as base `USD`, quote `KRW`, consistent with Yahoo Finance displaying the instrument as `USD/KRW`. Canonical normalization is handled separately from provider retrieval.
 
 ## FRED
 
 Intended use: US macroeconomic and financial series such as policy rates, inflation, employment, yields, liquidity, and stress indicators.
 
-Required metadata includes series ID, title, units, frequency, seasonal-adjustment status, observation date, retrieval date, and vintage or revision information when available. Revised values must not overwrite audit history silently.
-
-FRED uses its official API with `FRED_API_KEY` stored only as a runtime GitHub Actions secret for protected live smoke validation.
+FRED uses its official API with `FRED_API_KEY` stored only as a runtime GitHub Actions secret for protected live smoke validation. Revised values must not overwrite audit history silently.
 
 ## ECOS
 
 Intended use: Bank of Korea statistics relevant to Korean investors, including policy rates, exchange rates, monetary aggregates, prices, and growth indicators.
 
-The initial adapter uses the ECOS Open API `StatisticSearch` JSON service and requires `ECOS_API_KEY`. The key is runtime-only configuration and must not be committed, logged, embedded in fixtures, or included in secret-bearing URLs in evidence.
+The adapter uses the ECOS Open API `StatisticSearch` JSON service and requires runtime-only `ECOS_API_KEY`. Explicit bindings preserve statistic/item identifiers, cycle, canonical subject identity, unit, source period, and source metadata. Initial cycle support is annual (`A`), quarterly (`Q`), monthly (`M`), and daily (`D`).
 
-Explicit `EcosSeriesBinding` entries preserve:
+ECOS Live Smoke run `31182329368` succeeded on merged `main` commit `23bd2ef88ce7ab3f3da2f288ad066089c163f2e8` with 99 trusted observations on attempt 1. This is bounded live-success evidence, not a permanent availability guarantee.
 
-- project source identifier
-- statistic code
-- item codes 1-4 when applicable
-- cycle
-- canonical subject identity
-- canonical unit
+## FX Sources and Direction
 
-Source metadata preserves ECOS statistic/item codes and names, cycle, original source period, and `UNIT_NAME`. Canonical values use `Decimal`. Initial cycle support is annual (`A`), quarterly (`Q`), monthly (`M`), and daily (`D`). ECOS period labels are normalized to the start of the labeled period in UTC; that timestamp is not represented as the publication timestamp.
+FX ingestion must use an explicit ordered currency pair. The canonical convention is:
 
-The initial implementation requests one configured response page per bound series. Pagination orchestration, other ECOS services, additional cycle formats, and revision-specific semantics remain future work.
+- base currency: currency being priced
+- quote currency: currency used to express the price
+- canonical value: quote currency units per one base currency unit
+- canonical unit: `<QUOTE>_per_<BASE>`
 
-A manual ECOS Live Smoke workflow uses the common bounded retry executor and representative Bank of Korea base-rate series `722Y001`, item `0101000`, daily cycle. Live connectivity must not be recorded until an actual workflow run succeeds on `main` with `ECOS_API_KEY` configured.
+`FxPair` and `FxNormalizationBinding` define this contract. Source conventions are configured explicitly and never guessed from provider symbols.
 
-## FX Sources
+If source direction matches the canonical pair, the source `Decimal` value is preserved exactly. If the source direction is exactly reversed, normalization uses a fixed 34-digit `Decimal` reciprocal with `ROUND_HALF_EVEN`. Zero, negative, unrelated, or ambiguous rates are rejected.
 
-FX ingestion must use explicit base and quote currencies and a documented fixing or observation convention. Yahoo Finance or ECOS may be used only after identifier, timestamp, and rate-direction validation. A separate provider may be approved through a decision record.
+No provider fallback, averaging, or triangulation is allowed without a separately approved decision record. Future ECOS or FRED FX bindings must document their rate direction before use.
+
+See [`FX_NORMALIZATION.md`](FX_NORMALIZATION.md).
 
 ## Google Sheets
 
 Google Sheets is a user-controlled portfolio input, not a market-data provider or application database. It requires explicit schema, least-privilege access, row validation, import versioning, and read-only behavior unless separately approved.
 
-## Data Quality States
+## Data Quality and Freshness
 
-Canonical quality states are:
+Canonical quality/freshness states propagate into source snapshots and downstream analysis. Freshness is calculated from observation and retrieval metadata plus dataset-specific cadence and calendar rules, not from UI read time.
 
-- `valid`
-- `stale`
-- `partial`
-- `revised`
-- `estimated`
-- `invalid`
-- `unavailable`
+## Cache and Retry Policy
 
-Quality state propagates into source snapshots, analysis, portfolio valuation, and recommendations.
-
-## Freshness Policy
-
-Every dataset defines:
-
-- expected cadence
-- publication or market-calendar behavior
-- soft stale threshold
-- hard stale threshold
-- whether stale reads are allowed
-- whether partial publication is allowed
-
-Freshness is calculated from observation and retrieval metadata, not from the time the UI reads the record.
-
-## Cache Policy
-
-Caching reduces provider calls but does not erase provenance. Cache entries include dataset key, source retrieval time, expiry time, policy version, and content identity. Expired entries may only be served with explicit stale metadata when policy allows it.
-
-## Retry Policy
-
-Retries are bounded and apply only to retryable failures such as temporary network errors, rate limits, and selected server failures. Authentication, validation, unsupported-symbol, and deterministic parsing errors are not retried blindly. Backoff includes jitter and respects provider limits.
-
-The common executor retries a complete request only when no trusted observations were produced and all failures are retryable. Partial results stop immediately to avoid repeating already successful source work. Identifier-scoped retries and provider-specific `Retry-After` metadata handling remain future orchestration work.
+Caching must retain original source retrieval and provenance metadata. Retries are bounded and apply only to retryable failures. The common executor retries a whole request only when no trusted observations exist and all failures are retryable; partial results stop immediately.
 
 ## Fallback Policy
 
@@ -115,4 +77,4 @@ Fallback sources require an accepted decision record, unit and timestamp compari
 
 ## Provider Review Checklist
 
-Before implementation, verify current access method, terms, authentication, rate limits, fields, units, timezone, revisions, calendars, data-quality checks, failure modes, attribution, cache limits, retention, and removal strategy.
+Before implementation, verify access method, terms, authentication, rate limits, fields, units, timezone, revisions, calendars, rate direction where applicable, data-quality checks, failure modes, cache limits, retention, and removal strategy.

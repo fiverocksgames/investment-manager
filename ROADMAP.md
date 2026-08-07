@@ -34,34 +34,31 @@ Remaining:
 
 ### Completed
 
-- Phase 2 architecture and data-platform design
-- Canonical provider-independent data models
-- Provider capability, request, result, and protocol contracts
+- Phase 2 architecture and provider-independent canonical data models
 - Python 3.12 package and CI baseline
-- Official FRED Version 1 economic-series adapter
-- Protected runtime-only FRED API-key handling
-- Fixture-based FRED adapter tests
-- Manual protected FRED live smoke workflow
-- Successful live FRED connectivity validation
-- Smoke policy that tolerates expected `DGS10` missing-value and date-boundary warnings only when valid observations exist
+- FRED economic-series adapter, protected API-key handling, deterministic fixtures, and verified live retrieval
+- Yahoo daily market-price/FX adapter, controlled live smoke, bounded retry integration, HTTP header hardening, and verified live retrieval
+- Bank of Korea ECOS `StatisticSearch` economic-series adapter, secret-based live smoke, sanitized transport diagnostics, and verified live retrieval
+- Provider-independent bounded retry executor with exponential backoff, jitter, partial-result stop, and retry-exhaustion evidence
+- Live-success evidence recorded for FRED, Yahoo, and ECOS
 
 ### Active Next Milestones
 
-1. Yahoo market-data adapter contract verification and implementation
-2. ECOS economic-statistics adapter
-3. FX normalization provider
-4. Normalization and immutable source-snapshot integration
-5. Cache executor with preserved provenance
-6. Bounded retry executor
-7. Scheduled ingestion and operational status reporting
-8. Dataset and snapshot versioning
+1. Canonical FX normalization with explicit base/quote direction
+2. Normalization and immutable source-snapshot integration
+3. Cache executor with preserved provenance
+4. Persistence and idempotent ingestion integration
+5. Scheduled ingestion and operational status reporting
+6. Dataset and snapshot versioning
 
 ### Exit Criteria
 
-- Market and macro providers map into provider-independent canonical records.
+- Market, macro, and FX providers map into provider-independent canonical records.
+- FX direction is explicit and never inferred from ticker text.
 - Source identity, observation time, retrieval time, revision, quality, and freshness are preserved.
-- Missing, stale, partial, and failed data never silently become trusted analysis inputs.
+- Missing, stale, partial, failed, and ambiguous data never silently become trusted analysis inputs.
 - Cache and retries cannot misrepresent freshness or provenance.
+- Immutable source snapshots make downstream calculations reproducible.
 - Scheduled jobs fail safely and expose operational evidence.
 
 ## Release 0.3 — Portfolio Engine

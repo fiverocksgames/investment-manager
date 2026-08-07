@@ -2,43 +2,50 @@
 
 ## Current State
 
-Phase 2 includes the canonical data model/provider contract, FRED live-validated adapter, Yahoo daily market-data adapter with successful live smoke evidence, provider-independent bounded retry, and the merged ECOS `StatisticSearch` economic-series adapter with verified live retrieval.
+Phase 2 has live-validated FRED, Yahoo, and ECOS providers, provider-independent bounded retry, and explicit ECOS transport diagnostics. ECOS Live Smoke run `31182329368` succeeded with 99 trusted observations on attempt 1; Yahoo Live Smoke run `31169043266` succeeded with 10 trusted SPY observations on attempt 1. These are bounded run-specific evidence, not availability guarantees.
 
-ECOS adapter PR #37 merged as `0f3106bb8772317679df52e76717c6e9ddfebe94`. ECOS transport-diagnostic PR #39 merged as `23bd2ef88ce7ab3f3da2f288ad066089c163f2e8`. ECOS Live Smoke run `31182329368` then succeeded on that merged `main` commit with 99 trusted observations on attempt 1. This is bounded live-success evidence, not an availability guarantee.
-
-FRED, Yahoo, and ECOS each now have verified successful live retrieval evidence.
+The active milestone is canonical FX normalization.
 
 ## Repository and Active Work
 
 - Canonical repository: `fiverocksgames/investment-manager`
 - Default branch: `main`
-- Active branch: `agent/ecos-live-evidence`
-- Issue: #40 — `docs: record ECOS live-success evidence`
-- PR: evidence-only PR to be opened as Draft
+- Active branch: `agent/fx-normalization`
+- Issue: #42 — `feat: add canonical FX normalization`
+- Draft PR: #43 — `feat: add canonical FX normalization`
 
-## Verified ECOS Live Evidence
+## Active Implementation
 
-- Workflow run: `31182329368`
-- Commit: `23bd2ef88ce7ab3f3da2f288ad066089c163f2e8`
-- provider: `ecos`
-- source_identifier: `bok_base_rate_daily`
-- attempt_count: `1`
-- observation_count: `99`
-- first_observed_at: `2026-02-09T00:00:00+00:00`
-- last_observed_at: `2026-05-18T00:00:00+00:00`
-- unit: `percent_per_annum`
-- cycle: `D`
-- tolerated warning: `OUT_OF_RANGE`
+- `investment_manager/data/fx.py` adds `FxPair`, `FxNormalizationBinding`, `FxNormalizationError`, and `FxNormalizer`.
+- Canonical FX direction is quote currency per one base currency, with explicit units such as `KRW_per_USD`.
+- Direct source direction preserves the source `Decimal` exactly.
+- Exactly reversed source direction uses a fixed 34-digit `Decimal` reciprocal with `ROUND_HALF_EVEN`.
+- Zero/negative rates, non-FX observations, subject mismatches, invalid currency codes, and unrelated source currency pairs are rejected explicitly.
+- Provider, source identifier, source retrieval time, revision, quality/freshness, and provider metadata are preserved.
+- Normalized identifiers are deterministic from pair, provider/source identity, observation time, and revision.
+- `tests/test_fx_normalization.py` includes a network-free Yahoo `KRW=X` fixture configured explicitly as USD/KRW plus direct/inverse/error/provenance coverage.
+- `docs/FX_NORMALIZATION.md`, `docs/DATA_MODEL.md`, `docs/DATA_SOURCES.md`, `docs/TEST_PLAN.md`, roadmap, traceability, worklog, and changelog document the contract and boundaries.
+
+## Validation Status
+
+- Initial implementation head `044e350e9c028eb25944463328a69905c3b1ec73`: Documentation run #103 passed; Python run #51 test job passed.
+- Documentation-complete implementation head `f8cd1785cb3e1e1cac9a5755a7b910f1a6f7de79`: Python run #59 and Documentation run #111 passed.
+- Final living-document evidence update follows this verified implementation head; the PR must still pass applicable CI on its latest head before Ready for Review.
+- No new external provider call is introduced by FX normalization.
+
+## Critical FX Rule
+
+Do not infer rate direction from ticker syntax. Yahoo Finance displays `KRW=X` as USD/KRW, and this source convention is configured explicitly as base `USD`, quote `KRW`. Future provider FX bindings require separately verified direction semantics.
 
 ## Development Rules
 
 1. Follow `PROJECT_POLICY.md` and `AGENTS.md`.
 2. Never commit secrets, raw live payloads, secret-bearing URLs, or personal investment data.
-3. Financial values remain `Decimal`; datetimes remain timezone-aware and normalized to UTC.
-4. Do not hide provider failures, partial results, stale states, or validation gaps.
+3. Financial values remain `Decimal`; datetimes remain timezone-aware and UTC-normalized.
+4. Never hide failed, partial, stale, or ambiguous data.
 5. Substantial PRs begin as Draft.
-6. Never merge without explicit user approval. The user has already explicitly approved merging this evidence-only follow-up after CI passes.
+6. Never merge without explicit user approval.
 
 ## Exact Next Recommended Task
 
-Open the Draft PR for Issue #40, run Python and Documentation CI, update the PR with final evidence, and merge this evidence-only PR under the already-granted approval if the final head remains mergeable and all required CI passes. Then close/verify Issue #40 and continue to the next roadmap item.
+Verify Python and Documentation CI on the latest PR #43 head after this evidence update. If both pass, update PR validation and mark Ready for Review. Stop for explicit user merge approval. After merge, proceed to normalization/immutable source-snapshot integration.

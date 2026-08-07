@@ -2,6 +2,7 @@
 
 from .ecos import EcosProvider, EcosSeriesBinding
 from .fred import FredProvider, FredSeriesBinding
+from .fx import FxNormalizationBinding, FxNormalizationError, FxNormalizer, FxPair
 from .models import (
     Asset,
     AssetAlias,
@@ -38,6 +39,10 @@ __all__ = [
     "FredProvider",
     "FredSeriesBinding",
     "FreshnessState",
+    "FxNormalizationBinding",
+    "FxNormalizationError",
+    "FxNormalizer",
+    "FxPair",
     "IngestionFailure",
     "IngestionRun",
     "IngestionStatus",

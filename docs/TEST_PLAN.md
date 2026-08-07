@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Define validation for documentation, frontend, data ingestion, analysis, portfolio calculations, authentication, database policies, and deployment.
+Define validation for documentation, frontend, data ingestion, normalization, analysis, portfolio calculations, authentication, database policies, and deployment.
 
 ## Test Levels
 
@@ -12,42 +12,39 @@ Validate required files, Requirement ID references, internal links, decision rec
 
 ### Unit Tests
 
-Cover canonical model validation, symbol and series normalization, timestamp conversion, unit and currency mapping, quality classification, freshness thresholds, cache expiry, retry classification, retry bounds, backoff, jitter, idempotency keys, and safe error mapping.
+Cover canonical model validation, symbol/series/FX normalization, timestamp conversion, unit and currency mapping, quality classification, freshness thresholds, retry behavior, idempotency keys, and safe error mapping.
 
 ### Provider Contract Tests
 
-Each adapter uses recorded or synthetic fixtures to verify:
+Each adapter uses recorded or synthetic fixtures to verify request bounds, schema parsing, missing fields, provider error mapping, rate limits, timezone/calendar behavior, revisions where supported, unsupported identifiers, and normalization into canonical batches. Routine CI must not depend on live provider availability.
 
-- request bounds
-- expected schema parsing
-- missing and renamed fields
-- provider error mapping
-- rate-limit handling
-- timezone and calendar behavior
-- revisions and corrections where supported
-- unsupported identifiers
-- normalization into canonical batches
+ECOS fixture coverage additionally verifies explicit statistic/item/cycle bindings, authentication failure classification, supported `TIME` normalization, source-unit preservation, missing-value handling, and rejection of out-of-range or malformed periods. Fixtures never contain a real `ECOS_API_KEY`.
 
-Routine CI must not depend on live provider availability.
+### FX Normalization Tests
 
-ECOS fixture coverage additionally verifies explicit statistic/item/cycle bindings, authentication failure classification, ECOS `TIME` normalization for supported cycles, source-unit preservation, missing-value handling, and rejection of out-of-range or malformed periods. Fixtures never contain a real `ECOS_API_KEY`.
+FX normalization is deterministic and network-free. Required scenarios include:
+
+- canonical base/quote currency validation
+- direct source direction preserving the exact `Decimal` value
+- reverse source direction using the fixed-precision Decimal reciprocal
+- canonical directional unit such as `KRW_per_USD`
+- rejection of zero and negative rates
+- rejection of non-FX observations
+- rejection of canonical subject mismatch
+- rejection of unrelated or ambiguous source currency pairs
+- deterministic normalized observation identifiers
+- preservation of provider, source identifier, retrieval time, revision, quality/freshness, and source metadata
+- representative Yahoo `KRW=X` fixture normalized only through an explicit USD/KRW convention
+
+No test may infer FX direction from a ticker string.
 
 ### Retry Executor Tests
 
-The common retry executor uses injected sleepers and jitter sources so unit tests do not wait or depend on randomness. Required scenarios include:
-
-- direct success without retry
-- retryable failure followed by recovery
-- retry exhaustion at the configured bound
-- non-retryable failure stopping immediately
-- partial results stopping immediately
-- invalid retry-policy bounds
-
-Whole-request retry is intentionally not used for partial results until identifier-scoped ingestion orchestration exists.
+The common retry executor uses injected sleepers and jitter sources so unit tests do not wait or depend on randomness. Required scenarios include direct success, retryable recovery, retry exhaustion, non-retryable stop, partial-result stop, and invalid policy bounds.
 
 ### Integration Tests
 
-Verify provider fixture through normalization, persistence, ingestion-run counts, source-snapshot publication, cache behavior, and failure recording. Tests confirm failed or disallowed partial runs do not publish trusted snapshots.
+Verify provider fixture through normalization, persistence, ingestion-run counts, source-snapshot publication, cache behavior, and failure recording. Failed or disallowed partial runs must not publish trusted snapshots.
 
 ### End-to-End Tests
 
@@ -55,18 +52,15 @@ After implementation, verify scheduled or manually dispatched ingestion produces
 
 ## Required Phase 2 Scenarios
 
-- duplicate provider records
-- repeated idempotent ingestion
-- revised macro observations
-- corrected market observations
+- duplicate provider records and repeated idempotent ingestion
+- revised macro observations and corrected market observations
 - missing timestamps, units, currencies, and identifiers
-- daylight-saving and exchange-timezone boundaries
+- explicit FX direction and inverse normalization
 - market holidays and publication delays
 - stale and hard-expired datasets
 - allowed and disallowed partial datasets
 - cache hit, miss, expiry, and invalidation
-- transient timeout and bounded retry success
-- retry exhaustion
+- transient timeout and bounded retry success/exhaustion
 - rate limiting
 - authentication and validation failures that must not retry
 - provider schema change
@@ -83,24 +77,24 @@ Migration tests verify table constraints, numeric precision, uniqueness dimensio
 
 ## Numeric Validation
 
-Financial calculations use documented formulas, golden fixtures, expected results, and explicit tolerances. Phase 2 observations use decimal-safe representations and do not rely on exact binary floating-point equality.
+Financial calculations use documented formulas, golden fixtures, expected results, and explicit tolerances. Phase 2 observations use `Decimal`; FX reciprocal normalization uses a fixed 34-digit Decimal context with `ROUND_HALF_EVEN` and never binary floating point.
 
 ## CI Gates
 
-The Phase 2 implementation pipeline will progressively add Python formatting, linting, type checking, unit tests, provider contract tests, migration validation, documentation checks, secret scanning, and frontend build verification.
+The Phase 2 pipeline progressively includes Python compilation/unit tests, provider contract tests, documentation checks, secret scanning, migration validation, and frontend verification as applicable.
 
 ## Live Smoke Tests
 
-Live provider tests are optional, manually triggered, rate-limited, and non-blocking unless specifically designated for release validation. They verify current access and schema without replacing deterministic fixture tests. Retry exhaustion is recorded as a live failure, not converted into a success claim.
+Live provider tests are manually triggered, rate-limited, and do not replace deterministic fixtures. FRED and ECOS live workflows require API keys stored only in GitHub Actions secrets; Yahoo live smoke requires no secret. Logs expose only bounded summary evidence and classified safe failures.
 
-FRED and ECOS live smoke workflows require provider API keys stored only as GitHub Actions secrets. Yahoo live smoke requires no secret. Live logs expose only bounded summary evidence and classified failure codes; secret-bearing URLs, raw payloads, credentials, and observation values are excluded.
+FRED, Yahoo, and ECOS each have at least one verified successful live retrieval run. Those runs are bounded evidence and do not guarantee permanent provider availability.
 
-ECOS live success requires at least one trusted canonical observation from the representative bound series and no fatal failure after bounded retry. The workflow may tolerate only explicitly documented row-level warnings when trusted observations exist.
+FX normalization itself has no live network dependency; live FX source validation remains provider-specific.
 
 ## Test Evidence
 
-Every PR lists exact automated checks, commands or workflow runs, results, skipped areas, and known limitations. Failed required checks prevent completion unless an explicit risk acceptance is recorded.
+Every PR lists exact automated checks/results, skipped areas, and known limitations. Failed required checks prevent completion unless an explicit risk acceptance is recorded.
 
 ## Release Acceptance
 
-Before Phase 2 implementation is complete, all provider adapters must pass contract tests, normalized schemas must be consistent, stale and failure states must be observable, duplicate writes must be prevented, and a failed provider must not silently produce a trusted current snapshot.
+Before Phase 2 is complete, provider adapters and canonical normalization must pass contract tests, stale/failure states must remain observable, duplicate writes must be prevented, and failed providers must not silently produce trusted current snapshots.

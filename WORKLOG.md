@@ -1,5 +1,19 @@
 # Worklog
 
+## 2026-08-07 — Canonical FX Normalization
+
+- Created Issue #42 and branch `agent/fx-normalization`; opened Draft PR #43.
+- Added provider-independent `FxPair`, `FxNormalizationBinding`, `FxNormalizationError`, and `FxNormalizer`.
+- Canonical FX values are explicitly quote currency per one base currency with units such as `KRW_per_USD`.
+- Direct direction preserves the exact source `Decimal`; reversed direction uses a fixed 34-digit Decimal reciprocal with `ROUND_HALF_EVEN`.
+- Invalid codes, identical currencies, unrelated source pairs, zero/negative rates, non-FX observations, and subject mismatches are rejected rather than guessed.
+- Provider/source identity, retrieval time, revision, quality/freshness, and source metadata are preserved; normalized IDs are deterministic.
+- Added deterministic network-free tests including Yahoo `KRW=X`, whose source direction is explicitly configured as USD/KRW rather than inferred from ticker syntax.
+- Added `docs/FX_NORMALIZATION.md` and updated data model, data-source, test-plan, traceability, roadmap, handoff, and changelog documentation.
+- Initial implementation head `044e350e9c028eb25944463328a69905c3b1ec73`: Documentation run #103 passed and Python run #51 test job passed.
+- Documentation-complete implementation head `f8cd1785cb3e1e1cac9a5755a7b910f1a6f7de79`: Python run #59 and Documentation run #111 passed.
+- Final living-document evidence update follows the verified implementation head; the latest PR head must pass applicable CI before Ready for Review. Explicit user approval remains required before merge.
+
 ## 2026-08-07 — ECOS Live Success Evidence
 
 - PR #39 merged as commit `23bd2ef88ce7ab3f3da2f288ad066089c163f2e8`; Issue #38 closed.
