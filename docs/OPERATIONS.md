@@ -38,7 +38,20 @@ Normalized observations are published through `SourceSnapshotPublisher` before d
 - Publication timing is explicit and cannot precede the cutoff.
 - Publication validation errors are deterministic policy failures and are not provider-retry candidates.
 
-The current implementation is in-memory only. Database persistence must later enforce the same content identity transactionally and treat a repeated deterministic snapshot ID as idempotent rather than silently replacing different content.
+## Persistence and Transactional Publication
+
+`SnapshotRepository` persists the exact canonical observations, immutable source snapshot, and ordered membership in one database transaction.
+
+- Input observation IDs must exactly match the snapshot before opening a database connection.
+- Canonical financial values are persisted as PostgreSQL `numeric`; canonical times use `timestamptz`; source metadata uses `jsonb`.
+- Insert-if-absent semantics are followed by persisted-content verification.
+- Replaying identical immutable content is idempotent and creates no duplicates.
+- Reusing an observation, snapshot, or membership identity for different immutable content fails closed.
+- Any SQL, validation, or identity conflict rolls back the complete transaction.
+- RLS is enabled on the Phase 2 persistence tables, with no client-facing policies in this milestone.
+- Database URLs, passwords, service-role credentials, and other secrets are runtime-only and must never be logged or committed.
+
+The committed Supabase migration is source-controlled schema intent only. It is not evidence that the remote project has been migrated. Remote migration execution, schema inspection, and protected connectivity require separate execution evidence.
 
 ## Timeouts and Retries
 
@@ -47,6 +60,8 @@ Every provider call and job has an explicit timeout. Retries are bounded, use ex
 The common `BoundedRetryExecutor` retries a whole provider request only when there are no trusted observations and every returned failure is marked retryable. Partial results stop immediately because repeating the complete request could repeat successful source work. Identifier-scoped retry remains a later ingestion-orchestration concern.
 
 Retry policy records the maximum attempt count and applied delays. Delay and jitter dependencies are injectable for deterministic tests. Retry exhaustion remains a failed result and never becomes a successful snapshot or connectivity claim.
+
+Persistence identity conflicts and deterministic snapshot publication failures are not provider-retry candidates. A transient database transport retry policy requires a separate orchestration decision and must not blindly replay an ambiguous commit outcome.
 
 ## Cache Operations
 
@@ -73,7 +88,7 @@ Record:
 - quality and freshness summary
 - final status and safe error categories
 
-Logs never contain credentials, tokens, full sensitive payloads, or personal holdings.
+Logs never contain credentials, tokens, database connection strings, full sensitive payloads, or personal holdings.
 
 ## Run States
 
@@ -85,13 +100,14 @@ Canonical ingestion states are `queued`, `running`, `succeeded`, `partial`, `fai
 - Failed runs never publish successful snapshots.
 - Partial failures are recorded per source identifier.
 - Snapshot validation failure publishes nothing and leaves prior good snapshots unchanged.
+- Persistence failure rolls back the in-flight transaction and must not be reported as published.
 - Repeated failure opens an operational task or alert rather than retrying indefinitely.
 - Required-input failure blocks dependent analysis.
 - Prior good data may remain visible only with original timestamp and explicit stale status.
 
 ## Manual Recovery
 
-A maintainer may re-run a bounded failed dataset after confirming provider health, credentials, and policy. Manual recovery records the triggering user, reason, cutoff, and resulting workflow run. Data deletion or correction requires a separate reviewed procedure.
+A maintainer may re-run a bounded failed dataset after confirming provider health, credentials, and policy. Manual recovery records the triggering user, reason, cutoff, and resulting workflow run. Database migration recovery or data correction requires a separately reviewed procedure.
 
 ## Change Management
 
@@ -99,7 +115,7 @@ Every production-affecting change requires an Issue, Requirement IDs, documentat
 
 ## Runbooks
 
-Implementation work must add runbooks for provider outage, rate limiting, source schema change, stale data, failed snapshot publication, credential rotation, database recovery, and rollback.
+Implementation work must add runbooks for provider outage, rate limiting, source schema change, stale data, failed snapshot publication, credential rotation, database recovery, migration rollback, and application rollback.
 
 ## Service Priorities
 
