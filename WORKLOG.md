@@ -5,9 +5,13 @@
 - Created Issue #30 and branch `agent/yahoo-live-smoke`.
 - Added manual `Yahoo Live Smoke` workflow with no secret requirement.
 - Added `tools/yahoo_smoke.py` using a bounded 14-day SPY request through the canonical adapter.
-- Added deterministic smoke-result tests covering tolerated row warnings, HTTP 429, invalid payloads, and empty results.
+- Added deterministic smoke-result tests covering tolerated row warnings, HTTP 429, invalid payloads, and no-observation results.
 - Added `docs/YAHOO_LIVE_SMOKE.md` with best-effort endpoint, safe-failure, logging, and operational boundaries.
-- Live connectivity has not yet been claimed; Python, Documentation, and a manually triggered live workflow run remain pending.
+- Python run #15 failed because the smoke test attempted to construct an invalid completely empty `FetchResult`; the canonical invariant correctly rejected it.
+- Updated the test to represent a no-observation result with an explicit `MISSING_VALUE` failure while preserving the canonical model invariant.
+- Python run #16 and Documentation run #64 passed on commit `c327b5419674a4f75cc84f0aa616f6b17ef12bda`.
+- Manual Yahoo Live Smoke remains pending because the new `workflow_dispatch` workflow is not available for manual dispatch until it exists on the default branch.
+- Live connectivity has not yet been claimed.
 - Explicit user approval remains required before merge.
 
 ## 2026-08-06 — Yahoo Market-Data Adapter
