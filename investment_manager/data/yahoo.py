@@ -9,7 +9,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Callable, Mapping, Protocol
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
 
 from .models import (
@@ -23,6 +23,11 @@ from .models import (
 from .providers import DataProvider, FetchRequest, FetchResult, ProviderCapability
 
 YAHOO_CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart"
+YAHOO_REQUEST_HEADERS = {
+    "User-Agent": "InvestmentManager/0.1 (+https://github.com/fiverocksgames/investment-manager)",
+    "Accept": "application/json",
+    "Accept-Language": "en-US,en;q=0.9",
+}
 
 
 class YahooTransport(Protocol):
@@ -31,7 +36,8 @@ class YahooTransport(Protocol):
 
 
 def _default_transport(url: str, timeout: float) -> bytes:
-    with urlopen(url, timeout=timeout) as response:  # noqa: S310 - fixed HTTPS endpoint
+    request = Request(url, headers=YAHOO_REQUEST_HEADERS, method="GET")
+    with urlopen(request, timeout=timeout) as response:  # noqa: S310 - fixed HTTPS endpoint
         return response.read()
 
 
