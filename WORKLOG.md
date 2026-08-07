@@ -10,8 +10,9 @@
 - Backoff is bounded exponential delay with injectable jitter and sleep dependencies for deterministic tests.
 - Added deterministic tests for transient recovery, retry exhaustion, non-retryable stop, partial-result stop, direct success, and policy validation.
 - Applied the common executor to Yahoo Live Smoke with three maximum attempts and summary-only retry evidence.
-- Python and Documentation CI are pending on this branch. No Yahoo live-success claim has been made.
-- Explicit user approval remains required before merge.
+- Python run #22 and Documentation run #70 passed on commit `bfdfc4cc005565647beeeb754bb104438eaf0ec5`.
+- Living-document evidence updates after that commit require fresh CI before Ready for Review.
+- No Yahoo live-success claim has been made; explicit user approval remains required before merge.
 
 ## 2026-08-07 — Yahoo Live Smoke Validation
 
