@@ -1,5 +1,6 @@
 """Provider-independent data-platform contracts."""
 
+from .ecos import EcosProvider, EcosSeriesBinding
 from .fred import FredProvider, FredSeriesBinding
 from .models import (
     Asset,
@@ -30,6 +31,8 @@ __all__ = [
     "DataQualityState",
     "DatasetPolicy",
     "EconomicSeries",
+    "EcosProvider",
+    "EcosSeriesBinding",
     "FetchRequest",
     "FetchResult",
     "FredProvider",

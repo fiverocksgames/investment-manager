@@ -24,11 +24,13 @@ Each adapter uses recorded or synthetic fixtures to verify:
 - provider error mapping
 - rate-limit handling
 - timezone and calendar behavior
-- revisions and corrections
+- revisions and corrections where supported
 - unsupported identifiers
 - normalization into canonical batches
 
 Routine CI must not depend on live provider availability.
+
+ECOS fixture coverage additionally verifies explicit statistic/item/cycle bindings, authentication failure classification, ECOS `TIME` normalization for supported cycles, source-unit preservation, missing-value handling, and rejection of out-of-range or malformed periods. Fixtures never contain a real `ECOS_API_KEY`.
 
 ### Retry Executor Tests
 
@@ -90,6 +92,10 @@ The Phase 2 implementation pipeline will progressively add Python formatting, li
 ## Live Smoke Tests
 
 Live provider tests are optional, manually triggered, rate-limited, and non-blocking unless specifically designated for release validation. They verify current access and schema without replacing deterministic fixture tests. Retry exhaustion is recorded as a live failure, not converted into a success claim.
+
+FRED and ECOS live smoke workflows require provider API keys stored only as GitHub Actions secrets. Yahoo live smoke requires no secret. Live logs expose only bounded summary evidence and classified failure codes; secret-bearing URLs, raw payloads, credentials, and observation values are excluded.
+
+ECOS live success requires at least one trusted canonical observation from the representative bound series and no fatal failure after bounded retry. The workflow may tolerate only explicitly documented row-level warnings when trusted observations exist.
 
 ## Test Evidence
 
