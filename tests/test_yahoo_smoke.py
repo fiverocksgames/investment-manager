@@ -88,10 +88,14 @@ class YahooSmokeValidationTests(TestCase):
         self.assertFalse(valid)
         self.assertEqual(codes, ("INVALID_PAYLOAD",))
 
-    def test_rejects_empty_result(self) -> None:
-        result = FetchResult(provider="yahoo", request=self.request)
+    def test_rejects_no_observations_with_only_tolerated_warning(self) -> None:
+        result = FetchResult(
+            provider="yahoo",
+            request=self.request,
+            failures=(self.failure("MISSING_VALUE"),),
+        )
 
         valid, codes = validate_result(result)
 
         self.assertFalse(valid)
-        self.assertEqual(codes, ())
+        self.assertEqual(codes, ("MISSING_VALUE",))
