@@ -1,5 +1,19 @@
 # Worklog
 
+## 2026-08-08 — Immutable Source Snapshot Publication
+
+- PR #43 merged as `da322d96ef4905712b511139e5bbb1ea9da1b575`; Issue #42 closed.
+- Created Issue #44 and branch `agent/immutable-source-snapshots`; opened Draft PR #45.
+- Added `SnapshotPublicationPolicy`, `SnapshotPublicationError`, and `SourceSnapshotPublisher`.
+- Snapshot publication consumes normalized observations only, enforces one dataset/provider boundary, and filters observations after an explicit UTC cutoff.
+- Duplicate observation IDs, provider mismatches, empty eligible sets, naive timestamps, publication-before-cutoff, and disallowed partial quality fail closed.
+- `PARTIAL` quality is rejected by default and can be allowed only through explicit policy without upgrading quality or freshness.
+- Eligible observations are sorted deterministically; SHA-256 covers stable canonical observation/provenance content and UUIDv5 derives snapshot identity from dataset/provider/cutoff/checksum.
+- Added deterministic network-free tests for ordering, cutoff exclusion, duplicate IDs, provider mismatch, partial allow/deny policy, empty eligibility, publication timing, and UTC normalization.
+- Added `docs/SOURCE_SNAPSHOTS.md` and updated operations, test plan, traceability, and handoff documentation.
+- Initial implementation head `e1e6e44fe5e31ae4b6325362782c09c78f94fe7c`: Python run #65 and Documentation run #117 passed.
+- Database persistence and transactional idempotency remain explicitly deferred; final living-document CI is required before Ready for Review.
+
 ## 2026-08-07 — Canonical FX Normalization
 
 - Created Issue #42 and branch `agent/fx-normalization`; opened Draft PR #43.
@@ -12,7 +26,7 @@
 - Added `docs/FX_NORMALIZATION.md` and updated data model, data-source, test-plan, traceability, roadmap, handoff, and changelog documentation.
 - Initial implementation head `044e350e9c028eb25944463328a69905c3b1ec73`: Documentation run #103 passed and Python run #51 test job passed.
 - Documentation-complete implementation head `f8cd1785cb3e1e1cac9a5755a7b910f1a6f7de79`: Python run #59 and Documentation run #111 passed.
-- Final living-document evidence update follows the verified implementation head; the latest PR head must pass applicable CI before Ready for Review. Explicit user approval remains required before merge.
+- Final head `61715f6eee0dd763fdb55d4c4ab1fbdf44780046`: Python run #63 and Documentation run #115 passed before PR #43 merged.
 
 ## 2026-08-07 — ECOS Live Success Evidence
 
