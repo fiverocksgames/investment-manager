@@ -50,8 +50,8 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Validation
 
+- Bounded retry executor Python run #22 and Documentation run #70 passed on implementation head `bfdfc4cc005565647beeeb754bb104438eaf0ec5`; fresh CI is required after evidence-document updates.
 - Yahoo Live Smoke run `31141445027` reached the public endpoint from GitHub Actions and failed safely with `HTTP_429`; this is not live-retrieval success.
-- Bounded retry executor Python and Documentation CI are pending.
 - Yahoo live smoke Python run #20 and Documentation run #68 passed before PR #31 merged.
 - Yahoo adapter Python run #14 and Documentation run #62 passed before PR #29 merged.
 - Protected FRED live connectivity was successfully validated against the official endpoint.
