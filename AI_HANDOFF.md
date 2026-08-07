@@ -2,32 +2,31 @@
 
 ## Current State
 
-Phase 1 application infrastructure is complete with residual PWA and data-isolation validation work. Phase 2 includes the canonical Python data model, provider contract, FRED adapter with verified live connectivity, and the merged Yahoo daily market-data adapter and live-smoke workflow. The first Yahoo live run reached the provider but failed with `HTTP_429`, so live data retrieval success is still unverified. A provider-independent bounded retry executor is now in validation.
+Phase 1 application infrastructure is complete with residual PWA and data-isolation validation work. Phase 2 includes the canonical Python data model, provider contract, FRED adapter with verified live connectivity, merged Yahoo daily market-data and live-smoke support, and a merged provider-independent bounded retry executor. Yahoo Live Smoke has twice reached the public endpoint from GitHub-hosted runners but has not yet returned trusted observations: run `31141445027` failed with `HTTP_429`, and run `31150601290` exhausted three bounded retries with `HTTP_429`. Yahoo HTTP header hardening is now in validation.
 
 ## Repository and Active Work
 
 - Canonical repository: `fiverocksgames/investment-manager`
 - Default branch: `main`
-- Active branch: `agent/bounded-retry-executor`
-- Issue: #32 — `feat: add bounded retry executor and apply it to Yahoo smoke`
-- Draft PR: #33 — `feat: add bounded retry executor and apply it to Yahoo smoke`
+- Active branch: `agent/yahoo-header-hardening`
+- Issue: #34 — `feat: harden Yahoo HTTP request headers`
+- Draft PR: pending creation
 
 ## Implemented on the Active Branch
 
-- `investment_manager/data/retry.py` with `RetryPolicy`, `RetryExecution`, and `BoundedRetryExecutor`.
-- Whole-request retry only when there are no trusted observations and all failures are retryable.
-- Immediate stop for partial results and deterministic non-retryable failures.
-- Bounded exponential backoff with injected jitter and sleep dependencies.
-- `tests/test_retry_executor.py` with deterministic recovery, exhaustion, non-retryable, partial, success, and invalid-policy coverage.
-- Yahoo Live Smoke integration with maximum three attempts and safe attempt/exhaustion logging.
-- Updated retry and Yahoo operational documentation and living project records.
+- Yahoo default transport builds an explicit GET `urllib.request.Request`.
+- Default headers are a stable project-specific `User-Agent`, `Accept: application/json`, and `Accept-Language: en-US,en;q=0.9`.
+- Injected transport signature remains unchanged for deterministic provider fixtures.
+- Network-free default-transport test verifies headers, GET method, and timeout.
+- Added `docs/YAHOO_TRANSPORT.md` and updated Yahoo live-smoke evidence.
+- No Yahoo account, API key, cookies, crumb token, authenticated session, proxy, IP rotation, CAPTCHA bypass, or HTML scraping.
 
 ## Validation Status
 
-- Previous Yahoo Live Smoke run `31141445027` on `main` commit `048f1026b64596e44f2caa8ba5160fa3e1426b21` failed safely with `HTTP_429` on the actual provider call.
-- Python run #22 passed on implementation head `bfdfc4cc005565647beeeb754bb104438eaf0ec5`.
-- Documentation run #70 passed on the same head.
-- Living-document evidence updates after that commit require fresh Python and Documentation CI before Ready for Review.
+- Previous Yahoo Live Smoke run `31141445027` failed safely with `HTTP_429` on the live provider call.
+- Bounded retry PR #33 merged as `db76e2199639b075101c9c7d08e9266c1b5c8116` after Python run #26 and Documentation run #74 passed.
+- Post-merge Yahoo Live Smoke run `31150601290` made three attempts and failed safely with `HTTP_429`; `retry_exhausted=true`.
+- Python and Documentation CI for Issue #34 are pending.
 - Do not claim Yahoo live retrieval success unless a later actual smoke run returns canonical observations.
 
 ## Verified Completed Work
@@ -40,6 +39,7 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 - PR #26: release-oriented roadmap and release history
 - PR #29: Yahoo daily market-data adapter
 - PR #31: Yahoo live-smoke workflow, merged as `048f1026b64596e44f2caa8ba5160fa3e1426b21`
+- PR #33: bounded retry executor, merged as `db76e2199639b075101c9c7d08e9266c1b5c8116`
 - Live FRED connectivity validated with repository secret `FRED_API_KEY`
 
 ## Retry Rules
@@ -56,7 +56,8 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 - Financial values use `Decimal`; timestamps are normalized to UTC.
 - Missing or malformed rows never become trusted observations.
 - `HTTP_429` is an observed live failure mode on GitHub-hosted runners.
-- Bounded retries may recover transient failures but do not guarantee provider availability.
+- Minimal explicit request headers are permitted, but cookies, browser-session emulation, proxying, and bypass techniques are outside scope.
+- Bounded retries and request headers may improve transient access but do not guarantee provider availability.
 - Fallback provider strategy remains future work.
 
 ## Known Limitations
@@ -76,6 +77,10 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 5. Substantial pull requests begin as Draft.
 6. Never merge without explicit user approval.
 
+## Process Note
+
+A placeholder `docs/YAHOO_TRANSPORT.md` was accidentally committed directly to `main` while starting Issue #34 and immediately removed in commit `36c5d9c2cb11216d3a3d8319d3093ba0b308fee0`. The actual feature work is isolated to Issue #34 and `agent/yahoo-header-hardening`.
+
 ## Exact Next Recommended Task
 
-Confirm fresh Python and Documentation CI on the latest PR #33 head after evidence updates. If both pass, mark PR #33 Ready for Review. Do not merge without explicit user approval. After merge, manually run Yahoo Live Smoke again and record whether bounded retries recover the transient `HTTP_429` or exhaust safely.
+Open Draft PR for Issue #34, run Python and Documentation CI, fix any failures, then mark Ready for Review only after fresh CI succeeds. Do not merge without explicit user approval. After merge, manually run Yahoo Live Smoke and record whether the explicit headers allow trusted observations or whether `HTTP_429` persists.
