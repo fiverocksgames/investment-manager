@@ -36,14 +36,14 @@ class RetryExecution:
 
     result: FetchResult
     attempts: int
+    max_attempts: int
     delays: tuple[float, ...]
 
     @property
     def exhausted(self) -> bool:
         """Return whether a retryable result consumed the full attempt budget."""
         return (
-            self.attempts > 0
-            and self.attempts == len(self.delays) + 1
+            self.attempts == self.max_attempts
             and not self.result.observations
             and bool(self.result.failures)
             and all(failure.retryable for failure in self.result.failures)
@@ -69,7 +69,12 @@ class BoundedRetryExecutor:
         for attempt in range(1, self._policy.max_attempts + 1):
             result = provider.fetch(request)
             if not self._should_retry(result) or attempt == self._policy.max_attempts:
-                return RetryExecution(result=result, attempts=attempt, delays=tuple(delays))
+                return RetryExecution(
+                    result=result,
+                    attempts=attempt,
+                    max_attempts=self._policy.max_attempts,
+                    delays=tuple(delays),
+                )
 
             delay = self._delay_for(attempt)
             delays.append(delay)
