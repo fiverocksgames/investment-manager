@@ -49,7 +49,9 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Validation
 
-- ECOS adapter Python and Documentation CI are pending on Draft PR #37; ECOS live connectivity is not yet claimed.
+- ECOS initial implementation head `3b39f64343bab411bb1f8c6ba8fa1170670d022b`: Python run #34 and Documentation run #84 passed.
+- ECOS documentation-complete head `349c12d1671dea4a5504ca82f10e4a10a624bca0`: Python run #40 and Documentation run #90 passed; fresh CI is required after final evidence-document updates.
+- ECOS live connectivity is not yet claimed because the manual workflow has not yet run from merged `main` with `ECOS_API_KEY` configured.
 - Yahoo Live Smoke run `31169043266` succeeded on merged header-hardening commit `18dd594a93ca45f966b79a3b612808751c99c112`, returning 10 trusted SPY daily observations on attempt 1.
 - Earlier Yahoo runs `31141445027` and `31150601290` safely exposed `HTTP_429`, including bounded retry exhaustion in the latter.
 - Yahoo header-hardening Python run #32 and Documentation run #82 passed before PR #35 merged.
