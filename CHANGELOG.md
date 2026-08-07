@@ -42,7 +42,8 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Validation
 
-- Immutable snapshot initial implementation head `e1e6e44fe5e31ae4b6325362782c09c78f94fe7c`: Python run #65 and Documentation run #117 passed; final living-document head still requires fresh CI before Ready for Review.
+- Immutable snapshot initial implementation head `e1e6e44fe5e31ae4b6325362782c09c78f94fe7c`: Python run #65 and Documentation run #117 passed.
+- Immutable snapshot documentation-complete head `9c9ad4f7e7350fed1bfb68f270e536b94662606e`: Python run #73 and Documentation run #125 passed. PR #45 remains subject to the normal latest-head CI gate after any final evidence-only updates.
 - FX final head `61715f6eee0dd763fdb55d4c4ab1fbdf44780046`: Python run #63 and Documentation run #115 passed before PR #43 merged as `da322d96ef4905712b511139e5bbb1ea9da1b575`.
 - ECOS Live Smoke run `31182329368` succeeded with 99 trusted observations on attempt 1; Yahoo Live Smoke run `31169043266` succeeded with 10 trusted SPY observations on attempt 1; protected FRED live connectivity is verified.
 
