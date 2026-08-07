@@ -1,5 +1,17 @@
 # Worklog
 
+## 2026-08-07 — Yahoo HTTP Header Hardening
+
+- After merged bounded retry, Yahoo Live Smoke run `31150601290` executed on `main` commit `db76e2199639b075101c9c7d08e9266c1b5c8116` and exhausted three attempts with `HTTP_429` (`attempts=3`, `retry_exhausted=true`).
+- Created Issue #34 and branch `agent/yahoo-header-hardening`.
+- Added explicit Yahoo default transport headers: stable project-specific `User-Agent`, `Accept: application/json`, and `Accept-Language: en-US,en;q=0.9`.
+- Added deterministic network-free tests that verify the default transport builds a GET `Request` with the documented headers and timeout while preserving the injected transport contract.
+- Added `docs/YAHOO_TRANSPORT.md` and updated live-smoke evidence.
+- No Yahoo account, API key, cookie, crumb token, browser session, proxy, IP rotation, CAPTCHA bypass, or HTML scraping was added.
+- The header change does not claim to prevent rate limiting; a successful post-merge live run is required before recording Yahoo live retrieval success.
+- Process note: a placeholder `docs/YAHOO_TRANSPORT.md` was accidentally committed directly to `main` and immediately removed in commit `36c5d9c2cb11216d3a3d8319d3093ba0b308fee0`. The actual work follows Issue #34 and this branch.
+- Python and Documentation CI pending on the active branch. Explicit user approval remains required before merge.
+
 ## 2026-08-07 — Bounded Retry Executor
 
 - Yahoo Live Smoke run `31141445027` executed on merged `main` commit `048f1026b64596e44f2caa8ba5160fa3e1426b21` and failed safely with `HTTP_429` during the live provider call.
@@ -10,9 +22,9 @@
 - Backoff is bounded exponential delay with injectable jitter and sleep dependencies for deterministic tests.
 - Added deterministic tests for transient recovery, retry exhaustion, non-retryable stop, partial-result stop, direct success, and policy validation.
 - Applied the common executor to Yahoo Live Smoke with three maximum attempts and summary-only retry evidence.
-- Python run #22 and Documentation run #70 passed on commit `bfdfc4cc005565647beeeb754bb104438eaf0ec5`.
-- Living-document evidence updates after that commit require fresh CI before Ready for Review.
-- No Yahoo live-success claim has been made; explicit user approval remains required before merge.
+- Python run #26 and Documentation run #74 passed on final PR #33 head `0a8194993fa9a6f0f5f1d1a5e7e6b00571596df4`.
+- PR #33 merged as commit `db76e2199639b075101c9c7d08e9266c1b5c8116` after explicit user approval; Issue #32 closed.
+- Post-merge Yahoo Live Smoke run `31150601290` exhausted all three retries with `HTTP_429`; live retrieval success remains unverified.
 
 ## 2026-08-07 — Yahoo Live Smoke Validation
 
