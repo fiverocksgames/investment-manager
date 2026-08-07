@@ -49,6 +49,8 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 - ECOS Live Smoke run `31174803601` failed safely with `MISSING_SECRET` before any provider attempt.
 - ECOS Live Smoke run `31180017610` received `ECOS_API_KEY` correctly but exhausted three bounded attempts with `TRANSPORT_ERROR`; live retrieval success is not claimed.
+- ECOS transport-diagnostic implementation head `b579523ba5e6989127588b7c5f6197fcd9d85db1`: Python run #46 and Documentation run #96 passed.
+- ECOS transport-diagnostic final evidence head `fc64a5c7a599536c66ba9bbd61a38cd8e86dc58d`: Python run #48 and Documentation run #98 passed.
 - ECOS adapter final pre-merge head `674eacc0d6254cc7c94b436bf4d35203e1c8fecb`: Python run #44 and Documentation run #94 passed; PR #37 later merged as `0f3106bb8772317679df52e76717c6e9ddfebe94`.
 - Yahoo Live Smoke run `31169043266` succeeded with 10 trusted SPY daily observations on attempt 1.
 - Earlier Yahoo runs `31141445027` and `31150601290` safely exposed `HTTP_429`, including bounded retry exhaustion in the latter.
