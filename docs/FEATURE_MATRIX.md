@@ -46,12 +46,12 @@
 |---|---|---:|---|---|---|---|
 | REQ-DATA-001 | Provider-independent assets, series, observations, runs, failures, and snapshots | 2 | Done | `docs/DATA_MODEL.md`, `investment_manager/data/models.py` | Python run #1 | #16, #18 |
 | REQ-DATA-002 | Preserve source, revision, quality, cutoff, and freshness metadata | 2 | Done | Canonical metadata, policies, and snapshots | Python run #1 | #16, #18 |
-| REQ-PROVIDER-001 | Common provider adapter contract | 2 | In Validation | `DataProvider`, `FredProvider`, `YahooProvider`, `EcosProvider` | ECOS Python #34/#40; Documentation #84/#90; final evidence CI pending | #18, #20, #29, #31, #37 |
-| REQ-PROVIDER-002 | Explicit validation and failure classification | 2 | In Validation | Canonical failures, FRED/Yahoo/ECOS adapters, bounded retry, Yahoo transport headers | ECOS deterministic fixtures; Python #34/#40; final evidence CI pending | #18, #20, #29, #31, #33, #35, #37 |
+| REQ-PROVIDER-001 | Common provider adapter contract | 2 | Done | `DataProvider`, `FredProvider`, `YahooProvider`, `EcosProvider` | FRED/Yahoo/ECOS fixture CI; ECOS live `31182329368` succeeded | #18, #20, #29, #31, #37, #39 |
+| REQ-PROVIDER-002 | Explicit validation and failure classification | 2 | Done | Canonical failures, FRED/Yahoo/ECOS adapters, bounded retry, transport diagnostics | ECOS deterministic transport fixtures; ECOS live `31182329368` succeeded | #18, #20, #29, #31, #33, #35, #37, #39 |
 | REQ-OPS-002 | Idempotent ingestion and immutable snapshots | 2 | In Design | `docs/OPERATIONS.md`, `SourceSnapshot` | Executor and transaction tests not implemented | #16 |
-| REQ-OPS-003 | Apply bounded retries only to retryable provider failures | 2 | In Validation | `RetryPolicy`, `RetryExecution`, `BoundedRetryExecutor` | Python run #26; live retry exhaustion and recovery evidence | #33 |
-| REQ-MKT-001 | Collect and normalize market, macro, and FX data | 2 | In Validation | FRED macro, Yahoo daily market/FX, ECOS economic-series adapter | Yahoo live `31169043266` succeeded; ECOS Python #34/#40; live ECOS pending | #20, #29, #31, #33, #35, #37 |
-| REQ-MKT-002 | Expose source, retrieval time, and freshness | 2 | In Validation | FRED revision metadata, Yahoo metadata, ECOS statistic/item/cycle metadata | ECOS metadata fixtures and Python #34/#40; live ECOS pending | #20, #29, #31, #37 |
+| REQ-OPS-003 | Apply bounded retries only to retryable provider failures | 2 | Done | `RetryPolicy`, `RetryExecution`, `BoundedRetryExecutor` | Python run #26; Yahoo retry exhaustion/recovery; ECOS attempt-1 live success | #33, #39 |
+| REQ-MKT-001 | Collect and normalize market, macro, and FX data | 2 | Done | FRED macro, Yahoo daily market/FX, ECOS economic-series adapter | Yahoo live `31169043266`; ECOS live `31182329368`; FRED live verified | #20, #29, #31, #33, #35, #37, #39 |
+| REQ-MKT-002 | Expose source, retrieval time, and freshness | 2 | Done | FRED revision metadata, Yahoo metadata, ECOS statistic/item/cycle metadata | ECOS metadata fixtures and live `31182329368` | #20, #29, #31, #37, #39 |
 | REQ-OPS-001 | Run scheduled data and analysis jobs | 2 | Planned | Python CI and manual provider smoke workflows only | Scheduled workflow tests planned | TBD |
 
 ## Later MVP Requirements
