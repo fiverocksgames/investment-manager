@@ -1,0 +1,24 @@
+name: ECOS Live Smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install package
+        run: python -m pip install --disable-pip-version-check .
+      - name: Run controlled ECOS smoke test
+        env:
+          ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
+        run: python tools/ecos_smoke.py
