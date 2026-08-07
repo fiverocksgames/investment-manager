@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import json
+import socket
+import ssl
 import unittest
 from datetime import UTC, datetime
 from decimal import Decimal
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from uuid import UUID
 
 from investment_manager.data.ecos import EcosProvider, EcosSeriesBinding
@@ -99,20 +101,17 @@ class EcosProviderTests(unittest.TestCase):
 
     def test_missing_value_is_explicit_partial_failure(self) -> None:
         result = self.provider(lambda _url, _timeout: payload(second_value="-")).fetch(self.request(IDENTIFIER))
-
         self.assertTrue(result.partial)
         self.assertEqual(len(result.observations), 1)
         self.assertEqual({failure.code for failure in result.failures}, {"MISSING_VALUE"})
 
     def test_invalid_period_is_explicit_failure(self) -> None:
         result = self.provider(lambda _url, _timeout: payload(second_time="20261340")).fetch(self.request(IDENTIFIER))
-
         self.assertTrue(result.partial)
         self.assertEqual({failure.code for failure in result.failures}, {"INVALID_OBSERVATION"})
 
     def test_unknown_binding_and_success_produce_partial_result(self) -> None:
         result = self.provider(lambda _url, _timeout: payload()).fetch(self.request(IDENTIFIER, "unknown"))
-
         self.assertTrue(result.partial)
         self.assertEqual(len(result.observations), 2)
         self.assertEqual({failure.code for failure in result.failures}, {"UNKNOWN_BINDING"})
@@ -122,7 +121,6 @@ class EcosProviderTests(unittest.TestCase):
             raise HTTPError("https://example.invalid", 503, "unavailable", {}, None)
 
         result = self.provider(transport).fetch(self.request(IDENTIFIER))
-
         self.assertEqual(result.failures[0].code, "HTTP_503")
         self.assertTrue(result.failures[0].retryable)
 
@@ -131,19 +129,47 @@ class EcosProviderTests(unittest.TestCase):
             raise HTTPError("https://example.invalid", 403, "forbidden", {}, None)
 
         result = self.provider(transport).fetch(self.request(IDENTIFIER))
-
         self.assertEqual(result.failures[0].code, "AUTH_ERROR")
         self.assertFalse(result.failures[0].retryable)
 
+    def test_timeout_transport_failure_is_sanitized(self) -> None:
+        def transport(_url: str, _timeout: float) -> bytes:
+            raise TimeoutError("secret-bearing details must not be logged")
+
+        failure = self.provider(transport).fetch(self.request(IDENTIFIER)).failures[0]
+        self.assertEqual(failure.code, "TRANSPORT_ERROR")
+        self.assertTrue(failure.retryable)
+        self.assertEqual(failure.provider_reference, f"{IDENTIFIER}:transport_detail=timeout")
+        self.assertNotIn("secret-bearing", failure.message)
+
+    def test_dns_urlerror_transport_failure_is_sanitized(self) -> None:
+        def transport(_url: str, _timeout: float) -> bytes:
+            raise URLError(socket.gaierror(-2, "name lookup details"))
+
+        failure = self.provider(transport).fetch(self.request(IDENTIFIER)).failures[0]
+        self.assertEqual(failure.provider_reference, f"{IDENTIFIER}:transport_detail=dns")
+
+    def test_tls_urlerror_transport_failure_is_sanitized(self) -> None:
+        def transport(_url: str, _timeout: float) -> bytes:
+            raise URLError(ssl.SSLError("certificate details"))
+
+        failure = self.provider(transport).fetch(self.request(IDENTIFIER)).failures[0]
+        self.assertEqual(failure.provider_reference, f"{IDENTIFIER}:transport_detail=tls")
+
+    def test_connection_transport_failure_is_sanitized(self) -> None:
+        def transport(_url: str, _timeout: float) -> bytes:
+            raise ConnectionResetError("peer details")
+
+        failure = self.provider(transport).fetch(self.request(IDENTIFIER)).failures[0]
+        self.assertEqual(failure.provider_reference, f"{IDENTIFIER}:transport_detail=connection")
+
     def test_malformed_payload_is_invalid_payload_failure(self) -> None:
         result = self.provider(lambda _url, _timeout: b'{"StatisticSearch": {}}').fetch(self.request(IDENTIFIER))
-
         self.assertEqual(result.failures[0].code, "INVALID_PAYLOAD")
         self.assertFalse(result.failures[0].retryable)
 
     def test_out_of_range_period_is_rejected(self) -> None:
         result = self.provider(lambda _url, _timeout: payload(second_time="20251231")).fetch(self.request(IDENTIFIER))
-
         self.assertTrue(result.partial)
         self.assertEqual({failure.code for failure in result.failures}, {"OUT_OF_RANGE"})
 
