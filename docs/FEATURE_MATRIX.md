@@ -44,14 +44,14 @@
 
 | Requirement ID | Requirement | Phase | Status | Design / Implementation | Test | PR |
 |---|---|---:|---|---|---|---|
-| REQ-DATA-001 | Provider-independent assets, series, observations, runs, failures, and snapshots | 2 | Done | `docs/DATA_MODEL.md`, `investment_manager/data/models.py` | Python run #1 | #16, #18 |
-| REQ-DATA-002 | Preserve source, revision, quality, cutoff, and freshness metadata | 2 | Done | Canonical metadata, policies, and snapshots | Python run #1 | #16, #18 |
-| REQ-PROVIDER-001 | Common provider adapter contract | 2 | Done | `DataProvider`, `FredProvider`, `YahooProvider`, `EcosProvider` | FRED/Yahoo/ECOS fixture CI; ECOS live `31182329368` succeeded | #18, #20, #29, #31, #37, #39 |
-| REQ-PROVIDER-002 | Explicit validation and failure classification | 2 | Done | Canonical failures, FRED/Yahoo/ECOS adapters, bounded retry, transport diagnostics | ECOS deterministic transport fixtures; ECOS live `31182329368` succeeded | #18, #20, #29, #31, #33, #35, #37, #39 |
+| REQ-DATA-001 | Provider-independent assets, series, observations, runs, failures, snapshots, and ordered FX-pair identity | 2 | Done | `docs/DATA_MODEL.md`, canonical data modules | Python model/normalization CI | #16, #18, #43 |
+| REQ-DATA-002 | Preserve source, revision, quality, cutoff, and freshness metadata | 2 | Done | Canonical metadata, policies, and snapshots | Python run #1; FX provenance tests | #16, #18, #43 |
+| REQ-PROVIDER-001 | Common provider adapter contract | 2 | Done | `DataProvider`, FRED, Yahoo, ECOS | FRED/Yahoo/ECOS fixture CI and live evidence | #18, #20, #29, #31, #37, #39 |
+| REQ-PROVIDER-002 | Explicit validation and failure classification | 2 | In Validation | Canonical failures, retry, transport diagnostics, typed FX normalization failures | FX deterministic invalid/direction tests; final CI pending | #18, #20, #29, #33, #35, #37, #39, #43 |
 | REQ-OPS-002 | Idempotent ingestion and immutable snapshots | 2 | In Design | `docs/OPERATIONS.md`, `SourceSnapshot` | Executor and transaction tests not implemented | #16 |
-| REQ-OPS-003 | Apply bounded retries only to retryable provider failures | 2 | Done | `RetryPolicy`, `RetryExecution`, `BoundedRetryExecutor` | Python run #26; Yahoo retry exhaustion/recovery; ECOS attempt-1 live success | #33, #39 |
-| REQ-MKT-001 | Collect and normalize market, macro, and FX data | 2 | Done | FRED macro, Yahoo daily market/FX, ECOS economic-series adapter | Yahoo live `31169043266`; ECOS live `31182329368`; FRED live verified | #20, #29, #31, #33, #35, #37, #39 |
-| REQ-MKT-002 | Expose source, retrieval time, and freshness | 2 | Done | FRED revision metadata, Yahoo metadata, ECOS statistic/item/cycle metadata | ECOS metadata fixtures and live `31182329368` | #20, #29, #31, #37, #39 |
+| REQ-OPS-003 | Apply bounded retries only to retryable provider failures | 2 | Done | `RetryPolicy`, `RetryExecution`, `BoundedRetryExecutor` | Python run #26; live recovery/exhaustion evidence | #33, #39 |
+| REQ-MKT-001 | Collect and normalize market, macro, and FX data | 2 | In Validation | FRED macro, Yahoo market/FX, ECOS economic series, `FxNormalizer` | Yahoo/ECOS/FRED live evidence; FX direct/inverse fixtures; final CI pending | #20, #29, #31, #35, #37, #39, #43 |
+| REQ-MKT-002 | Expose source, retrieval time, freshness, and explicit FX rate direction | 2 | In Validation | Provider metadata plus canonical `FxPair` and FX provenance attributes | FX provenance/directional-unit tests; final CI pending | #20, #29, #31, #37, #39, #43 |
 | REQ-OPS-001 | Run scheduled data and analysis jobs | 2 | Planned | Python CI and manual provider smoke workflows only | Scheduled workflow tests planned | TBD |
 
 ## Later MVP Requirements
