@@ -1,5 +1,18 @@
 # Worklog
 
+## 2026-08-07 — Bounded Retry Executor
+
+- Yahoo Live Smoke run `31141445027` executed on merged `main` commit `048f1026b64596e44f2caa8ba5160fa3e1426b21` and failed safely with `HTTP_429` during the live provider call.
+- Created Issue #32 and branch `agent/bounded-retry-executor`.
+- Added provider-independent `RetryPolicy`, `RetryExecution`, and `BoundedRetryExecutor` contracts.
+- Retry occurs only when no trusted observations exist and every returned failure is marked retryable.
+- Partial results and deterministic non-retryable failures stop immediately.
+- Backoff is bounded exponential delay with injectable jitter and sleep dependencies for deterministic tests.
+- Added deterministic tests for transient recovery, retry exhaustion, non-retryable stop, partial-result stop, direct success, and policy validation.
+- Applied the common executor to Yahoo Live Smoke with three maximum attempts and summary-only retry evidence.
+- Python and Documentation CI are pending on this branch. No Yahoo live-success claim has been made.
+- Explicit user approval remains required before merge.
+
 ## 2026-08-07 — Yahoo Live Smoke Validation
 
 - Created Issue #30 and branch `agent/yahoo-live-smoke`.
@@ -9,10 +22,9 @@
 - Added `docs/YAHOO_LIVE_SMOKE.md` with best-effort endpoint, safe-failure, logging, and operational boundaries.
 - Python run #15 failed because the smoke test attempted to construct an invalid completely empty `FetchResult`; the canonical invariant correctly rejected it.
 - Updated the test to represent a no-observation result with an explicit `MISSING_VALUE` failure while preserving the canonical model invariant.
-- Python run #16 and Documentation run #64 passed on commit `c327b5419674a4f75cc84f0aa616f6b17ef12bda`.
-- Manual Yahoo Live Smoke remains pending because the new `workflow_dispatch` workflow is not available for manual dispatch until it exists on the default branch.
-- Live connectivity has not yet been claimed.
-- Explicit user approval remains required before merge.
+- Python run #20 and Documentation run #68 passed on final PR #31 head `729277e21c42131929836a5a85e476d7b96c79e4`.
+- PR #31 merged as commit `048f1026b64596e44f2caa8ba5160fa3e1426b21` after explicit user approval; Issue #30 closed.
+- First live workflow run `31141445027` reached Yahoo and failed safely with `HTTP_429`; live data retrieval success remains unverified.
 
 ## 2026-08-06 — Yahoo Market-Data Adapter
 
