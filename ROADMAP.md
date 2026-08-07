@@ -40,16 +40,16 @@ Remaining:
 - Yahoo daily market-price/FX adapter, controlled live smoke, bounded retry integration, HTTP header hardening, and verified live retrieval
 - Bank of Korea ECOS `StatisticSearch` economic-series adapter, secret-based live smoke, sanitized transport diagnostics, and verified live retrieval
 - Provider-independent bounded retry executor with exponential backoff, jitter, partial-result stop, and retry-exhaustion evidence
+- Canonical FX normalization with explicit base/quote direction and deterministic Decimal inverse normalization
 - Live-success evidence recorded for FRED, Yahoo, and ECOS
 
 ### Active Next Milestones
 
-1. Canonical FX normalization with explicit base/quote direction
-2. Normalization and immutable source-snapshot integration
-3. Cache executor with preserved provenance
-4. Persistence and idempotent ingestion integration
-5. Scheduled ingestion and operational status reporting
-6. Dataset and snapshot versioning
+1. Immutable source-snapshot publication integration
+2. Cache executor with preserved provenance
+3. Persistence and idempotent ingestion integration
+4. Scheduled ingestion and operational status reporting
+5. Dataset and snapshot versioning
 
 ### Exit Criteria
 
@@ -58,7 +58,7 @@ Remaining:
 - Source identity, observation time, retrieval time, revision, quality, and freshness are preserved.
 - Missing, stale, partial, failed, and ambiguous data never silently become trusted analysis inputs.
 - Cache and retries cannot misrepresent freshness or provenance.
-- Immutable source snapshots make downstream calculations reproducible.
+- Immutable source snapshots make downstream calculations reproducible with deterministic content identity and cutoff semantics.
 - Scheduled jobs fail safely and expose operational evidence.
 
 ## Release 0.3 — Portfolio Engine
