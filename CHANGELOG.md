@@ -55,7 +55,7 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Validation
 
-- Yahoo header-hardening Python and Documentation CI are pending.
+- Yahoo header-hardening Python run #28 and Documentation run #78 passed on `e61674e1d98c3034f14a4a643ae1bedbb92aff22`; fresh CI is required after evidence-document updates.
 - Yahoo Live Smoke run `31150601290` on merged bounded-retry commit `db76e2199639b075101c9c7d08e9266c1b5c8116` exhausted three attempts with `HTTP_429`; this is not live-retrieval success.
 - Bounded retry executor Python run #26 and Documentation run #74 passed before PR #33 merged.
 - Yahoo Live Smoke run `31141445027` reached the public endpoint from GitHub Actions and failed safely with `HTTP_429`; this is not live-retrieval success.
