@@ -21,6 +21,7 @@ from .models import (
 )
 from .providers import DataProvider, FetchRequest, FetchResult, ProviderCapability
 from .retry import BoundedRetryExecutor, RetryExecution, RetryPolicy
+from .snapshots import SnapshotPublicationError, SnapshotPublicationPolicy, SourceSnapshotPublisher
 from .yahoo import YahooProvider, YahooSymbolBinding
 
 __all__ = [
@@ -52,7 +53,10 @@ __all__ = [
     "ProviderMetadata",
     "RetryExecution",
     "RetryPolicy",
+    "SnapshotPublicationError",
+    "SnapshotPublicationPolicy",
     "SourceSnapshot",
+    "SourceSnapshotPublisher",
     "YahooProvider",
     "YahooSymbolBinding",
 ]
