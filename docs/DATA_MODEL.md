@@ -13,6 +13,7 @@ Define the provider-independent domain model for Phase 2 Data Platform. This doc
 - Canonical identifiers are stable even when provider symbols change.
 - Data writes are idempotent for the same canonical key, source, observation time, and revision.
 - Downstream analysis consumes only normalized and validated records.
+- FX direction is explicit; base/quote semantics are never inferred from ticker text.
 
 ## Canonical Entities
 
@@ -63,6 +64,22 @@ Required fields:
 - `revision_policy`.
 - `status`.
 
+### FxPair
+
+Represents an ordered canonical currency pair.
+
+Required fields:
+
+- `pair_id`: stable UUID.
+- `base_currency`: three-letter uppercase currency code for the currency being priced.
+- `quote_currency`: three-letter uppercase currency code used to express the price.
+
+Canonical FX values are always quote-currency units per one base-currency unit. The canonical unit is `<QUOTE>_per_<BASE>`, for example `KRW_per_USD` for USD/KRW.
+
+Source direction is represented separately from canonical direction. A source may be accepted only when its two configured currencies exactly match the canonical pair in either direct or reversed order. Reversed source rates are normalized with a deterministic fixed-precision `Decimal` reciprocal. Ambiguous or unrelated rates are rejected.
+
+See [`FX_NORMALIZATION.md`](FX_NORMALIZATION.md).
+
 ### Provider
 
 Defines a data source boundary.
@@ -103,7 +120,7 @@ Required fields:
 - `ingestion_run_id`.
 - `schema_version`.
 
-Optional market fields may include open, high, low, close, adjusted close, and volume in a typed market-price record derived from the canonical observation contract.
+FX observations use `subject_id` for the canonical `FxPair`, `metric=rate`, and a directional unit such as `KRW_per_USD`.
 
 ### DataQualityState
 
@@ -178,39 +195,11 @@ Authentication failures, schema mismatches, validation failures, and explicit pe
 
 Represents one bounded retrieval and normalization attempt.
 
-Required fields:
-
-- `ingestion_run_id`.
-- `dataset_id`.
-- `provider_id`.
-- `requested_from`, `requested_to`.
-- `started_at`, `completed_at`.
-- `status`: queued, running, succeeded, partial, failed, or cancelled.
-- `attempt_count`.
-- `records_received`.
-- `records_valid`.
-- `records_rejected`.
-- `data_cutoff`.
-- `commit_sha`.
-- `adapter_version`.
-- `schema_version`.
-- `warning_count`.
-- `error_count`.
+Required fields include run/dataset/provider identity, requested range, timestamps, terminal status, attempt count, record counts, cutoff, commit SHA, adapter/schema version, warnings, and errors.
 
 ### IngestionFailure
 
-Required fields:
-
-- `failure_id`.
-- `ingestion_run_id`.
-- `error_category`.
-- `retryable`.
-- `safe_message`.
-- `provider_status_code` when safe to store.
-- `subject_reference` when a failure is record-specific.
-- `occurred_at`.
-
-Sensitive request content, credentials, and raw personal portfolio values must not be stored in failure messages.
+Required fields include run identity, stable error category, retryability, safe message, optional provider status, optional subject reference, and occurrence time. Sensitive request content, credentials, and raw personal portfolio values must not be stored in failure messages.
 
 ### SourceSnapshot
 
@@ -230,15 +219,7 @@ Analysis and recommendation records must reference a SourceSnapshot rather than 
 
 ## Provider Interface Contract
 
-Every provider adapter must expose equivalent logical operations even when implementation details differ:
-
-- Describe provider capabilities and supported datasets.
-- Resolve canonical subjects to provider identifiers.
-- Fetch a bounded period or latest eligible observation.
-- Return provider response metadata without leaking it into domain contracts.
-- Parse and normalize into canonical observations.
-- Classify provider and record-level failures.
-- Report rate-limit and retry hints when available.
+Every provider adapter must expose equivalent logical operations even when implementation details differ: describe capabilities, resolve identifiers, fetch bounded observations, preserve provider metadata, normalize canonical observations, classify failures, and report retry hints when available.
 
 Adapters must not perform investment analysis, portfolio logic, or UI formatting.
 
@@ -252,17 +233,12 @@ Adapters must not perform investment analysis, portfolio logic, or UI formatting
 - Do not forward-fill missing observations during ingestion.
 - Corporate-action and adjusted-price policies must be versioned and explicit.
 - Revisions create a new revision or vintage record rather than silently overwriting history where the source supports vintages.
+- FX rates must preserve explicit source base/quote metadata and normalize into one ordered canonical `FxPair` direction.
+- FX reciprocal conversion uses `Decimal` only with fixed precision and documented rounding; zero/negative or unrelated rates are rejected.
 
 ## Idempotency and Uniqueness
 
-A normalized observation is uniquely identified by:
-
-- Canonical subject.
-- Metric.
-- Observation time or period.
-- Provider.
-- Revision or vintage identity.
-- Schema version where interpretation changed.
+A normalized observation is uniquely identified by canonical subject, metric, observation time/period, provider, revision/vintage identity, and schema version where interpretation changed.
 
 Repeated ingestion of the same source data must not create duplicate trusted observations.
 
@@ -274,6 +250,7 @@ Repeated ingestion of the same source data must not create duplicate trusted obs
 - Optional datasets may degrade outputs only when the limitation is surfaced.
 - Last known good data remains queryable with its original timestamps and stale or expired status.
 - Conflicting providers are not silently averaged or merged.
+- Ambiguous FX direction is insufficient data, not a guessed conversion.
 
 ## Phase 2 Implementation Sequence
 
@@ -282,17 +259,19 @@ Repeated ingestion of the same source data must not create duplicate trusted obs
 3. Yahoo Finance adapter.
 4. FRED adapter.
 5. ECOS adapter.
-6. FX adapter.
-7. Persistence and idempotency.
-8. Cache and retry services.
+6. Canonical FX normalization.
+7. Persistence and immutable snapshot integration.
+8. Cache services.
 9. Scheduled integration and operational reporting.
+10. Dataset and snapshot versioning.
 
 ## Deferred Decisions
 
-- Final FX provider selection.
+- Final secondary FX provider selection.
 - Raw payload retention periods.
 - Exact Supabase migration layout.
 - Provider-specific rate limits and credentials.
 - Corporate-action reconciliation across providers.
+- FX fixing-time reconciliation, triangulation, spread handling, and fallback priority.
 
 These require separate Issues and decision records before implementation.
