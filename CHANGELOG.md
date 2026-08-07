@@ -6,60 +6,53 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Added
 
+- Provider-independent immutable source snapshot publication with `SnapshotPublicationPolicy`, `SnapshotPublicationError`, and `SourceSnapshotPublisher`
+- Deterministic SHA-256 snapshot content checksum and UUIDv5 snapshot identity derived from dataset/provider/cutoff/content
+- Network-free source snapshot tests for ordering, cutoff filtering, duplicate IDs, provider mismatch, partial policy, empty eligibility, publication timing, and UTC normalization
+- `docs/SOURCE_SNAPSHOTS.md` with publication, identity, failure, and deferred persistence boundaries
 - Provider-independent canonical FX normalization with explicit `FxPair`, `FxNormalizationBinding`, `FxNormalizationError`, and `FxNormalizer`
 - Directional FX units such as `KRW_per_USD`, deterministic direct/inverse normalization, and provider-provenance preservation
-- Deterministic network-free FX normalization tests including representative Yahoo `KRW=X` USD/KRW fixture coverage
-- `docs/FX_NORMALIZATION.md` with canonical direction, reciprocal precision, provenance, and failure boundaries
-- Sanitized ECOS transport diagnostics (`timeout`, `dns`, `tls`, `connection`, `transport`) while preserving canonical `TRANSPORT_ERROR` behavior
-- Deterministic ECOS tests for timeout, DNS, TLS, and connection-reset transport classification
-- Bank of Korea ECOS `StatisticSearch` economic-series adapter with explicit bindings, `Decimal` values, UTC timestamps, deterministic identifiers, and source metadata
-- Manual secret-based ECOS Live Smoke workflow using `ECOS_API_KEY` and the common bounded retry executor
-- Explicit Yahoo default HTTP request headers with a stable project-specific `User-Agent`, JSON `Accept`, and English `Accept-Language`
-- Provider-independent bounded retry executor with exponential backoff, jitter, attempt evidence, and deterministic tests
-- Yahoo daily market-price and FX-rate adapter with explicit symbol bindings and deterministic fixture tests
-- Official FRED Version 1 economic-series adapter and protected live smoke workflow
+- Sanitized ECOS transport diagnostics and deterministic ECOS transport tests
+- Bank of Korea ECOS `StatisticSearch` economic-series adapter and protected live smoke workflow
+- Explicit Yahoo default HTTP request headers and provider-independent bounded retry executor
+- Yahoo daily market-price/FX adapter and official FRED economic-series adapter
 
 ### Changed
 
-- FX normalization now requires explicit base/quote source direction; ticker text is never used to guess rate direction.
+- Source snapshot publication now requires explicit dataset/provider/cutoff boundaries and deterministically orders eligible observations before identity generation.
+- Observations after a snapshot cutoff are excluded without rewriting source timestamps, freshness, quality, or provenance.
+- `PARTIAL` quality is rejected from snapshots by default and requires an explicit publication policy to allow it.
+- FX normalization requires explicit base/quote source direction; ticker text is never used to guess rate direction.
 - Reverse FX direction uses a fixed 34-digit `Decimal` reciprocal with `ROUND_HALF_EVEN`; direct direction preserves the source `Decimal` exactly.
-- FX normalized observations preserve source provider, source identifier, retrieval time, revision, quality/freshness, and original provider metadata while adding canonical/source direction metadata.
-- ECOS Live Smoke emits only sanitized transport-detail categories when canonical transport failures occur.
-- Retry only provider results with no trusted observations and exclusively retryable failures; partial and deterministic failures stop immediately.
-- Require canonical financial values to use `Decimal` and timezone-aware UTC datetimes.
+- Retry only provider results with no trusted observations and exclusively retryable failures; deterministic snapshot validation failures are not retry candidates.
 
 ### Fixed
 
 - Removed ambiguity from FX canonical units by defining ordered base/quote semantics rather than storing a quote currency label alone.
 - Improved ECOS transport observability without logging raw exception strings that could disclose endpoint or credential context.
 - Corrected retry-exhaustion evidence so it is tied to the configured maximum attempt budget.
-- Corrected the Yahoo smoke test so it preserves the canonical `FetchResult` invariant while validating a no-observation outcome.
 - Corrected the FRED live smoke false negative caused by normal weekend or holiday gaps and date-boundary normalization.
 
 ### Security
 
+- Snapshot identity excludes credentials, raw provider requests, raw payloads, and personal portfolio information.
 - FX normalization makes no external calls and does not expose provider credentials or raw payloads.
 - ECOS transport diagnostics classify exception types only; raw exception text, API keys, secret-bearing URLs, raw payloads, and observation values remain excluded.
-- ECOS live smoke reads `ECOS_API_KEY` only from GitHub Actions secrets.
-- Retry execution does not log raw provider payloads, full request URLs, credentials, or personal investment data.
-- FRED credentials remain encrypted GitHub Actions secrets only.
+- FRED and ECOS credentials remain encrypted GitHub Actions secrets only.
 
 ### Validation
 
-- FX initial implementation head `044e350e9c028eb25944463328a69905c3b1ec73`: Documentation run #103 passed; Python run #51 test job passed.
-- FX documentation-complete implementation head `f8cd1785cb3e1e1cac9a5755a7b910f1a6f7de79`: Python run #59 and Documentation run #111 passed. The final living-document evidence head still requires the normal latest-head CI gate before Ready for Review.
-- ECOS Live Smoke run `31182329368` succeeded on merged `main` commit `23bd2ef88ce7ab3f3da2f288ad066089c163f2e8` with 99 trusted observations on attempt 1; this remains bounded live-success evidence.
-- ECOS transport-diagnostic final head `d9bed23781defaa1b389af93fdcf454e7f5fe058`: Python run #49 and Documentation run #99 passed before merge.
-- Yahoo Live Smoke run `31169043266` succeeded with 10 trusted SPY daily observations on attempt 1.
-- Protected FRED live connectivity was successfully validated against the official endpoint.
-- FRED, Yahoo, and ECOS each have verified successful live retrieval evidence.
+- Immutable snapshot initial implementation head `e1e6e44fe5e31ae4b6325362782c09c78f94fe7c`: Python run #65 and Documentation run #117 passed; final living-document head still requires fresh CI before Ready for Review.
+- FX final head `61715f6eee0dd763fdb55d4c4ab1fbdf44780046`: Python run #63 and Documentation run #115 passed before PR #43 merged as `da322d96ef4905712b511139e5bbb1ea9da1b575`.
+- ECOS Live Smoke run `31182329368` succeeded with 99 trusted observations on attempt 1; Yahoo Live Smoke run `31169043266` succeeded with 10 trusted SPY observations on attempt 1; protected FRED live connectivity is verified.
 
 ### Known Limitations
 
-- FX normalization does not implement cross-provider fallback, averaging, triangulation, fixing-time reconciliation, bid/ask spread handling, persistence, or snapshot publication.
-- The Yahoo `KRW=X` convention is explicitly configured as USD/KRW; future provider FX bindings require separately verified direction semantics.
+- Source snapshot publication is currently in-memory only; Supabase/database persistence, transactional idempotency, and snapshot query APIs remain future work.
+- Snapshot publication does not perform provider fallback, cross-provider merging, cache integration, or scheduling.
+- FX normalization does not implement cross-provider fallback, averaging, triangulation, fixing-time reconciliation, bid/ask spread handling, or persistence.
 - ECOS and Yahoo live success are bounded evidence from specific runs and do not guarantee future provider availability.
-- Identifier-scoped retry, `Retry-After` handling, cache, immutable snapshot integration, persistence, migration, scheduled ingestion, and dataset versioning remain future work.
+- Identifier-scoped retry, `Retry-After` handling, cache, persistence/migration, scheduled ingestion, and dataset versioning remain future work.
 - No user-owned database tables, RLS policies, or cross-user isolation tests exist.
 - Frontend CI still uses `npm install` because `package-lock.json` is not committed.
 - Browser-level PWA installation and offline behavior remain unverified.
