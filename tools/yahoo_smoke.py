@@ -8,6 +8,7 @@ from uuid import UUID
 
 from investment_manager.data.models import ObservationKind
 from investment_manager.data.providers import FetchRequest, FetchResult, ProviderCapability
+from investment_manager.data.retry import BoundedRetryExecutor, RetryPolicy
 from investment_manager.data.yahoo import YahooProvider, YahooSymbolBinding
 
 SYMBOL = "SPY"
@@ -44,12 +45,25 @@ def main() -> int:
         start_at=start_at,
         end_at=end_at,
     )
-    result = provider.fetch(request)
+    execution = BoundedRetryExecutor(
+        policy=RetryPolicy(
+            max_attempts=3,
+            base_delay_seconds=5.0,
+            max_delay_seconds=20.0,
+            jitter_seconds=2.0,
+        )
+    ).execute(provider, request)
+    result = execution.result
     valid, codes = validate_result(result)
 
     if not valid:
         rendered = ",".join(codes) if codes else "EMPTY_RESULT"
-        print(f"Yahoo smoke test failed safely: failure_codes={rendered}", file=sys.stderr)
+        print(
+            "Yahoo smoke test failed safely: "
+            f"failure_codes={rendered} attempts={execution.attempts} "
+            f"retry_exhausted={str(execution.exhausted).lower()}",
+            file=sys.stderr,
+        )
         return 1
 
     first = min(result.observations, key=lambda item: item.observed_at)
@@ -57,6 +71,7 @@ def main() -> int:
     print("Yahoo smoke test succeeded")
     print(f"provider={result.provider}")
     print(f"symbol={SYMBOL}")
+    print(f"attempt_count={execution.attempts}")
     print(f"observation_count={len(result.observations)}")
     print(f"first_observed_at={first.observed_at.isoformat()}")
     print(f"last_observed_at={last.observed_at.isoformat()}")
