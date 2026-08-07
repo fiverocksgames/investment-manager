@@ -7,7 +7,7 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 ### Added
 
 - Manual Yahoo Live Smoke workflow for a bounded recent SPY request without secrets
-- Deterministic Yahoo smoke-result tests for tolerated warnings, rate limiting, payload failures, and empty results
+- Deterministic Yahoo smoke-result tests for tolerated warnings, rate limiting, payload failures, and no-observation results
 - `docs/YAHOO_LIVE_SMOKE.md` with best-effort endpoint and operational boundaries
 - Yahoo daily market-price and FX-rate adapter with explicit symbol bindings
 - Adjusted-close canonical observations with OHLCV and adjustment metadata
@@ -22,6 +22,7 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 - Treat Yahoo as a best-effort public chart endpoint requiring controlled live validation.
 - Restrict Yahoo smoke logs to non-sensitive summary metadata and classified failure codes.
+- Include the Yahoo smoke workflow in Python CI path filtering.
 - Extended the common provider contract from macro data into daily market and FX observations.
 - Required explicit provider-symbol bindings rather than inferred canonical identity.
 - Required canonical financial values to use `Decimal` and timezone-aware UTC datetimes.
@@ -30,6 +31,7 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Fixed
 
+- Corrected the Yahoo smoke test so it preserves the canonical `FetchResult` invariant while validating a no-observation outcome.
 - Corrected the FRED live smoke false negative caused by normal weekend or holiday gaps and date-boundary normalization.
 - Corrected stale living-document status for completed FRED work.
 - Corrected Yahoo fixture date ranges and FX metadata after strict range validation exposed inconsistent fixtures.
@@ -43,7 +45,8 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Validation
 
-- Yahoo live smoke Python, Documentation, and manual live validation are pending.
+- Yahoo live smoke Python run #16 and Documentation run #64 passed on commit `c327b5419674a4f75cc84f0aa616f6b17ef12bda` after fixing the invalid empty-result test from Python run #15.
+- Manual Yahoo live validation remains pending until the new workflow exists on the default branch and can be dispatched.
 - Yahoo adapter Python run #14 and Documentation run #62 passed before PR #29 merged.
 - Protected FRED live connectivity was successfully validated against the official endpoint.
 - Prior frontend, documentation, Python, authentication, and deployment validations remain recorded in merged PR history.
