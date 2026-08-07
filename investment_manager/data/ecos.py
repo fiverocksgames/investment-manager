@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import socket
+import ssl
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
@@ -34,6 +36,21 @@ class EcosTransport(Protocol):
 def _default_transport(url: str, timeout: float) -> bytes:
     with urlopen(url, timeout=timeout) as response:  # noqa: S310 - fixed HTTPS endpoint
         return response.read()
+
+
+def _transport_detail(error: BaseException) -> str:
+    """Return a stable, non-sensitive category for transport diagnostics."""
+
+    candidate: BaseException | object = error.reason if isinstance(error, URLError) else error
+    if isinstance(candidate, (TimeoutError, socket.timeout)):
+        return "timeout"
+    if isinstance(candidate, socket.gaierror):
+        return "dns"
+    if isinstance(candidate, (ssl.SSLError, ssl.CertificateError)):
+        return "tls"
+    if isinstance(candidate, (ConnectionError, ConnectionRefusedError, ConnectionResetError, BrokenPipeError)):
+        return "connection"
+    return "transport"
 
 
 @dataclass(frozen=True, slots=True)
@@ -146,11 +163,12 @@ class EcosProvider(DataProvider):
                 code = "AUTH_ERROR" if error.code in {401, 403} else f"HTTP_{error.code}"
                 failures.append(self._failure(run_id, code, source_identifier, retryable, retrieved_at))
             except (URLError, TimeoutError, OSError) as error:
+                detail = _transport_detail(error)
                 failures.append(
                     self._failure(
                         run_id,
                         "TRANSPORT_ERROR",
-                        f"{source_identifier}: {type(error).__name__}",
+                        f"{source_identifier}:transport_detail={detail}",
                         True,
                         retrieved_at,
                     )
