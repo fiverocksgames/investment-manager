@@ -10,9 +10,11 @@
 - Initial cycle support is annual (`A`), quarterly (`Q`), monthly (`M`), and daily (`D`).
 - Added deterministic fixture tests for valid observations, missing values, malformed periods, unknown bindings, authentication failures, retryable server failures, malformed payloads, out-of-range rows, and quarterly normalization.
 - Added manual `.github/workflows/ecos-smoke.yml` and `tools/ecos_smoke.py` using GitHub Actions secret `ECOS_API_KEY` and the common bounded retry executor.
-- Added `docs/ECOS_ADAPTER.md` and updated traceability, handoff, changelog, and Python CI path filtering.
-- ECOS live connectivity is not yet claimed. Live validation requires the workflow on `main` and an actual run with `ECOS_API_KEY` configured.
-- Initial Python and Documentation CI are running; fresh CI will be required after final evidence updates.
+- Added `docs/ECOS_ADAPTER.md`, updated `docs/DATA_SOURCES.md`, `docs/TEST_PLAN.md`, traceability, handoff, changelog, and Python CI path filtering.
+- Initial implementation head `3b39f64343bab411bb1f8c6ba8fa1170670d022b`: Python run #34 and Documentation run #84 passed.
+- Documentation-complete head `349c12d1671dea4a5504ca82f10e4a10a624bca0`: Python run #40 and Documentation run #90 passed.
+- Final evidence-document updates require one fresh CI cycle before Ready for Review.
+- ECOS live connectivity is not yet claimed. Live validation requires the workflow on `main`, `ECOS_API_KEY` configured, and an actual successful run.
 - Explicit user approval remains required before merge.
 
 ## 2026-08-07 — Yahoo HTTP Header Hardening
