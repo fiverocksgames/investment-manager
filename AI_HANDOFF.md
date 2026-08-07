@@ -2,7 +2,7 @@
 
 ## Current State
 
-Phase 1 application infrastructure is complete with residual PWA and data-isolation validation work. Phase 2 includes the canonical Python data model, provider contract, FRED adapter with verified live connectivity, and the merged Yahoo daily market-data adapter and live-smoke workflow. The first Yahoo live run reached the provider but failed with `HTTP_429`, so live data retrieval success is still unverified. A provider-independent bounded retry executor is now in development.
+Phase 1 application infrastructure is complete with residual PWA and data-isolation validation work. Phase 2 includes the canonical Python data model, provider contract, FRED adapter with verified live connectivity, and the merged Yahoo daily market-data adapter and live-smoke workflow. The first Yahoo live run reached the provider but failed with `HTTP_429`, so live data retrieval success is still unverified. A provider-independent bounded retry executor is now in validation.
 
 ## Repository and Active Work
 
@@ -10,7 +10,7 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 - Default branch: `main`
 - Active branch: `agent/bounded-retry-executor`
 - Issue: #32 — `feat: add bounded retry executor and apply it to Yahoo smoke`
-- Draft PR: pending creation
+- Draft PR: #33 — `feat: add bounded retry executor and apply it to Yahoo smoke`
 
 ## Implemented on the Active Branch
 
@@ -25,8 +25,9 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 ## Validation Status
 
 - Previous Yahoo Live Smoke run `31141445027` on `main` commit `048f1026b64596e44f2caa8ba5160fa3e1426b21` failed safely with `HTTP_429` on the actual provider call.
-- Python CI for Issue #32 is pending.
-- Documentation CI for Issue #32 is pending.
+- Python run #22 passed on implementation head `bfdfc4cc005565647beeeb754bb104438eaf0ec5`.
+- Documentation run #70 passed on the same head.
+- Living-document evidence updates after that commit require fresh Python and Documentation CI before Ready for Review.
 - Do not claim Yahoo live retrieval success unless a later actual smoke run returns canonical observations.
 
 ## Verified Completed Work
@@ -77,4 +78,4 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 
 ## Exact Next Recommended Task
 
-Open the Draft PR for Issue #32, validate Python and Documentation CI, fix any failures, and mark Ready for Review only after required checks pass. After merge approval and merge, manually run Yahoo Live Smoke again and record whether bounded retries recover the transient `HTTP_429` or exhaust safely.
+Confirm fresh Python and Documentation CI on the latest PR #33 head after evidence updates. If both pass, mark PR #33 Ready for Review. Do not merge without explicit user approval. After merge, manually run Yahoo Live Smoke again and record whether bounded retries recover the transient `HTTP_429` or exhaust safely.
