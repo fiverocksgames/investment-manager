@@ -1,0 +1,69 @@
+# Persistence and Idempotent Snapshot Storage
+
+## Purpose
+
+Define the first server-side persistence contract for canonical observations and immutable source snapshots.
+
+## Storage Boundary
+
+The committed migration targets PostgreSQL/Supabase. Data-platform tables are server-managed and are not browser-facing user tables.
+
+- `data_observations` stores canonical normalized observations.
+- `source_snapshots` stores immutable deterministic snapshot identity and cutoff metadata.
+- `source_snapshot_observations` stores exact ordered snapshot membership.
+
+Financial values use PostgreSQL `numeric`. Observation, retrieval, cutoff, and publication times use `timestamptz`. Provider metadata uses `jsonb`.
+
+## Immutability
+
+`observation_id` and `snapshot_id` are immutable identities. Persistence uses insert-if-absent semantics. If an identity already exists, the repository reads the persisted content and compares it to the canonical input.
+
+- identical content is an idempotent replay and succeeds without duplicate rows;
+- conflicting content under the same identity fails with `PersistenceError`;
+- no conflicting row is overwritten or refreshed in place.
+
+Snapshot membership is also immutable. `(snapshot_id, position)` identifies ordered membership and a snapshot may not contain the same observation twice.
+
+## Transaction Boundary
+
+`SnapshotRepository.persist()` writes the exact observations, snapshot row, and ordered memberships in one database transaction. Every input observation ID must exactly match `SourceSnapshot.observation_ids` before a connection is opened.
+
+The transaction commits only after:
+
+1. every observation is inserted or verified identical;
+2. the snapshot is inserted or verified identical;
+3. every membership position is inserted or verified identical;
+4. persisted membership count exactly matches the snapshot.
+
+Any validation, SQL, or conflict failure rolls back the full transaction.
+
+## Connection Contract
+
+The Python repository accepts an injected DB-API-compatible connection factory. The core package intentionally adds no mandatory PostgreSQL driver dependency in this milestone. A deployment/runtime may later provide an approved driver without changing the canonical persistence semantics.
+
+Database URLs, passwords, service-role credentials, and other secrets are runtime-only configuration and must never appear in code, logs, fixtures, PR text, or committed SQL.
+
+## RLS and Access
+
+The migration enables Row Level Security on all three Phase 2 persistence tables and deliberately creates no client-facing policies. This keeps browser access denied by default. Server-side ingestion access and future user-owned portfolio/RLS design require separately reviewed configuration.
+
+## Migration Validation Boundary
+
+Routine CI validates Python persistence behavior and documentation without connecting to a live Supabase project. Committing the migration is not evidence that it has been applied remotely.
+
+Remote migration execution, schema inspection, service-role connectivity, and rollback/recovery validation require separate protected execution evidence after merge.
+
+## Initial Limitations
+
+This milestone does not implement:
+
+- remote migration deployment;
+- a mandatory PostgreSQL driver;
+- ingestion-run persistence;
+- user-owned portfolio tables or user RLS policies;
+- cache execution;
+- scheduler/orchestration;
+- dataset/snapshot version migration policy;
+- deletion/correction workflows.
+
+These remain later Phase 2 tasks.

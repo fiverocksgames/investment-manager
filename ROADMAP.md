@@ -41,13 +41,14 @@ Remaining:
 - Bank of Korea ECOS `StatisticSearch` economic-series adapter, secret-based live smoke, sanitized transport diagnostics, and verified live retrieval
 - Provider-independent bounded retry executor with exponential backoff, jitter, partial-result stop, and retry-exhaustion evidence
 - Canonical FX normalization with explicit base/quote direction and deterministic Decimal inverse normalization
+- Deterministic immutable source-snapshot publication with explicit cutoff, checksum, and snapshot identity
 - Live-success evidence recorded for FRED, Yahoo, and ECOS
 
 ### Active Next Milestones
 
-1. Immutable source-snapshot publication integration
-2. Cache executor with preserved provenance
-3. Persistence and idempotent ingestion integration
+1. Persistence and idempotent snapshot storage integration
+2. Protected remote Supabase migration/application validation
+3. Cache executor with preserved provenance
 4. Scheduled ingestion and operational status reporting
 5. Dataset and snapshot versioning
 
@@ -59,6 +60,8 @@ Remaining:
 - Missing, stale, partial, failed, and ambiguous data never silently become trusted analysis inputs.
 - Cache and retries cannot misrepresent freshness or provenance.
 - Immutable source snapshots make downstream calculations reproducible with deterministic content identity and cutoff semantics.
+- Persisted observations and snapshots are transactionally idempotent and immutable-conflict safe.
+- Remote database deployment is evidenced separately from committed migration files.
 - Scheduled jobs fail safely and expose operational evidence.
 
 ## Release 0.3 — Portfolio Engine

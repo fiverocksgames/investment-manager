@@ -1,5 +1,21 @@
 # Worklog
 
+## 2026-08-08 — Persistence and Idempotent Snapshot Storage
+
+- PR #45 merged as `878f0bb69cf0df70de12898b42ec4f8e25786320`; Issue #44 closed.
+- Created Issue #46 and branch `agent/persistence-idempotency`; opened Draft PR #47.
+- Added `SnapshotRepository`, `PersistenceResult`, and `PersistenceError` behind an injected DB-API-compatible connection factory.
+- Added `supabase/migrations/202608080001_data_platform_persistence.sql` with server-managed `data_observations`, `source_snapshots`, and ordered `source_snapshot_observations` tables.
+- PostgreSQL persistence uses `numeric` for canonical financial values, `timestamptz` for canonical times, UUID identity, and `jsonb` for source metadata.
+- RLS is enabled on all three data-platform tables with no client-facing policies; browser access is intentionally denied by default.
+- Persistence uses insert-if-absent plus persisted-content verification. Identical replay is idempotent; conflicting same-ID observation/snapshot/membership content fails closed and is never overwritten.
+- Observation rows, snapshot row, and exact ordered membership publish in one transaction; any validation, SQL, or immutable-identity conflict rolls back the complete transaction.
+- Added deterministic fake-DB tests covering atomic write, identical replay, observation conflict, membership conflict, rollback, exact snapshot membership, Decimal preservation, UTC timestamps, and deterministic source-metadata serialization.
+- Added `docs/PERSISTENCE.md` and updated operations, test plan, roadmap, feature traceability, and handoff documents.
+- Initial implementation head `42d2b8414a54dc75930bad3dd233d636c6ce4f5c`: Python run #78 and Documentation run #130 passed.
+- The migration has **not** been applied to a remote Supabase project. Remote migration/application and protected connectivity remain separate evidence work after merge.
+- Final latest-head CI is required before PR #47 may be marked Ready for Review; explicit user approval remains required before merge.
+
 ## 2026-08-08 — Immutable Source Snapshot Publication
 
 - PR #43 merged as `da322d96ef4905712b511139e5bbb1ea9da1b575`; Issue #42 closed.

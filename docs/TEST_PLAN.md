@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Define validation for documentation, frontend, data ingestion, normalization, immutable source snapshots, analysis, portfolio calculations, authentication, database policies, and deployment.
+Define validation for documentation, frontend, data ingestion, normalization, immutable source snapshots, persistence, analysis, portfolio calculations, authentication, database policies, and deployment.
 
 ## Test Levels
 
@@ -12,7 +12,7 @@ Validate required files, Requirement ID references, internal links, decision rec
 
 ### Unit Tests
 
-Cover canonical model validation, symbol/series/FX normalization, timestamp conversion, unit and currency mapping, quality classification, freshness thresholds, retry behavior, deterministic snapshot identity, idempotency keys, and safe error mapping.
+Cover canonical model validation, symbol/series/FX normalization, timestamp conversion, unit and currency mapping, quality classification, freshness thresholds, retry behavior, deterministic snapshot identity, persistence idempotency, and safe error mapping.
 
 ### Provider Contract Tests
 
@@ -26,20 +26,23 @@ FX normalization is deterministic and network-free. Required scenarios include c
 
 ### Source Snapshot Publication Tests
 
-Snapshot publication is deterministic and network-free. Required scenarios include:
+Snapshot publication is deterministic and network-free. Required scenarios include same logical eligible observations in different input orders yielding the same checksum/snapshot ID, explicit UTC cutoff filtering, duplicate observation-ID rejection, provider mismatch rejection, partial-quality policy, empty eligible set rejection, publication timestamp validation, UTC normalization, and provenance/freshness preservation.
 
-- same logical eligible observations in different input orders yielding the same checksum and snapshot ID
-- explicit UTC cutoff filtering
-- duplicate observation-ID rejection
-- provider-boundary mismatch rejection
-- `PARTIAL` quality rejection by default
-- explicit allow-partial policy without quality/freshness promotion
-- empty eligible set rejection
-- publication timestamp validation
-- timezone-aware input normalization to UTC
-- provenance/freshness preservation on source observations
+### Persistence Tests
 
-Database transaction behavior is deferred until persistence is implemented.
+Persistence tests use an injected deterministic fake DB rather than a remote Supabase project. Required scenarios include:
+
+- snapshot, observations, and ordered memberships committed as one transaction;
+- input observations must exactly match snapshot membership before a DB connection is opened;
+- identical replay produces no duplicate rows and remains successful;
+- existing observation identity with conflicting immutable content fails closed;
+- existing snapshot membership conflict fails closed;
+- any conflict or write failure rolls back the transaction;
+- `Decimal` values remain Decimal-safe at the Python persistence boundary;
+- UTC-aware timestamps are preserved;
+- source metadata is serialized deterministically as JSON.
+
+The committed PostgreSQL migration is reviewed as code but routine CI does not claim that it has been executed against a remote Supabase project. Remote migration application, schema inspection, and service-role connectivity require separate protected evidence.
 
 ### Retry Executor Tests
 
@@ -47,11 +50,11 @@ The common retry executor uses injected sleepers and jitter sources so unit test
 
 ### Integration Tests
 
-Verify provider fixture through normalization, persistence, ingestion-run counts, source-snapshot publication, cache behavior, and failure recording. Failed or disallowed partial runs must not publish trusted snapshots.
+Verify provider fixture through normalization, source-snapshot publication, persistence, ingestion-run counts, cache behavior, and failure recording. Failed or disallowed partial runs must not publish trusted snapshots.
 
 ### End-to-End Tests
 
-After implementation, verify scheduled or manually dispatched ingestion produces observable run status and normalized data with source and freshness metadata. No test places an order.
+After implementation, verify scheduled or manually dispatched ingestion produces observable run status and normalized persisted data with source and freshness metadata. No test places an order.
 
 ## Required Phase 2 Scenarios
 
@@ -61,6 +64,8 @@ After implementation, verify scheduled or manually dispatched ingestion produces
 - explicit FX direction and inverse normalization
 - deterministic source snapshot content identity
 - cutoff exclusion and disallowed partial snapshot publication
+- immutable same-ID persistence conflict
+- transactional snapshot persistence rollback
 - market holidays and publication delays
 - stale and hard-expired datasets
 - allowed and disallowed partial datasets
@@ -69,7 +74,6 @@ After implementation, verify scheduled or manually dispatched ingestion produces
 - rate limiting
 - authentication and validation failures that must not retry
 - provider schema change
-- snapshot transaction failure
 - prior good snapshot preserved after failure
 
 ## Golden Fixtures
@@ -78,7 +82,7 @@ Fixtures include known source payloads, canonical expected records, rejected row
 
 ## Database Validation
 
-Migration tests verify table constraints, numeric precision, uniqueness dimensions, foreign keys, transactional snapshot publication, and server-only access to ingestion metadata. RLS tests are required before any user-owned table is exposed.
+The Phase 2 persistence migration uses PostgreSQL `numeric` for canonical financial values, `timestamptz` for canonical times, UUID primary/foreign keys, ordered snapshot membership, uniqueness constraints, and RLS enabled with no client-facing policies. Remote database validation must verify those constraints after protected migration execution. User-owned table RLS tests remain separately required before portfolio data is exposed.
 
 ## Numeric Validation
 
@@ -86,7 +90,7 @@ Financial calculations use documented formulas, golden fixtures, expected result
 
 ## CI Gates
 
-The Phase 2 pipeline progressively includes Python compilation/unit tests, provider contract tests, documentation checks, secret scanning, migration validation, and frontend verification as applicable.
+The Phase 2 pipeline progressively includes Python compilation/unit tests, provider contract tests, persistence tests, documentation checks, secret scanning, protected migration validation, and frontend verification as applicable.
 
 ## Live Smoke Tests
 
@@ -94,7 +98,7 @@ Live provider tests are manually triggered, rate-limited, and do not replace det
 
 FRED, Yahoo, and ECOS each have at least one verified successful live retrieval run. Those runs are bounded evidence and do not guarantee permanent provider availability.
 
-FX normalization and source snapshot publication have no live network dependency; live source validation remains provider-specific.
+FX normalization, source snapshot publication, and fake-DB persistence tests have no live network dependency. Remote Supabase migration/application validation is a separate protected operational check, not a provider smoke test.
 
 ## Test Evidence
 
@@ -102,4 +106,4 @@ Every PR lists exact automated checks/results, skipped areas, and known limitati
 
 ## Release Acceptance
 
-Before Phase 2 is complete, provider adapters and canonical normalization must pass contract tests, stale/failure states must remain observable, duplicate writes must be prevented, deterministic source snapshots must make downstream input sets reproducible, and failed providers must not silently produce trusted current snapshots.
+Before Phase 2 is complete, provider adapters and canonical normalization must pass contract tests, stale/failure states must remain observable, duplicate writes must be prevented, deterministic source snapshots must make downstream input sets reproducible, persisted immutable identities must be conflict-safe, and failed providers/persistence attempts must not silently produce trusted current snapshots.
