@@ -47,18 +47,20 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Validation
 
+- ECOS Live Smoke run `31182329368` succeeded on merged `main` commit `23bd2ef88ce7ab3f3da2f288ad066089c163f2e8`: 99 trusted `bok_base_rate_daily` observations on attempt 1, range `2026-02-09T00:00:00+00:00` through `2026-05-18T00:00:00+00:00`, unit `percent_per_annum`, cycle `D`; `OUT_OF_RANGE` was tolerated as a warning. This is bounded live-success evidence, not an availability guarantee.
 - ECOS Live Smoke run `31174803601` failed safely with `MISSING_SECRET` before any provider attempt.
-- ECOS Live Smoke run `31180017610` received `ECOS_API_KEY` correctly but exhausted three bounded attempts with `TRANSPORT_ERROR`; live retrieval success is not claimed.
+- ECOS Live Smoke run `31180017610` received `ECOS_API_KEY` correctly but exhausted three bounded attempts with `TRANSPORT_ERROR`.
 - ECOS transport-diagnostic implementation head `b579523ba5e6989127588b7c5f6197fcd9d85db1`: Python run #46 and Documentation run #96 passed.
-- ECOS transport-diagnostic final evidence head `fc64a5c7a599536c66ba9bbd61a38cd8e86dc58d`: Python run #48 and Documentation run #98 passed.
+- ECOS transport-diagnostic final changelog-evidence head `d9bed23781defaa1b389af93fdcf454e7f5fe058`: Python run #49 and Documentation run #99 passed before PR #39 merged as `23bd2ef88ce7ab3f3da2f288ad066089c163f2e8`.
 - ECOS adapter final pre-merge head `674eacc0d6254cc7c94b436bf4d35203e1c8fecb`: Python run #44 and Documentation run #94 passed; PR #37 later merged as `0f3106bb8772317679df52e76717c6e9ddfebe94`.
 - Yahoo Live Smoke run `31169043266` succeeded with 10 trusted SPY daily observations on attempt 1.
 - Earlier Yahoo runs `31141445027` and `31150601290` safely exposed `HTTP_429`, including bounded retry exhaustion in the latter.
 - Protected FRED live connectivity was successfully validated against the official endpoint.
+- FRED, Yahoo, and ECOS each now have verified successful live retrieval evidence.
 
 ### Known Limitations
 
-- ECOS live connectivity remains unverified until an actual post-merge smoke run returns trusted observations.
+- ECOS live success is bounded evidence from a specific run and does not guarantee future provider availability.
 - ECOS support is initially limited to `StatisticSearch`, `economic_series`, cycles `A`, `Q`, `M`, and `D`, and a single configured response page per bound series.
 - Sanitized transport categories improve diagnosis but do not expose low-level endpoint details by design.
 - Yahoo live success is bounded evidence from a specific run and does not guarantee future provider availability.
