@@ -27,6 +27,10 @@ Python ingestion jobs run through GitHub Actions. Each workflow invocation must 
 
 Every provider call and job has an explicit timeout. Retries are bounded, use exponential backoff with jitter, and apply only to retryable categories. Rate-limit responses respect available retry guidance. Deterministic validation, authentication, unsupported-symbol, and schema errors stop immediately.
 
+The common `BoundedRetryExecutor` retries a whole provider request only when there are no trusted observations and every returned failure is marked retryable. Partial results stop immediately because repeating the complete request could repeat successful source work. Identifier-scoped retry remains a later ingestion-orchestration concern.
+
+Retry policy records the maximum attempt count and applied delays. Delay and jitter dependencies are injectable for deterministic tests. Retry exhaustion remains a failed result and never becomes a successful snapshot or connectivity claim.
+
 ## Cache Operations
 
 Cache policies are dataset-specific. Cache hits retain source retrieval and expiry metadata. Cache expiry does not automatically trigger stale publication; the dataset policy determines whether stale data can be shown. Cache invalidation occurs on policy change, source revision, identifier correction, or adapter incompatibility.
