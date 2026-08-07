@@ -1,5 +1,16 @@
 # Worklog
 
+## 2026-08-07 — ECOS Live Success Evidence
+
+- PR #39 merged as commit `23bd2ef88ce7ab3f3da2f288ad066089c163f2e8`; Issue #38 closed.
+- ECOS Live Smoke run `31182329368` succeeded on merged `main` commit `23bd2ef88ce7ab3f3da2f288ad066089c163f2e8`.
+- The run used GitHub Actions secret `ECOS_API_KEY` without exposing the key.
+- `provider=ecos`, `source_identifier=bok_base_rate_daily`, `attempt_count=1`, `observation_count=99`.
+- Observed range in the returned trusted observations was `2026-02-09T00:00:00+00:00` through `2026-05-18T00:00:00+00:00`, canonical unit `percent_per_annum`, cycle `D`.
+- `OUT_OF_RANGE` appeared only as a tolerated warning and did not prevent successful live validation.
+- This is bounded evidence that ECOS live retrieval succeeded for this run; it is not a guarantee of permanent provider availability.
+- FRED, Yahoo, and ECOS now each have verified successful live retrieval evidence.
+
 ## 2026-08-07 — ECOS Transport Diagnostics
 
 - PR #37 merged as commit `0f3106bb8772317679df52e76717c6e9ddfebe94` after explicit user approval; Issue #36 closed.
@@ -12,7 +23,7 @@
 - Updated ECOS smoke output to include sanitized `transport_details` only when available.
 - Updated `docs/ECOS_ADAPTER.md` with the two observed live-smoke failures and diagnostic boundaries.
 - Draft PR #39 opened; implementation/documentation head `b579523ba5e6989127588b7c5f6197fcd9d85db1` passed Python run #46 and Documentation run #96.
-- Fresh CI is required after this evidence update before Ready for Review. Explicit user approval remains required before merge.
+- Final changelog-evidence head `d9bed23781defaa1b389af93fdcf454e7f5fe058` passed Python run #49 and Documentation run #99 before merge.
 
 ## 2026-08-07 — ECOS Economic-Series Adapter
 
@@ -55,7 +66,7 @@
 - Issue #28 and PR #29 added daily market-price and FX-rate normalization through explicit Yahoo bindings.
 - Adjusted close becomes canonical value; OHLCV and provider metadata are preserved.
 - Python run #14 and Documentation run #62 passed before merge.
-- PR #29 merged as commit `bc0c706620895063689c96e655317e0060f20ab8`; Issue #28 closed.
+- PR #29 merged as `bc0c706620895063689c96e655317e0060f20ab8`; Issue #28 closed.
 
 ## 2026-08-06 — Roadmap and Release History
 
