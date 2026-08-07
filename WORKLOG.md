@@ -10,7 +10,8 @@
 - No Yahoo account, API key, cookie, crumb token, browser session, proxy, IP rotation, CAPTCHA bypass, or HTML scraping was added.
 - The header change does not claim to prevent rate limiting; a successful post-merge live run is required before recording Yahoo live retrieval success.
 - Process note: a placeholder `docs/YAHOO_TRANSPORT.md` was accidentally committed directly to `main` and immediately removed in commit `36c5d9c2cb11216d3a3d8319d3093ba0b308fee0`. The actual work follows Issue #34 and this branch.
-- Python and Documentation CI pending on the active branch. Explicit user approval remains required before merge.
+- Python run #28 and Documentation run #78 passed on implementation/evidence head `e61674e1d98c3034f14a4a643ae1bedbb92aff22`; fresh CI is required after this evidence update before Ready for Review.
+- Explicit user approval remains required before merge.
 
 ## 2026-08-07 — Bounded Retry Executor
 
