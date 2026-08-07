@@ -24,12 +24,13 @@ The active milestone is canonical FX normalization.
 - Provider, source identifier, source retrieval time, revision, quality/freshness, and provider metadata are preserved.
 - Normalized identifiers are deterministic from pair, provider/source identity, observation time, and revision.
 - `tests/test_fx_normalization.py` includes a network-free Yahoo `KRW=X` fixture configured explicitly as USD/KRW plus direct/inverse/error/provenance coverage.
-- `docs/FX_NORMALIZATION.md`, `docs/DATA_MODEL.md`, `docs/DATA_SOURCES.md`, and `docs/TEST_PLAN.md` define the contract and test boundaries.
+- `docs/FX_NORMALIZATION.md`, `docs/DATA_MODEL.md`, `docs/DATA_SOURCES.md`, `docs/TEST_PLAN.md`, roadmap, traceability, worklog, and changelog document the contract and boundaries.
 
 ## Validation Status
 
 - Initial implementation head `044e350e9c028eb25944463328a69905c3b1ec73`: Documentation run #103 passed; Python run #51 test job passed.
-- Living-document and traceability updates changed the head; fresh final-head Python and Documentation CI are required before Ready for Review.
+- Documentation-complete implementation head `f8cd1785cb3e1e1cac9a5755a7b910f1a6f7de79`: Python run #59 and Documentation run #111 passed.
+- Final living-document evidence update follows this verified implementation head; the PR must still pass applicable CI on its latest head before Ready for Review.
 - No new external provider call is introduced by FX normalization.
 
 ## Critical FX Rule
@@ -47,4 +48,4 @@ Do not infer rate direction from ticker syntax. Yahoo Finance displays `KRW=X` a
 
 ## Exact Next Recommended Task
 
-Finish living-document evidence updates, run fresh Python and Documentation CI on the final PR #43 head, fix any failures, update PR validation, and mark Ready for Review only after both applicable checks pass. Stop for explicit user merge approval. After merge, proceed to normalization/immutable source-snapshot integration.
+Verify Python and Documentation CI on the latest PR #43 head after this evidence update. If both pass, update PR validation and mark Ready for Review. Stop for explicit user merge approval. After merge, proceed to normalization/immutable source-snapshot integration.
