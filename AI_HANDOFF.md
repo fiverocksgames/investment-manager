@@ -10,7 +10,7 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 - Default branch: `main`
 - Active branch: `agent/yahoo-header-hardening`
 - Issue: #34 — `feat: harden Yahoo HTTP request headers`
-- Draft PR: pending creation
+- Draft PR: #35 — `feat: harden Yahoo HTTP request headers`
 
 ## Implemented on the Active Branch
 
@@ -26,7 +26,8 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 - Previous Yahoo Live Smoke run `31141445027` failed safely with `HTTP_429` on the live provider call.
 - Bounded retry PR #33 merged as `db76e2199639b075101c9c7d08e9266c1b5c8116` after Python run #26 and Documentation run #74 passed.
 - Post-merge Yahoo Live Smoke run `31150601290` made three attempts and failed safely with `HTTP_429`; `retry_exhausted=true`.
-- Python and Documentation CI for Issue #34 are pending.
+- Yahoo header-hardening Python run #28 and Documentation run #78 passed on `e61674e1d98c3034f14a4a643ae1bedbb92aff22`.
+- Fresh CI is required on the final documentation-evidence head before Ready for Review.
 - Do not claim Yahoo live retrieval success unless a later actual smoke run returns canonical observations.
 
 ## Verified Completed Work
@@ -83,4 +84,4 @@ A placeholder `docs/YAHOO_TRANSPORT.md` was accidentally committed directly to `
 
 ## Exact Next Recommended Task
 
-Open Draft PR for Issue #34, run Python and Documentation CI, fix any failures, then mark Ready for Review only after fresh CI succeeds. Do not merge without explicit user approval. After merge, manually run Yahoo Live Smoke and record whether the explicit headers allow trusted observations or whether `HTTP_429` persists.
+Confirm fresh Python and Documentation CI on the final PR #35 head after evidence updates. If both pass, mark PR #35 Ready for Review. Do not merge without explicit user approval. After merge, manually run Yahoo Live Smoke and record whether the explicit headers allow trusted observations or whether `HTTP_429` persists.
