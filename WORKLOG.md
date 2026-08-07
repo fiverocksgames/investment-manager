@@ -1,5 +1,19 @@
 # Worklog
 
+## 2026-08-07 — Yahoo Live Smoke Validation
+
+- Created Issue #30 and branch `agent/yahoo-live-smoke`.
+- Added manual `Yahoo Live Smoke` workflow with no secret requirement.
+- Added `tools/yahoo_smoke.py` using a bounded 14-day SPY request through the canonical adapter.
+- Added deterministic smoke-result tests covering tolerated row warnings, HTTP 429, invalid payloads, and no-observation results.
+- Added `docs/YAHOO_LIVE_SMOKE.md` with best-effort endpoint, safe-failure, logging, and operational boundaries.
+- Python run #15 failed because the smoke test attempted to construct an invalid completely empty `FetchResult`; the canonical invariant correctly rejected it.
+- Updated the test to represent a no-observation result with an explicit `MISSING_VALUE` failure while preserving the canonical model invariant.
+- Python run #16 and Documentation run #64 passed on commit `c327b5419674a4f75cc84f0aa616f6b17ef12bda`.
+- Manual Yahoo Live Smoke remains pending because the new `workflow_dispatch` workflow is not available for manual dispatch until it exists on the default branch.
+- Live connectivity has not yet been claimed.
+- Explicit user approval remains required before merge.
+
 ## 2026-08-06 — Yahoo Market-Data Adapter
 
 ### Adapter Work
@@ -21,10 +35,10 @@
 
 ### Adapter Validation Status
 
-- Python run #10 passed for commit `3444d9381c8924902414742fdeb6c1c5772db08b`.
-- Documentation run #58 passed for commit `3444d9381c8924902414742fdeb6c1c5772db08b`.
-- Living-document updates after that commit require fresh Python and Documentation CI before Ready for Review.
-- Explicit user approval remains required before merge.
+- Python run #10 and Documentation run #58 passed on the initial implementation commit.
+- Python run #14 and Documentation run #62 passed after living-document updates.
+- PR #29 merged as commit `bc0c706620895063689c96e655317e0060f20ab8` after explicit user approval.
+- Issue #28 closed as completed.
 
 ## 2026-08-06 — Roadmap and Release History
 
