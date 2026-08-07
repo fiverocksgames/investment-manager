@@ -14,6 +14,7 @@ Define the provider-independent domain model for Phase 2 Data Platform. This doc
 - Data writes are idempotent for the same canonical key, source, observation time, and revision.
 - Downstream analysis consumes only normalized and validated records.
 - FX direction is explicit; base/quote semantics are never inferred from ticker text.
+- Downstream calculations reference an explicit immutable source snapshot rather than an implicit latest state.
 
 ## Canonical Entities
 
@@ -21,48 +22,15 @@ Define the provider-independent domain model for Phase 2 Data Platform. This doc
 
 Represents an investable instrument or market reference.
 
-Required fields:
-
-- `asset_id`: stable UUID.
-- `canonical_symbol`: project-controlled identifier.
-- `display_name`: user-facing name.
-- `asset_type`: ETF, index, bond, commodity, cryptocurrency, FX pair, or other approved type.
-- `market`: canonical exchange or market identifier.
-- `currency`: ISO 4217 code where applicable.
-- `timezone`: IANA timezone for market observations.
-- `status`: active, inactive, or unsupported.
-- `created_at`, `updated_at`.
+Required fields include stable asset identity, canonical symbol, display name, asset type, market, currency, timezone, status, and lifecycle timestamps.
 
 ### AssetAlias
 
-Maps provider-specific identifiers to an Asset.
-
-Required fields:
-
-- `asset_id`.
-- `provider_id`.
-- `provider_symbol`.
-- `valid_from`, `valid_to`.
-- `metadata`: non-contract provider notes.
-
-Uniqueness must prevent ambiguous active aliases for the same provider symbol.
+Maps provider-specific identifiers to an Asset. Uniqueness must prevent ambiguous active aliases for the same provider symbol.
 
 ### EconomicSeries
 
-Represents a macroeconomic or financial time series.
-
-Required fields:
-
-- `series_id`: stable project identifier.
-- `provider_id`.
-- `provider_series_code`.
-- `display_name`.
-- `frequency`.
-- `unit`.
-- `seasonal_adjustment`.
-- `timezone` or publication-zone metadata.
-- `revision_policy`.
-- `status`.
+Represents a macroeconomic or financial time series with stable identity, provider code, display metadata, frequency, unit, seasonal adjustment, publication-zone metadata, revision policy, and status.
 
 ### FxPair
 
@@ -82,19 +50,7 @@ See [`FX_NORMALIZATION.md`](FX_NORMALIZATION.md).
 
 ### Provider
 
-Defines a data source boundary.
-
-Required fields:
-
-- `provider_id`.
-- `name`.
-- `provider_type`: market, macro, FX, portfolio, or reference.
-- `access_method`.
-- `terms_reference`.
-- `default_timezone`.
-- `default_rate_limit`.
-- `health_status`.
-- `enabled`.
+Defines a data source boundary with provider identity, provider type, access method, terms reference, timezone/rate-limit metadata, health status, and enabled state.
 
 The initial provider set is Yahoo Finance, FRED, ECOS, and an approved FX source or adapter.
 
@@ -102,126 +58,63 @@ The initial provider set is Yahoo Finance, FRED, ECOS, and an approved FX source
 
 Canonical representation of a normalized value.
 
-Required fields:
-
-- `observation_id`.
-- `subject_type`: asset, economic_series, or fx_pair.
-- `subject_id`.
-- `metric`: close, adjusted_close, volume, rate, index_value, macro_value, or another approved metric.
-- `observation_time`.
-- `value` using fixed-precision numeric storage.
-- `unit`.
-- `currency` when relevant.
-- `provider_id`.
-- `retrieved_at`.
-- `revision_id` or vintage metadata when supported.
-- `quality_state`.
-- `freshness_state`.
-- `ingestion_run_id`.
-- `schema_version`.
+Required fields include observation identity, subject type/id, metric, observation time, fixed-precision value, unit/currency where applicable, provider identity, retrieval time, revision/vintage metadata, quality, freshness, ingestion run, and schema version.
 
 FX observations use `subject_id` for the canonical `FxPair`, `metric=rate`, and a directional unit such as `KRW_per_USD`.
 
 ### DataQualityState
 
-Allowed values:
-
-- `valid`.
-- `partial`.
-- `estimated`.
-- `revised`.
-- `invalid`.
-- `unavailable`.
-
-Invalid or unavailable records are not eligible for trusted downstream calculations.
+Allowed values include `valid`, `partial`, `estimated`, `revised`, `invalid`, and `unavailable`. Invalid or unavailable records are not eligible for trusted downstream calculations.
 
 ### FreshnessState
 
-Allowed values:
-
-- `current`: within the approved freshness threshold.
-- `stale`: beyond the threshold but last known good data remains available.
-- `expired`: too old for decision-support use.
-- `unknown`: cadence or observation timing cannot be established.
-
-Freshness is evaluated from dataset-specific cadence rules, market calendars, observation time, and retrieval time. Retrieval time alone cannot make an old observation current.
+Allowed values represent current/fresh, aging/stale, expired, and unknown states according to the implemented canonical model and dataset policy. Freshness is evaluated from observation/retrieval metadata and cadence rules; retrieval time alone cannot make an old observation current.
 
 ### DatasetPolicy
 
-Defines operational expectations for a logical dataset.
-
-Required fields:
-
-- `dataset_id`.
-- `provider_id`.
-- `subject_scope`.
-- `expected_cadence`.
-- `fresh_after` duration.
-- `stale_after` duration.
-- `expire_after` duration.
-- `retry_policy_id`.
-- `cache_policy_id`.
-- `required_for_analysis`.
-- `enabled`.
+Defines dataset/provider scope, cadence, freshness thresholds, retry/cache policy references, analysis requirement, and enabled state.
 
 ### CachePolicy
 
-Required fields:
-
-- `cache_policy_id`.
-- `ttl`.
-- `serve_stale_for` duration.
-- `refresh_strategy`.
-- `cache_key_version`.
-- `max_entries` or storage limit where applicable.
-
-Stale cache entries may be displayed only with explicit stale metadata. They must never be rewritten as newly retrieved observations.
+Defines TTL, stale-serving policy, refresh strategy, key version, and storage bounds. Cached data must retain original provenance and cannot be rewritten as newly retrieved observations.
 
 ### RetryPolicy
 
-Required fields:
-
-- `retry_policy_id`.
-- `max_attempts`.
-- `initial_delay`.
-- `backoff_multiplier`.
-- `max_delay`.
-- `retryable_error_categories`.
-- `jitter_enabled`.
-
-Authentication failures, schema mismatches, validation failures, and explicit permission errors are not automatically retryable.
+Defines maximum attempts, delays, backoff, retryable categories, and jitter. Authentication, schema, validation, and permission failures are not blindly retried.
 
 ### IngestionRun
 
-Represents one bounded retrieval and normalization attempt.
-
-Required fields include run/dataset/provider identity, requested range, timestamps, terminal status, attempt count, record counts, cutoff, commit SHA, adapter/schema version, warnings, and errors.
+Represents one bounded retrieval and normalization attempt with run/dataset/provider identity, requested range, timestamps, status, counts, cutoff, commit/adapter/schema versions, and warning/error evidence.
 
 ### IngestionFailure
 
-Required fields include run identity, stable error category, retryability, safe message, optional provider status, optional subject reference, and occurrence time. Sensitive request content, credentials, and raw personal portfolio values must not be stored in failure messages.
+Records stable error category, retryability, safe message, optional provider status/reference, and occurrence time without secrets or sensitive payloads.
 
 ### SourceSnapshot
 
-Records the exact source set used by a downstream calculation.
+Records the exact immutable source set used by a downstream calculation.
 
-Required fields:
+Implemented canonical fields include:
 
-- `source_snapshot_id`.
-- `created_at`.
-- `data_cutoff`.
-- `observation_ids` or immutable query criteria.
-- `quality_summary`.
-- `freshness_summary`.
-- `schema_version`.
+- `snapshot_id`: deterministic UUIDv5 identity.
+- `dataset`: normalized logical dataset identifier.
+- `provider`: one explicit provider boundary.
+- `cutoff_at`: timezone-aware UTC data cutoff.
+- `published_at`: explicit UTC publication timestamp; never earlier than cutoff.
+- `observation_ids`: non-empty unique deterministic ordering of eligible canonical observations.
+- `checksum`: lowercase SHA-256 content identity.
 
-Analysis and recommendation records must reference a SourceSnapshot rather than relying on an implicit latest state.
+`SourceSnapshotPublisher` derives the checksum from stable canonical observation and provenance content, including observation identity, subject/kind, timestamp, exact `Decimal` string value, unit, quality/freshness, source identity, retrieval time, revision, and sorted source attributes. Input iteration order must not change checksum or snapshot ID.
+
+The snapshot ID is deterministic from dataset, provider, cutoff, and checksum. `published_at` is operational publication metadata and is not part of content identity.
+
+Publication is fail-closed: provider mismatches, duplicate observation IDs, disallowed partial quality, invalid timing, or an empty eligible set do not produce a snapshot. Observations after the cutoff are excluded rather than rewritten. Publication never upgrades quality/freshness or changes provider provenance.
+
+See [`SOURCE_SNAPSHOTS.md`](SOURCE_SNAPSHOTS.md).
 
 ## Provider Interface Contract
 
-Every provider adapter must expose equivalent logical operations even when implementation details differ: describe capabilities, resolve identifiers, fetch bounded observations, preserve provider metadata, normalize canonical observations, classify failures, and report retry hints when available.
-
-Adapters must not perform investment analysis, portfolio logic, or UI formatting.
+Every provider adapter must describe capabilities, resolve identifiers, fetch bounded observations, preserve provider metadata, normalize canonical observations, classify failures, and report retry hints when available. Adapters must not perform investment analysis, portfolio logic, or UI formatting.
 
 ## Normalization Rules
 
@@ -235,12 +128,13 @@ Adapters must not perform investment analysis, portfolio logic, or UI formatting
 - Revisions create a new revision or vintage record rather than silently overwriting history where the source supports vintages.
 - FX rates must preserve explicit source base/quote metadata and normalize into one ordered canonical `FxPair` direction.
 - FX reciprocal conversion uses `Decimal` only with fixed precision and documented rounding; zero/negative or unrelated rates are rejected.
+- Source snapshot publication consumes normalized canonical observations only and applies an explicit cutoff without changing source observations.
 
 ## Idempotency and Uniqueness
 
 A normalized observation is uniquely identified by canonical subject, metric, observation time/period, provider, revision/vintage identity, and schema version where interpretation changed.
 
-Repeated ingestion of the same source data must not create duplicate trusted observations.
+Repeated ingestion of the same source data must not create duplicate trusted observations. Repeated publication of the same eligible source content at the same dataset/provider/cutoff produces the same checksum and snapshot identity.
 
 ## Fail-Safe Rules
 
@@ -251,6 +145,7 @@ Repeated ingestion of the same source data must not create duplicate trusted obs
 - Last known good data remains queryable with its original timestamps and stale or expired status.
 - Conflicting providers are not silently averaged or merged.
 - Ambiguous FX direction is insufficient data, not a guessed conversion.
+- Snapshot publication failure produces no new trusted snapshot and does not mutate a prior good snapshot.
 
 ## Phase 2 Implementation Sequence
 
@@ -260,16 +155,17 @@ Repeated ingestion of the same source data must not create duplicate trusted obs
 4. FRED adapter.
 5. ECOS adapter.
 6. Canonical FX normalization.
-7. Persistence and immutable snapshot integration.
+7. Immutable source-snapshot publication.
 8. Cache services.
-9. Scheduled integration and operational reporting.
-10. Dataset and snapshot versioning.
+9. Persistence and idempotent ingestion integration.
+10. Scheduled integration and operational reporting.
+11. Dataset and snapshot versioning.
 
 ## Deferred Decisions
 
 - Final secondary FX provider selection.
 - Raw payload retention periods.
-- Exact Supabase migration layout.
+- Exact Supabase migration layout and transactional snapshot persistence.
 - Provider-specific rate limits and credentials.
 - Corporate-action reconciliation across providers.
 - FX fixing-time reconciliation, triangulation, spread handling, and fallback priority.
