@@ -19,6 +19,7 @@ from .models import (
     ProviderMetadata,
     SourceSnapshot,
 )
+from .persistence import PersistenceError, PersistenceResult, SnapshotRepository
 from .providers import DataProvider, FetchRequest, FetchResult, ProviderCapability
 from .retry import BoundedRetryExecutor, RetryExecution, RetryPolicy
 from .snapshots import SnapshotPublicationError, SnapshotPublicationPolicy, SourceSnapshotPublisher
@@ -49,12 +50,15 @@ __all__ = [
     "IngestionStatus",
     "Observation",
     "ObservationKind",
+    "PersistenceError",
+    "PersistenceResult",
     "ProviderCapability",
     "ProviderMetadata",
     "RetryExecution",
     "RetryPolicy",
     "SnapshotPublicationError",
     "SnapshotPublicationPolicy",
+    "SnapshotRepository",
     "SourceSnapshot",
     "SourceSnapshotPublisher",
     "YahooProvider",
