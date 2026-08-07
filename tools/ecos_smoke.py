@@ -16,6 +16,17 @@ SUBJECT_ID = UUID("b1f2d21e-7964-59bf-b9de-a4305a086475")
 TOLERATED_FAILURE_CODES = frozenset({"MISSING_VALUE", "OUT_OF_RANGE"})
 
 
+def _transport_details(result) -> tuple[str, ...]:
+    details: set[str] = set()
+    marker = "transport_detail="
+    for failure in result.failures:
+        if failure.code != "TRANSPORT_ERROR" or not failure.provider_reference:
+            continue
+        if marker in failure.provider_reference:
+            details.add(failure.provider_reference.split(marker, 1)[1])
+    return tuple(sorted(details))
+
+
 def main() -> int:
     api_key = os.environ.get("ECOS_API_KEY", "").strip()
     if not api_key:
@@ -50,12 +61,15 @@ def main() -> int:
     result = execution.result
     codes = tuple(sorted({failure.code for failure in result.failures}))
     fatal_codes = tuple(code for code in codes if code not in TOLERATED_FAILURE_CODES)
+    transport_details = _transport_details(result)
 
     if not result.observations or fatal_codes:
         rendered = ",".join(codes) if codes else "NO_OBSERVATIONS"
+        detail_text = f" transport_details={','.join(transport_details)}" if transport_details else ""
         print(
             "ECOS smoke test failed safely: "
-            f"failure_codes={rendered} attempts={execution.attempts} retry_exhausted={str(execution.exhausted).lower()}",
+            f"failure_codes={rendered} attempts={execution.attempts} retry_exhausted={str(execution.exhausted).lower()}"
+            f"{detail_text}",
             file=sys.stderr,
         )
         return 1

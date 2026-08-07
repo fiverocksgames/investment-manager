@@ -54,15 +54,22 @@ The adapter keeps failures explicit:
 - malformed row/time/value -> `INVALID_OBSERVATION`
 - normalized timestamp outside request bounds -> `OUT_OF_RANGE`
 
+Transport failures retain the canonical `TRANSPORT_ERROR` code but attach one sanitized diagnostic category: `timeout`, `dns`, `tls`, `connection`, or `transport`. Classification uses exception types only. Raw exception text, URLs, request paths, and credentials are not included in the diagnostic evidence.
+
 The adapter itself does not retry. Retry orchestration belongs to the common `BoundedRetryExecutor`.
 
 ## Live Validation
 
 `.github/workflows/ecos-smoke.yml` is a manually triggered protected smoke workflow. It reads `ECOS_API_KEY` from GitHub Actions secrets and requests a bounded recent window for Bank of Korea base rate series `722Y001`, item `0101000`, daily cycle.
 
-The smoke log prints only provider-independent summary evidence. It must not print the key, the secret-bearing request URL, raw payload, or observation values.
+The smoke log prints only provider-independent summary evidence. It must not print the key, the secret-bearing request URL, raw payload, observation values, or raw transport exception messages. When a transport failure occurs, it may print only the sanitized transport category.
 
-Live connectivity must not be claimed until an actual workflow run succeeds after the workflow exists on `main`.
+Observed live evidence:
+
+- Run `31174803601` failed safely before any provider call because `ECOS_API_KEY` was not configured (`MISSING_SECRET`, attempts `0`).
+- Run `31180017610` received the secret correctly but exhausted three bounded attempts with canonical `TRANSPORT_ERROR`. This run motivated sanitized transport-detail diagnostics; it does not prove live connectivity.
+
+Live connectivity must not be claimed until an actual workflow run succeeds and returns trusted canonical observations.
 
 ## Boundaries
 

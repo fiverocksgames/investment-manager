@@ -1,5 +1,19 @@
 # Worklog
 
+## 2026-08-07 — ECOS Transport Diagnostics
+
+- PR #37 merged as commit `0f3106bb8772317679df52e76717c6e9ddfebe94` after explicit user approval; Issue #36 closed.
+- ECOS Live Smoke run `31174803601` failed safely with `MISSING_SECRET` before any provider attempt because `ECOS_API_KEY` was not configured.
+- After `ECOS_API_KEY` was configured, run `31180017610` reached the live-call path but exhausted three bounded attempts with canonical `TRANSPORT_ERROR`.
+- Created Issue #38 and branch `agent/ecos-transport-diagnostics` to improve safe transport observability.
+- Kept canonical failure code and retry semantics unchanged while adding sanitized categories: `timeout`, `dns`, `tls`, `connection`, and fallback `transport`.
+- Sanitized diagnostics use exception types only; raw exception text, secret-bearing URLs, API keys, payloads, and observation values are excluded.
+- Added deterministic network-free tests for timeout, DNS, TLS, and connection-reset classification.
+- Updated ECOS smoke output to include sanitized `transport_details` only when available.
+- Updated `docs/ECOS_ADAPTER.md` with the two observed live-smoke failures and diagnostic boundaries.
+- Draft PR #39 opened; implementation/documentation head `b579523ba5e6989127588b7c5f6197fcd9d85db1` passed Python run #46 and Documentation run #96.
+- Fresh CI is required after this evidence update before Ready for Review. Explicit user approval remains required before merge.
+
 ## 2026-08-07 — ECOS Economic-Series Adapter
 
 - Yahoo Live Smoke run `31169043266` succeeded on merged header-hardening commit `18dd594a93ca45f966b79a3b612808751c99c112`, returning 10 trusted SPY daily observations on attempt 1. This is bounded live-success evidence, not an availability guarantee.
@@ -13,9 +27,7 @@
 - Added `docs/ECOS_ADAPTER.md`, updated `docs/DATA_SOURCES.md`, `docs/TEST_PLAN.md`, traceability, handoff, changelog, and Python CI path filtering.
 - Initial implementation head `3b39f64343bab411bb1f8c6ba8fa1170670d022b`: Python run #34 and Documentation run #84 passed.
 - Documentation-complete head `349c12d1671dea4a5504ca82f10e4a10a624bca0`: Python run #40 and Documentation run #90 passed.
-- Final evidence-document updates require one fresh CI cycle before Ready for Review.
-- ECOS live connectivity is not yet claimed. Live validation requires the workflow on `main`, `ECOS_API_KEY` configured, and an actual successful run.
-- Explicit user approval remains required before merge.
+- Final evidence head `674eacc0d6254cc7c94b436bf4d35203e1c8fecb`: Python run #44 and Documentation run #94 passed before merge.
 
 ## 2026-08-07 — Yahoo HTTP Header Hardening
 
