@@ -18,20 +18,19 @@ PR #43 merged as `da322d96ef4905712b511139e5bbb1ea9da1b575`; Issue #42 closed. C
 
 - `investment_manager/data/snapshots.py` adds `SnapshotPublicationPolicy`, `SnapshotPublicationError`, and `SourceSnapshotPublisher`.
 - Publication consumes normalized `Observation` values only and never calls providers or mutates source observations.
-- One dataset/provider boundary is enforced per snapshot.
-- Observations after the explicit UTC cutoff are excluded.
+- One dataset/provider boundary is enforced per snapshot; observations after the explicit UTC cutoff are excluded.
 - Duplicate observation IDs and provider mismatches fail closed.
 - `PARTIAL` quality is rejected by default and may be allowed only through explicit policy.
-- Eligible observations are deterministically sorted before identity generation.
-- SHA-256 checksum covers stable canonical value/provenance content.
+- Eligible observations are deterministically sorted before SHA-256 checksum generation.
 - Snapshot UUIDv5 is deterministic from dataset, provider, cutoff, and checksum.
 - Empty eligible sets and publication-before-cutoff fail explicitly.
-- `docs/SOURCE_SNAPSHOTS.md`, operations, test plan, and traceability document the contract and deferred persistence boundary.
+- `docs/SOURCE_SNAPSHOTS.md`, data model, operations, test plan, roadmap, traceability, worklog, and changelog document the contract and deferred persistence boundary.
 
 ## Validation Status
 
-- Initial implementation head `e1e6e44fe5e31ae4b6325362782c09c78f94fe7c`: Python run #65 passed; Documentation run #117 passed.
-- Living-document and roadmap updates are in progress; final-head CI is still required before Ready for Review.
+- Initial implementation head `e1e6e44fe5e31ae4b6325362782c09c78f94fe7c`: Python run #65 and Documentation run #117 passed.
+- Documentation-complete head `9c9ad4f7e7350fed1bfb68f270e536b94662606e`: Python run #73 and Documentation run #125 passed.
+- PR #45 must still satisfy the normal latest-head CI gate after any final evidence-only document changes before Ready for Review.
 - No live network validation is required because snapshot publication is a pure in-memory canonical operation.
 
 ## Development Rules
@@ -46,4 +45,4 @@ PR #43 merged as `da322d96ef4905712b511139e5bbb1ea9da1b575`; Issue #42 closed. C
 
 ## Exact Next Recommended Task
 
-Complete WORKLOG/CHANGELOG/ROADMAP evidence updates, run Python and Documentation CI on the latest PR #45 head, fix any failure, update PR validation, and mark Ready for Review only when final-head checks pass. Stop for explicit user merge approval. After merge, proceed to cache executor or persistence/idempotent ingestion according to the updated roadmap.
+Run Python and Documentation CI on the latest PR #45 head after final evidence updates. If both pass, update the PR body and mark Ready for Review. Stop for explicit user merge approval. After merge, proceed to the cache executor or persistence/idempotent ingestion according to the roadmap.
