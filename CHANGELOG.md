@@ -6,6 +6,8 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Added
 
+- Provider-independent bounded retry executor with exponential backoff, jitter, attempt evidence, and deterministic tests
+- Yahoo Live Smoke integration with bounded retry and safe retry-exhaustion reporting
 - Manual Yahoo Live Smoke workflow for a bounded recent SPY request without secrets
 - Deterministic Yahoo smoke-result tests for tolerated warnings, rate limiting, payload failures, and no-observation results
 - `docs/YAHOO_LIVE_SMOKE.md` with best-effort endpoint and operational boundaries
@@ -20,8 +22,9 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Changed
 
+- Retry only provider results with no trusted observations and exclusively retryable failures; partial and deterministic failures stop immediately.
 - Treat Yahoo as a best-effort public chart endpoint requiring controlled live validation.
-- Restrict Yahoo smoke logs to non-sensitive summary metadata and classified failure codes.
+- Restrict Yahoo smoke logs to non-sensitive summary metadata, classified failure codes, attempt count, and retry-exhaustion state.
 - Include the Yahoo smoke workflow in Python CI path filtering.
 - Extended the common provider contract from macro data into daily market and FX observations.
 - Required explicit provider-symbol bindings rather than inferred canonical identity.
@@ -31,6 +34,7 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Fixed
 
+- Corrected retry-exhaustion evidence so it is tied to the configured maximum attempt budget.
 - Corrected the Yahoo smoke test so it preserves the canonical `FetchResult` invariant while validating a no-observation outcome.
 - Corrected the FRED live smoke false negative caused by normal weekend or holiday gaps and date-boundary normalization.
 - Corrected stale living-document status for completed FRED work.
@@ -38,6 +42,7 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Security
 
+- Retry execution does not log raw provider payloads, full request URLs, credentials, or personal investment data.
 - Yahoo live smoke requires no credential and excludes raw payloads, full URLs, and observation values from logs.
 - FRED credentials remain encrypted GitHub Actions secrets only.
 - Yahoo adapter requires no committed credential and does not scrape rendered HTML.
@@ -45,17 +50,18 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Validation
 
-- Yahoo live smoke Python run #16 and Documentation run #64 passed on commit `c327b5419674a4f75cc84f0aa616f6b17ef12bda` after fixing the invalid empty-result test from Python run #15.
-- Manual Yahoo live validation remains pending until the new workflow exists on the default branch and can be dispatched.
+- Bounded retry executor Python run #22 and Documentation run #70 passed on implementation head `bfdfc4cc005565647beeeb754bb104438eaf0ec5`; fresh CI is required after evidence-document updates.
+- Yahoo Live Smoke run `31141445027` reached the public endpoint from GitHub Actions and failed safely with `HTTP_429`; this is not live-retrieval success.
+- Yahoo live smoke Python run #20 and Documentation run #68 passed before PR #31 merged.
 - Yahoo adapter Python run #14 and Documentation run #62 passed before PR #29 merged.
 - Protected FRED live connectivity was successfully validated against the official endpoint.
 - Prior frontend, documentation, Python, authentication, and deployment validations remain recorded in merged PR history.
 
 ### Known Limitations
 
-- Yahoo live connectivity and production availability have not yet been validated by the new workflow.
-- Yahoo endpoint and schema stability are not guaranteed; fallback provider strategy remains future work.
-- No ECOS adapter, cache executor, retry executor, persistence, migration, or scheduled ingestion exists.
+- Yahoo live data retrieval has not yet succeeded in recorded GitHub-hosted smoke validation.
+- Bounded retry cannot guarantee recovery from provider or shared-runner rate limiting.
+- Identifier-scoped retry, `Retry-After` handling, fallback providers, ECOS, cache, persistence, migration, and scheduled ingestion remain future work.
 - No user-owned database tables, RLS policies, or cross-user isolation tests exist.
 - Frontend CI still uses `npm install` because `package-lock.json` is not committed.
 - Browser-level PWA installation and offline behavior remain unverified.

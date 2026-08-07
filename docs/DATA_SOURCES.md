@@ -31,7 +31,7 @@ Intended use: historical and latest available prices for approved Korean and US 
 
 Required fields include provider symbol, observation timestamp, OHLC values where available, adjusted close policy, volume, currency, exchange timezone, retrieval time, and quality state.
 
-Risks include unofficial access patterns, symbol changes, delayed data, incomplete corporate-action adjustments, and provider schema changes. The adapter must use bounded retries, recorded fixtures, and schema validation.
+Risks include unofficial access patterns, symbol changes, delayed data, incomplete corporate-action adjustments, provider schema changes, and rate limiting. The adapter uses recorded fixtures and schema validation; live smoke uses the common bounded retry executor. A recorded GitHub-hosted live run returned `HTTP_429`, so current live data retrieval success must not be assumed.
 
 ## FRED
 
@@ -87,6 +87,8 @@ Caching reduces provider calls but does not erase provenance. Cache entries incl
 ## Retry Policy
 
 Retries are bounded and apply only to retryable failures such as temporary network errors, rate limits, and selected server failures. Authentication, validation, unsupported-symbol, and deterministic parsing errors are not retried blindly. Backoff includes jitter and respects provider limits.
+
+The common executor retries a complete request only when no trusted observations were produced and all failures are retryable. Partial results stop immediately to avoid repeating already successful source work. Identifier-scoped retries and provider-specific `Retry-After` metadata handling remain future orchestration work.
 
 ## Fallback Policy
 

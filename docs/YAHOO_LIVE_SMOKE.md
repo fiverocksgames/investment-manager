@@ -19,6 +19,19 @@ This is operational evidence of a bounded live call. It is not a guarantee of pr
 
 The workflow is intentionally manual to avoid unnecessary polling of an undocumented public endpoint.
 
+## Retry Policy
+
+Yahoo smoke uses the common `BoundedRetryExecutor` rather than a provider-specific retry loop.
+
+- Maximum attempts: 3
+- Exponential base delay: 5 seconds
+- Maximum delay: 20 seconds
+- Jitter: up to 2 seconds
+- Retry only when there are no trusted observations and every failure is marked retryable
+- Do not retry partial results or deterministic non-retryable failures
+
+This policy can recover from transient HTTP 429, transport, or selected server failures when the adapter classifies them as retryable. Exhaustion remains an explicit failed smoke run and does not prove live connectivity.
+
 ## Success Criteria
 
 A run succeeds only when:
@@ -34,16 +47,14 @@ A run succeeds only when:
 
 The smoke test fails for conditions including:
 
-- HTTP 429 rate limiting
-- Other HTTP failures
-- Network or timeout errors
+- HTTP 429 after bounded retry exhaustion
+- Other retryable failures after exhaustion
+- Non-retryable HTTP failures
 - Yahoo error responses
 - Payload or schema changes
 - Invalid observation data
-- Empty results
+- No-observation results
 - Any unexpected failure classification
-
-The workflow does not retry automatically. Retry policy belongs to a future bounded retry executor rather than this connectivity check.
 
 ## Logging and Privacy
 
@@ -51,6 +62,8 @@ The workflow prints only bounded summary metadata:
 
 - provider
 - symbol
+- attempt count
+- retry exhaustion state on failure
 - observation count
 - first and last observation timestamps
 - currency
@@ -61,4 +74,4 @@ It does not print raw payloads, complete request URLs, credentials, cookies, per
 
 ## Operational Boundary
 
-Yahoo is treated as a best-effort public chart endpoint. Controlled live validation is required before recording current connectivity. A fallback provider strategy, provider health model, cache, retry executor, persistence, and scheduled ingestion remain future work.
+Yahoo is treated as a best-effort public chart endpoint. Controlled live validation is required before recording current connectivity. A fallback provider strategy, provider health model, cache, persistence, and scheduled ingestion remain future work.
