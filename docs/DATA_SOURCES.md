@@ -31,7 +31,9 @@ Intended use: historical and latest available prices for approved Korean and US 
 
 Required fields include provider symbol, observation timestamp, OHLC values where available, adjusted close policy, volume, currency, exchange timezone, retrieval time, and quality state.
 
-Risks include unofficial access patterns, symbol changes, delayed data, incomplete corporate-action adjustments, provider schema changes, and rate limiting. The adapter uses recorded fixtures and schema validation; live smoke uses the common bounded retry executor. A recorded GitHub-hosted live run returned `HTTP_429`, so current live data retrieval success must not be assumed.
+Risks include unofficial access patterns, symbol changes, delayed data, incomplete corporate-action adjustments, provider schema changes, and rate limiting. The adapter uses deterministic fixtures, explicit request headers, schema validation, and the common bounded retry executor in live smoke validation.
+
+Yahoo Live Smoke run `31169043266` succeeded on merged commit `18dd594a93ca45f966b79a3b612808751c99c112`, returning 10 trusted SPY daily observations on attempt 1. This is evidence that the bounded request succeeded for that run; it is not an availability or schema-stability guarantee.
 
 ## FRED
 
@@ -39,11 +41,28 @@ Intended use: US macroeconomic and financial series such as policy rates, inflat
 
 Required metadata includes series ID, title, units, frequency, seasonal-adjustment status, observation date, retrieval date, and vintage or revision information when available. Revised values must not overwrite audit history silently.
 
+FRED uses its official API with `FRED_API_KEY` stored only as a runtime GitHub Actions secret for protected live smoke validation.
+
 ## ECOS
 
 Intended use: Bank of Korea statistics relevant to Korean investors, including policy rates, exchange rates, monetary aggregates, prices, and growth indicators.
 
-Required metadata includes statistic code, item code, cycle, units, observation period, publication timing, retrieval time, and revision behavior. Korean calendar and publication delays must be reflected in freshness policies.
+The initial adapter uses the ECOS Open API `StatisticSearch` JSON service and requires `ECOS_API_KEY`. The key is runtime-only configuration and must not be committed, logged, embedded in fixtures, or included in secret-bearing URLs in evidence.
+
+Explicit `EcosSeriesBinding` entries preserve:
+
+- project source identifier
+- statistic code
+- item codes 1-4 when applicable
+- cycle
+- canonical subject identity
+- canonical unit
+
+Source metadata preserves ECOS statistic/item codes and names, cycle, original source period, and `UNIT_NAME`. Canonical values use `Decimal`. Initial cycle support is annual (`A`), quarterly (`Q`), monthly (`M`), and daily (`D`). ECOS period labels are normalized to the start of the labeled period in UTC; that timestamp is not represented as the publication timestamp.
+
+The initial implementation requests one configured response page per bound series. Pagination orchestration, other ECOS services, additional cycle formats, and revision-specific semantics remain future work.
+
+A manual ECOS Live Smoke workflow uses the common bounded retry executor and representative Bank of Korea base-rate series `722Y001`, item `0101000`, daily cycle. Live connectivity must not be recorded until an actual workflow run succeeds on `main` with `ECOS_API_KEY` configured.
 
 ## FX Sources
 
