@@ -47,10 +47,10 @@
 | REQ-DATA-001 | Provider-independent assets, series, observations, runs, failures, and snapshots | 2 | Done | `docs/DATA_MODEL.md`, `investment_manager/data/models.py` | Python run #1 | #16, #18 |
 | REQ-DATA-002 | Preserve source, revision, quality, cutoff, and freshness metadata | 2 | Done | Canonical metadata, policies, and snapshots | Python run #1 | #16, #18 |
 | REQ-PROVIDER-001 | Common provider adapter contract | 2 | In Validation | `DataProvider`, `FredProvider`, `YahooProvider`, Yahoo live smoke | Provider fixtures and smoke validation; Python run #20 | #18, #20, #29, #31 |
-| REQ-PROVIDER-002 | Explicit validation and failure classification | 2 | In Validation | Canonical failures plus provider adapters and bounded retry | Deterministic failure, smoke, and retry tests; CI pending | #18, #20, #29, #31; Issue #32 |
+| REQ-PROVIDER-002 | Explicit validation and failure classification | 2 | In Validation | Canonical failures plus provider adapters and bounded retry | Deterministic failure, smoke, and retry tests; Python run #22 | #18, #20, #29, #31, #33 |
 | REQ-OPS-002 | Idempotent ingestion and immutable snapshots | 2 | In Design | `docs/OPERATIONS.md`, `SourceSnapshot` | Executor and transaction tests not implemented | #16 |
-| REQ-OPS-003 | Apply bounded retries only to retryable provider failures | 2 | In Validation | `RetryPolicy`, `RetryExecution`, `BoundedRetryExecutor` | Deterministic retry tests; CI pending | Issue #32 |
-| REQ-MKT-001 | Collect and normalize market, macro, and FX data | 2 | In Validation | FRED macro data plus Yahoo daily market and FX adapters | FRED fixtures, Yahoo fixtures, live smoke observed `HTTP_429`; retry validation pending | #20, #29, #31; Issue #32 |
+| REQ-OPS-003 | Apply bounded retries only to retryable provider failures | 2 | In Validation | `RetryPolicy`, `RetryExecution`, `BoundedRetryExecutor` | Python run #22; fresh CI pending after evidence updates | #33 |
+| REQ-MKT-001 | Collect and normalize market, macro, and FX data | 2 | In Validation | FRED macro data plus Yahoo daily market and FX adapters | FRED fixtures, Yahoo fixtures, live smoke observed `HTTP_429`; retry CI #22 | #20, #29, #31, #33 |
 | REQ-MKT-002 | Expose source, retrieval time, and freshness | 2 | In Validation | FRED revision metadata and Yahoo metadata plus bounded smoke evidence | Metadata and smoke tests; Python run #20 | #20, #29, #31 |
 | REQ-OPS-001 | Run scheduled data and analysis jobs | 2 | Planned | Python CI and manual provider smoke workflows only | Scheduled workflow tests planned | TBD |
 
