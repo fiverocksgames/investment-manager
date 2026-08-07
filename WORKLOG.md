@@ -11,7 +11,8 @@
 - Added deterministic network-free tests for timeout, DNS, TLS, and connection-reset classification.
 - Updated ECOS smoke output to include sanitized `transport_details` only when available.
 - Updated `docs/ECOS_ADAPTER.md` with the two observed live-smoke failures and diagnostic boundaries.
-- Python and Documentation CI are required before Ready for Review. Explicit user approval remains required before merge.
+- Draft PR #39 opened; implementation/documentation head `b579523ba5e6989127588b7c5f6197fcd9d85db1` passed Python run #46 and Documentation run #96.
+- Fresh CI is required after this evidence update before Ready for Review. Explicit user approval remains required before merge.
 
 ## 2026-08-07 — ECOS Economic-Series Adapter
 
