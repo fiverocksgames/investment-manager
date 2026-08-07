@@ -18,12 +18,14 @@ from .models import (
     SourceSnapshot,
 )
 from .providers import DataProvider, FetchRequest, FetchResult, ProviderCapability
+from .retry import BoundedRetryExecutor, RetryExecution, RetryPolicy
 from .yahoo import YahooProvider, YahooSymbolBinding
 
 __all__ = [
     "Asset",
     "AssetAlias",
     "AssetClass",
+    "BoundedRetryExecutor",
     "DataProvider",
     "DataQualityState",
     "DatasetPolicy",
@@ -40,6 +42,8 @@ __all__ = [
     "ObservationKind",
     "ProviderCapability",
     "ProviderMetadata",
+    "RetryExecution",
+    "RetryPolicy",
     "SourceSnapshot",
     "YahooProvider",
     "YahooSymbolBinding",
