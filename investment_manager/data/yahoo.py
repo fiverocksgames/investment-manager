@@ -103,10 +103,10 @@ class YahooProvider(DataProvider):
             if binding is None:
                 failures.append(self._failure(run_id, "UNKNOWN_BINDING", symbol, False, retrieved_at))
                 continue
-            if request.dataset == ProviderCapability.FX_RATES.value and binding.kind is not ObservationKind.FX_RATE:
+            if request.dataset == ProviderCapability.FX_RATES.value and binding.kind != ObservationKind.FX_RATE:
                 failures.append(self._failure(run_id, "BINDING_KIND_MISMATCH", symbol, False, retrieved_at))
                 continue
-            if request.dataset == ProviderCapability.MARKET_PRICES.value and binding.kind is not ObservationKind.MARKET_PRICE:
+            if request.dataset == ProviderCapability.MARKET_PRICES.value and binding.kind != ObservationKind.MARKET_PRICE:
                 failures.append(self._failure(run_id, "BINDING_KIND_MISMATCH", symbol, False, retrieved_at))
                 continue
             try:
