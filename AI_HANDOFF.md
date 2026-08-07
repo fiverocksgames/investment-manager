@@ -16,16 +16,19 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 
 - `.github/workflows/yahoo-smoke.yml` with manual `workflow_dispatch` and no secret requirement.
 - `tools/yahoo_smoke.py` with a bounded recent SPY request through `YahooProvider`.
-- Safe result validation requiring at least one observation and rejecting 429, transport, payload, schema, empty-result, and unexpected failures.
+- Safe result validation requiring at least one observation and rejecting 429, transport, payload, schema, no-observation, and unexpected failures.
 - Summary-only logs without raw payloads, full URLs, credentials, or observation values.
 - `tests/test_yahoo_smoke.py` with deterministic validation tests and no live network dependency.
 - `docs/YAHOO_LIVE_SMOKE.md` with best-effort endpoint, validation, logging, and operational boundaries.
+- Python CI path filters include the Yahoo smoke workflow.
 
 ## Validation Status
 
-- Python CI pending on the latest head.
-- Documentation CI pending on the latest head.
-- Manual Yahoo Live Smoke run pending.
+- Python run #15 failed because a test attempted to construct a completely empty `FetchResult`, which the canonical model intentionally rejects.
+- The test was corrected to represent a no-observation result with an explicit `MISSING_VALUE` failure.
+- Python run #16 passed on commit `c327b5419674a4f75cc84f0aa616f6b17ef12bda`.
+- Documentation run #64 passed on the same commit.
+- Manual Yahoo Live Smoke remains pending because a newly added `workflow_dispatch` workflow cannot be manually dispatched until the workflow exists on the default branch.
 - Do not claim Yahoo live connectivity until an actual successful workflow run is recorded.
 
 ## Verified Completed Work
@@ -51,6 +54,7 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 ## Known Limitations
 
 - Yahoo live connectivity has not yet been validated by the new workflow.
+- The manual workflow must first exist on `main` before it can be dispatched through GitHub Actions.
 - No ECOS adapter, cache executor, retry executor, persistence, migration, scheduled ingestion, analysis, portfolio, recommendation, or backtest logic exists.
 - PWA install/offline validation, user-owned tables, RLS, and cross-user isolation remain pending.
 - Frontend CI still lacks a committed package lockfile.
@@ -66,4 +70,4 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 
 ## Exact Next Recommended Task
 
-Confirm Python and Documentation CI on the latest PR #31 head, fix any failures, then manually run `Yahoo Live Smoke`. Record the actual result without overstating provider stability. Mark Ready for Review only after required validation passes, and do not merge without explicit user approval.
+Confirm fresh Python and Documentation CI after the living-document updates. If both pass, mark PR #31 Ready for Review. Do not merge without explicit user approval. After merge, manually dispatch `Yahoo Live Smoke`, record the actual result, and if needed follow with a small evidence-only documentation PR.
