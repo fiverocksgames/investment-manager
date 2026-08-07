@@ -2,34 +2,32 @@
 
 ## Current State
 
-Phase 1 application infrastructure is complete with residual PWA and data-isolation validation work. Phase 2 includes the canonical Python data model, provider contract, FRED adapter with verified live connectivity, and the merged Yahoo daily market-data adapter. A controlled Yahoo live smoke validation is now in progress.
+Phase 1 application infrastructure is complete with residual PWA and data-isolation validation work. Phase 2 includes the canonical Python data model, provider contract, FRED adapter with verified live connectivity, and the merged Yahoo daily market-data adapter and live-smoke workflow. The first Yahoo live run reached the provider but failed with `HTTP_429`, so live data retrieval success is still unverified. A provider-independent bounded retry executor is now in development.
 
 ## Repository and Active Work
 
 - Canonical repository: `fiverocksgames/investment-manager`
 - Default branch: `main`
-- Active branch: `agent/yahoo-live-smoke`
-- Issue: #30 — `feat: add Yahoo live smoke validation`
-- Draft PR: #31 — `feat: add Yahoo live smoke validation`
+- Active branch: `agent/bounded-retry-executor`
+- Issue: #32 — `feat: add bounded retry executor and apply it to Yahoo smoke`
+- Draft PR: pending creation
 
 ## Implemented on the Active Branch
 
-- `.github/workflows/yahoo-smoke.yml` with manual `workflow_dispatch` and no secret requirement.
-- `tools/yahoo_smoke.py` with a bounded recent SPY request through `YahooProvider`.
-- Safe result validation requiring at least one observation and rejecting 429, transport, payload, schema, no-observation, and unexpected failures.
-- Summary-only logs without raw payloads, full URLs, credentials, or observation values.
-- `tests/test_yahoo_smoke.py` with deterministic validation tests and no live network dependency.
-- `docs/YAHOO_LIVE_SMOKE.md` with best-effort endpoint, validation, logging, and operational boundaries.
-- Python CI path filters include the Yahoo smoke workflow.
+- `investment_manager/data/retry.py` with `RetryPolicy`, `RetryExecution`, and `BoundedRetryExecutor`.
+- Whole-request retry only when there are no trusted observations and all failures are retryable.
+- Immediate stop for partial results and deterministic non-retryable failures.
+- Bounded exponential backoff with injected jitter and sleep dependencies.
+- `tests/test_retry_executor.py` with deterministic recovery, exhaustion, non-retryable, partial, success, and invalid-policy coverage.
+- Yahoo Live Smoke integration with maximum three attempts and safe attempt/exhaustion logging.
+- Updated retry and Yahoo operational documentation and living project records.
 
 ## Validation Status
 
-- Python run #15 failed because a test attempted to construct a completely empty `FetchResult`, which the canonical model intentionally rejects.
-- The test was corrected to represent a no-observation result with an explicit `MISSING_VALUE` failure.
-- Python run #16 passed on commit `c327b5419674a4f75cc84f0aa616f6b17ef12bda`.
-- Documentation run #64 passed on the same commit.
-- Manual Yahoo Live Smoke remains pending because a newly added `workflow_dispatch` workflow cannot be manually dispatched until the workflow exists on the default branch.
-- Do not claim Yahoo live connectivity until an actual successful workflow run is recorded.
+- Previous Yahoo Live Smoke run `31141445027` on `main` commit `048f1026b64596e44f2caa8ba5160fa3e1426b21` failed safely with `HTTP_429` on the actual provider call.
+- Python CI for Issue #32 is pending.
+- Documentation CI for Issue #32 is pending.
+- Do not claim Yahoo live retrieval success unless a later actual smoke run returns canonical observations.
 
 ## Verified Completed Work
 
@@ -39,23 +37,32 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 - PR #22: protected FRED live smoke workflow
 - PR #24: corrected expected FRED partial-result handling
 - PR #26: release-oriented roadmap and release history
-- PR #29: Yahoo daily market-data adapter, merged as `bc0c706620895063689c96e655317e0060f20ab8`
+- PR #29: Yahoo daily market-data adapter
+- PR #31: Yahoo live-smoke workflow, merged as `048f1026b64596e44f2caa8ba5160fa3e1426b21`
 - Live FRED connectivity validated with repository secret `FRED_API_KEY`
+
+## Retry Rules
+
+- Adapters classify failures; the common executor decides whether to retry.
+- Retryable does not mean infinite retry: every execution has a hard attempt bound.
+- Partial results are not automatically retried because whole-request repetition can duplicate successful source work.
+- Authentication, validation, schema, binding, and other deterministic failures must stop immediately when classified non-retryable.
+- Retry evidence includes attempt count and delays without exposing provider payloads or sensitive URLs.
 
 ## Yahoo Rules
 
 - Yahoo is a best-effort public chart endpoint, not a guaranteed official production API.
-- Canonical identity comes only from explicit `YahooSymbolBinding` entries.
 - Financial values use `Decimal`; timestamps are normalized to UTC.
 - Missing or malformed rows never become trusted observations.
-- Controlled live validation proves only the bounded call that actually ran.
+- `HTTP_429` is an observed live failure mode on GitHub-hosted runners.
+- Bounded retries may recover transient failures but do not guarantee provider availability.
 - Fallback provider strategy remains future work.
 
 ## Known Limitations
 
-- Yahoo live connectivity has not yet been validated by the new workflow.
-- The manual workflow must first exist on `main` before it can be dispatched through GitHub Actions.
-- No ECOS adapter, cache executor, retry executor, persistence, migration, scheduled ingestion, analysis, portfolio, recommendation, or backtest logic exists.
+- Yahoo live data retrieval has not yet succeeded in the recorded smoke workflow.
+- Identifier-scoped retries, `Retry-After` metadata handling, cache, fallback provider, persistence, migration, and scheduled ingestion remain future work.
+- No ECOS adapter, analysis, portfolio, recommendation, or backtest logic exists.
 - PWA install/offline validation, user-owned tables, RLS, and cross-user isolation remain pending.
 - Frontend CI still lacks a committed package lockfile.
 
@@ -70,4 +77,4 @@ Phase 1 application infrastructure is complete with residual PWA and data-isolat
 
 ## Exact Next Recommended Task
 
-Confirm fresh Python and Documentation CI after the living-document updates. If both pass, mark PR #31 Ready for Review. Do not merge without explicit user approval. After merge, manually dispatch `Yahoo Live Smoke`, record the actual result, and if needed follow with a small evidence-only documentation PR.
+Open the Draft PR for Issue #32, validate Python and Documentation CI, fix any failures, and mark Ready for Review only after required checks pass. After merge approval and merge, manually run Yahoo Live Smoke again and record whether bounded retries recover the transient `HTTP_429` or exhaust safely.
