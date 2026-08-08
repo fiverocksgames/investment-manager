@@ -42,15 +42,18 @@ Remaining:
 - Provider-independent bounded retry executor with exponential backoff, jitter, partial-result stop, and retry-exhaustion evidence
 - Canonical FX normalization with explicit base/quote direction and deterministic Decimal inverse normalization
 - Deterministic immutable source-snapshot publication with explicit cutoff, checksum, and snapshot identity
+- Transactional idempotent snapshot persistence contract with deterministic fake-DB coverage
+- Initial Supabase persistence migration applied and remotely inspected
+- Bounded remote persistence smoke covering Decimal preservation, identical replay, immutable-conflict rejection, and cleanup
+- Follow-up covering index for `source_snapshot_observations.observation_id` applied remotely; prior unindexed-FK advisor finding resolved
 - Live-success evidence recorded for FRED, Yahoo, and ECOS
 
 ### Active Next Milestones
 
-1. Persistence and idempotent snapshot storage integration
-2. Protected remote Supabase migration/application validation
-3. Cache executor with preserved provenance
-4. Scheduled ingestion and operational status reporting
-5. Dataset and snapshot versioning
+1. Cache executor with preserved provenance
+2. Live PostgreSQL-driver validation of `SnapshotRepository`
+3. Scheduled ingestion and operational status reporting
+4. Dataset and snapshot versioning
 
 ### Exit Criteria
 
@@ -61,7 +64,7 @@ Remaining:
 - Cache and retries cannot misrepresent freshness or provenance.
 - Immutable source snapshots make downstream calculations reproducible with deterministic content identity and cutoff semantics.
 - Persisted observations and snapshots are transactionally idempotent and immutable-conflict safe.
-- Remote database deployment is evidenced separately from committed migration files.
+- Remote database deployment and schema primitives have bounded execution evidence separate from committed migration files.
 - Scheduled jobs fail safely and expose operational evidence.
 
 ## Release 0.3 — Portfolio Engine
