@@ -158,7 +158,7 @@ _SELECT_VERSION = """
 select dataset, as_of, created_at, checksum from dataset_versions where version_id = %s
 """
 _SELECT_SNAPSHOT = """
-select dataset, provider, cutoff_at, checksum from source_snapshots where snapshot_id = %s
+select dataset, provider, cutoff_at, published_at, checksum from source_snapshots where snapshot_id = %s
 """
 _INSERT_MEMBERSHIP = """
 insert into dataset_version_snapshots (version_id, position, snapshot_id)
@@ -202,7 +202,13 @@ class DatasetVersionRepository:
             for snapshot in ordered:
                 cursor.execute(_SELECT_SNAPSHOT, (str(snapshot.snapshot_id),))
                 row = cursor.fetchone()
-                expected = (snapshot.dataset, snapshot.provider, snapshot.cutoff_at, snapshot.checksum)
+                expected = (
+                    snapshot.dataset,
+                    snapshot.provider,
+                    snapshot.cutoff_at,
+                    snapshot.published_at,
+                    snapshot.checksum,
+                )
                 if row is None or tuple(row) != expected:
                     raise DatasetVersionError("referenced source snapshot is missing or conflicts with persisted content")
 
