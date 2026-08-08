@@ -12,7 +12,7 @@ PR #72 merged as `a88dae118afbcfd3ab1e09d4c8c6643a9cd457bb`; Issue #71 closed. M
 - Default branch: `main`
 - Active branch: `agent/dataset-versioning-remote-evidence`
 - Issue: #73 — `docs: record remote dataset-versioning deployment evidence`
-- PR: evidence-only PR pending CI/Ready-for-Review completion
+- Draft PR: #74 — evidence-only remote deployment record
 
 ## Dataset Versioning
 
@@ -35,6 +35,12 @@ PR #72 merged as `a88dae118afbcfd3ab1e09d4c8c6643a9cd457bb`; Issue #71 closed. M
 - Supabase Security Advisor reports `rls_enabled_no_policy` INFO for the new tables, which is expected for this server-only phase. The existing Auth leaked-password-protection warning is unrelated and remains a separate security decision.
 - Python `DatasetVersionRepository` live connectivity has **not** been separately executed against production; do not claim it has.
 
+## Validation Status
+
+- PR #74 initial Documentation run #197 failed only because the evidence document contained a bare URL (`MD034`).
+- The URL was converted to a Markdown link.
+- Latest head `d1a6224f2428824d747161b2cc7c9bb54a2e8327` passed Documentation run #198.
+
 ## Verified Production Scheduled-Ingestion Evidence
 
 - GitHub Actions run `31257977677` on `main` succeeded with Yahoo `market_prices`, one provider attempt, eight received/accepted observations, and durable snapshot/run evidence.
@@ -54,6 +60,6 @@ PR #72 merged as `a88dae118afbcfd3ab1e09d4c8c6643a9cd457bb`; Issue #71 closed. M
 
 ## Exact Next Steps
 
-1. Finish Issue #73 evidence-only documentation and Documentation CI.
-2. Mark the evidence PR Ready for Review when latest-head CI passes; stop for explicit merge approval.
+1. Update PR #74 with final Documentation #198 evidence and mark Ready for Review.
+2. Stop for explicit user merge approval.
 3. After evidence is merged, next Phase 2 architecture work should define a reproducible cross-dataset analysis-input manifest, or separately broaden production scheduling to additional approved provider/dataset paths.
