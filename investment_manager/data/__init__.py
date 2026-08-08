@@ -1,5 +1,6 @@
 """Provider-independent data-platform contracts."""
 
+from .cache import CacheExecution, CacheExecutor
 from .ecos import EcosProvider, EcosSeriesBinding
 from .fred import FredProvider, FredSeriesBinding
 from .fx import FxNormalizationBinding, FxNormalizationError, FxNormalizer, FxPair
@@ -30,6 +31,8 @@ __all__ = [
     "AssetAlias",
     "AssetClass",
     "BoundedRetryExecutor",
+    "CacheExecution",
+    "CacheExecutor",
     "DataProvider",
     "DataQualityState",
     "DatasetPolicy",
