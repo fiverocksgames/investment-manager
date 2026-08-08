@@ -4,6 +4,7 @@ from .cache import CacheExecution, CacheExecutor
 from .ecos import EcosProvider, EcosSeriesBinding
 from .fred import FredProvider, FredSeriesBinding
 from .fx import FxNormalizationBinding, FxNormalizationError, FxNormalizer, FxPair
+from .ingestion import IngestionExecution, IngestionJob, IngestionOrchestrator
 from .models import (
     Asset,
     AssetAlias,
@@ -48,7 +49,10 @@ __all__ = [
     "FxNormalizationError",
     "FxNormalizer",
     "FxPair",
+    "IngestionExecution",
     "IngestionFailure",
+    "IngestionJob",
+    "IngestionOrchestrator",
     "IngestionRun",
     "IngestionStatus",
     "Observation",
