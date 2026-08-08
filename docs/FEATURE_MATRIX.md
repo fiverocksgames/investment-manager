@@ -45,14 +45,14 @@
 | Requirement ID | Requirement | Phase | Status | Design / Implementation | Test | PR |
 |---|---|---:|---|---|---|---|
 | REQ-DATA-001 | Provider-independent assets, series, observations, runs, failures, snapshots, and ordered FX-pair identity | 2 | Done | `docs/DATA_MODEL.md`, canonical data modules | Python model/normalization CI | #16, #18, #43 |
-| REQ-DATA-002 | Preserve source, revision, quality, cutoff, freshness, persisted immutable content, and logical dataset-version identity | 2 | In Validation | Canonical metadata, FX provenance, deterministic snapshots, `SnapshotRepository`, `CacheExecutor`, `IngestionOrchestrator`, durable ingestion status, `DatasetVersionPublisher`, `DatasetVersionRepository`, `docs/DATASET_VERSIONING.md` | Snapshot/persistence/cache/ingestion/status/version provenance tests; Python #128 | #16, #18, #43, #45, #47, #51, #55, #58, #62, #64, #72 |
+| REQ-DATA-002 | Preserve source, revision, quality, cutoff, freshness, persisted immutable content, logical dataset-version identity, and exact cross-dataset analysis-input identity | 2 | In Validation | Canonical metadata, deterministic snapshots, persistence/cache/ingestion, `DatasetVersionPublisher`, `AnalysisInputManifestPublisher`, repositories, `docs/DATASET_VERSIONING.md`, `docs/ANALYSIS_INPUT_MANIFESTS.md` | Snapshot/persistence/cache/ingestion/version/manifest tests; Python #140 | #16, #18, #43, #45, #47, #51, #55, #58, #62, #64, #72, #76 |
 | REQ-PROVIDER-001 | Common provider adapter contract | 2 | Done | `DataProvider`, FRED, Yahoo, ECOS | FRED/Yahoo/ECOS fixture CI and live evidence | #18, #20, #29, #31, #37, #39 |
-| REQ-PROVIDER-002 | Explicit validation and failure classification | 2 | In Validation | Canonical failures, retry, transport diagnostics, typed FX/snapshot/persistence/cache/ingestion/version validation, sanitized durable failures | Deterministic failure/conflict/cache/ingestion/status/version tests | #18, #20, #29, #33, #35, #37, #39, #43, #45, #47, #58, #62, #64, #72 |
-| REQ-OPS-002 | Idempotent ingestion and immutable snapshots/dataset versions | 2 | In Validation | `SourceSnapshotPublisher`, `SnapshotRepository`, Supabase persistence migrations, `IngestionOrchestrator`, `IngestionStatusRepository`, `DatasetVersionPublisher`, `DatasetVersionRepository` | Snapshot/version identity/cutoff tests, atomic replay/conflict/rollback tests, remote snapshot schema validation; dataset-version remote migration pending | #16, #45, #47, #51, #55, #62, #64, #72 |
+| REQ-PROVIDER-002 | Explicit validation and failure classification | 2 | In Validation | Canonical failures, retry, transport diagnostics, typed FX/snapshot/persistence/cache/ingestion/version/manifest validation | Deterministic failure/conflict/cache/ingestion/status/version/manifest tests | #18, #20, #29, #33, #35, #37, #39, #43, #45, #47, #58, #62, #64, #72, #76 |
+| REQ-OPS-002 | Idempotent ingestion and immutable snapshots/dataset versions/analysis-input manifests | 2 | In Validation | `SourceSnapshotPublisher`, `SnapshotRepository`, `DatasetVersionPublisher`, `DatasetVersionRepository`, `AnalysisInputManifestPublisher`, `AnalysisInputManifestRepository` | Identity/cutoff tests, atomic replay/conflict/rollback tests; dataset-version remote schema verified; manifest migration pending merge | #16, #45, #47, #51, #55, #62, #64, #72, #74, #76 |
 | REQ-OPS-003 | Apply bounded retries only to retryable provider failures | 2 | Done | `RetryPolicy`, `RetryExecution`, `BoundedRetryExecutor` | Python run #26; live recovery/exhaustion evidence | #33, #39 |
 | REQ-OPS-004 | Cache successful provider results without rewriting provenance or hiding refresh failure | 2 | Done | `CacheExecutor`, `CacheExecution`, `docs/CACHE_EXECUTOR.md` | Python #93, Documentation #152 | #58 |
 | REQ-MKT-001 | Collect and normalize market, macro, and FX data | 2 | In Validation | FRED macro, Yahoo market/FX, ECOS economic series, `FxNormalizer` | Yahoo/ECOS/FRED live evidence; FX direct/inverse tests | #20, #29, #31, #35, #37, #39, #43 |
-| REQ-MKT-002 | Expose source, retrieval time, freshness, FX direction, reproducible source-set/dataset-version identity, persisted provenance, cache reuse, and ingestion status | 2 | In Validation | Provider metadata, `FxPair`, snapshot checksum/UUID/cutoff, PostgreSQL persistence, cache metadata, `IngestionExecution`, durable run/failure evidence, deterministic `DatasetVersion` | FX/snapshot/persistence/cache/ingestion/status/version provenance tests; Python #128 | #20, #29, #31, #37, #39, #43, #45, #47, #58, #62, #64, #72 |
+| REQ-MKT-002 | Expose source, retrieval time, freshness, FX direction, reproducible source-set/dataset-version identity, persisted provenance, cache reuse, and ingestion status | 2 | In Validation | Provider metadata, snapshots, PostgreSQL persistence, cache, ingestion evidence, deterministic `DatasetVersion` | Provenance tests; Python #128 | #20, #29, #31, #37, #39, #43, #45, #47, #58, #62, #64, #72 |
 | REQ-OPS-001 | Run scheduled data and analysis jobs | 2 | In Validation | `IngestionJob`, `IngestionOrchestrator`, `.github/workflows/scheduled-yahoo-ingestion.yml`, `IngestionStatusRepository`, `docs/SCHEDULED_INGESTION.md` | deterministic scheduler/status tests; production Yahoo run `31257977677` succeeded with durable evidence | #62, #64, #68, #70 |
 
 ## Later MVP Requirements
@@ -60,8 +60,8 @@
 | Requirement ID | Requirement | Phase | Status | Evidence |
 |---|---|---:|---|---|
 | REQ-SIG-001 | Calculate moving averages, RSI, and MACD | 3 | Planned | `docs/ANALYSIS_SPEC.md` |
-| REQ-SIG-002 | Calculate momentum and volatility | 3 | Planned | `docs/ANALYSIS_SPEC.md` |
-| REQ-SIG-003 | Classify market regime | 3 | Planned | `docs/ANALYSIS_SPEC.md` |
+| REQ-SIG-002 | Produce reproducible versioned analysis results from exact inputs and parameters | 3 | In Design | `docs/ANALYSIS_SPEC.md`, `docs/ANALYSIS_INPUT_MANIFESTS.md`; exact input identity in #76, parameter/model identity deferred |
+| REQ-SIG-003 | Classify market regime with explainable evidence | 3 | Planned | `docs/ANALYSIS_SPEC.md` |
 | REQ-PORT-001 | Import Google Sheets portfolio | 4 | Planned | `docs/PORTFOLIO_SPEC.md` |
 | REQ-PORT-002 | Compare actual and target allocations | 4 | Planned | `docs/PORTFOLIO_SPEC.md` |
 | REQ-PORT-003 | Produce non-executing rebalance guidance | 4 | Planned | Portfolio and investment policy docs |
@@ -73,7 +73,7 @@
 
 | Requirement ID | Requirement | Phase | Status | Rationale |
 |---|---|---:|---|---|
-| REQ-BKT-001 | Backtest investment strategies | 7 | Deferred | Requires point-in-time datasets and bias controls |
+| REQ-BKT-001 | Backtest investment strategies | 7 | Deferred | Input manifests preserve exact point-in-time input identity, but backtest execution, bias controls, parameter/model versioning, and evaluation policy remain deferred |
 | REQ-NEWS-001 | Analyze news and disclosures | 7 | Deferred | Requires separate data-rights and model validation design |
 | REQ-TRADE-001 | Execute brokerage orders | N/A | Excluded | Product is a DSS, not an automated trader |
 | REQ-ASSET-001 | Recommend individual stocks | N/A | Excluded | MVP is ETF-focused |
