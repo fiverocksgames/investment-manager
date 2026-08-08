@@ -4,15 +4,15 @@
 
 Phase 2 now has live-validated FRED, Yahoo, and ECOS providers, provider-independent bounded retry, explicit FX normalization, deterministic immutable source-snapshot publication, and remotely deployed persistence schema evidence.
 
-PR #47 merged as `b68388ffbe3b16e00fa51d224f02564ab6bf3c62`; Issue #46 closed. The initial persistence migration has been applied successfully to Supabase project `xztjjgzpryrfcppqkbdo` and the remote schema was inspected.
+PR #47 merged as `b68388ffbe3b16e00fa51d224f02564ab6bf3c62`; Issue #46 closed. PR #51 merged as `46b209f7c824c3a439ecb26a2fd20559ad8462f9`; Issue #50 closed. The initial persistence migration and follow-up foreign-key covering-index migration have both been applied to Supabase project `xztjjgzpryrfcppqkbdo`.
 
 ## Repository and Active Work
 
 - Canonical repository: `fiverocksgames/investment-manager`
 - Default branch: `main`
-- Active branch: `agent/persistence-fk-index`
-- Issue: #50 — `fix: add covering index for snapshot observation foreign key`
-- Active PR: not yet opened at this handoff update
+- Active branch: `agent/persistence-index-evidence`
+- Issue: #53 — `docs: record remote persistence index validation evidence`
+- Draft PR: to be opened for evidence-only documentation
 
 ## Verified Remote Persistence Evidence
 
@@ -23,13 +23,15 @@ PR #47 merged as `b68388ffbe3b16e00fa51d224f02564ab6bf3c62`; Issue #46 closed. T
 - A bounded remote smoke inserted one temporary observation/snapshot/membership, replayed identical observation content without duplication, verified PostgreSQL preserved `123.45`, confirmed a conflicting same-ID insert is rejected, and removed all smoke rows afterward.
 - This does not yet prove the Python `SnapshotRepository` against a live PostgreSQL driver; the smoke validated the deployed schema and persistence primitives directly.
 
-## Active Follow-up
+## Verified Follow-up Index Evidence
 
-- Supabase performance advisor reported one actionable finding: `source_snapshot_observations.observation_id` lacked a covering index.
-- `supabase/migrations/202608080002_snapshot_observation_fk_index.sql` adds `source_snapshot_observations_observation_id_idx` with `create index if not exists`.
-- RLS-without-policy notices are expected for the server-managed deny-by-default design.
-- Existing unused-index notices are expected on the newly created empty tables and are not removal signals.
-- The separate leaked-password-protection Auth warning is outside this persistence migration and requires a dedicated security decision.
+- `supabase/migrations/202608080002_snapshot_observation_fk_index.sql` creates `source_snapshot_observations_observation_id_idx` with `create index if not exists`.
+- The follow-up migration was applied remotely after PR #51 merged.
+- Supabase performance advisor no longer reports `unindexed_foreign_keys` for `source_snapshot_observations.observation_id`.
+- Remaining `unused_index` notices are informational and expected for newly created/empty data-platform tables.
+- Supabase migration history currently contains two entries named `snapshot_observation_fk_index` with different versions. The SQL is idempotent so schema state is correct; the duplicate history entry is documented and must not be silently rewritten.
+- RLS-without-policy notices remain expected for the server-managed deny-by-default design.
+- The separate leaked-password-protection Auth warning is outside this persistence work and requires a dedicated security decision.
 
 ## Development Rules
 
@@ -44,4 +46,4 @@ PR #47 merged as `b68388ffbe3b16e00fa51d224f02564ab6bf3c62`; Issue #46 closed. T
 
 ## Exact Next Recommended Task
 
-Open a Draft PR for Issue #50, run applicable CI, and mark Ready for Review only after latest-head evidence succeeds. Stop for explicit user merge approval. After merge, apply the follow-up index migration to the protected Supabase project and re-run the performance advisor before claiming the foreign-key warning resolved.
+Open a Draft evidence-only PR for Issue #53, run Documentation CI, and mark Ready for Review only if the latest head passes. Stop for explicit user merge approval. After merge, continue with the next Phase 2 milestone; live Python `SnapshotRepository` connectivity remains a separate future task unless intentionally prioritized.
