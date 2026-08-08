@@ -48,7 +48,7 @@ Supabase Security Advisor therefore reports `rls_enabled_no_policy` INFO for the
 
 The Performance Advisor reports no `unindexed_foreign_keys` finding for the dataset-version tables. The newly created lookup and FK indexes currently appear as `unused_index` INFO because the tables are new and have little or no workload history. They should not be removed based solely on this initial signal.
 
-Remediation reference for unused-index advisor messages: https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index
+Remediation reference for unused-index advisor messages: [Supabase database linter documentation](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index)
 
 ## Evidence Boundary
 
