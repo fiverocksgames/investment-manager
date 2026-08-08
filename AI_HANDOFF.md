@@ -2,35 +2,34 @@
 
 ## Current State
 
-Phase 2 has live-validated FRED, Yahoo, and ECOS providers, provider-independent bounded retry, explicit FX normalization, deterministic immutable source-snapshot publication, remotely deployed persistence schema evidence, and active provenance-preserving cache work.
+Phase 2 has live-validated FRED, Yahoo, and ECOS providers, provider-independent bounded retry, explicit FX normalization, deterministic immutable source-snapshot publication, remotely deployed persistence schema evidence, and a merged provenance-preserving cache executor.
 
-PR #55 merged as `3ea639233da1d8d42e7ce9e4ff34d3ea9240cb26`; Issue #53 closed. Remote persistence and follow-up covering-index evidence are documented on `main`.
+PR #58 merged as `74dd4e4da743b6ce0d9d2f0760edc7b640f197a4`; Issue #57 closed. Scheduled ingestion orchestration and operational status reporting are now active work.
 
 ## Repository and Active Work
 
 - Canonical repository: `fiverocksgames/investment-manager`
 - Default branch: `main`
-- Active branch: `agent/cache-executor`
-- Issue: #57 — `feat: add provenance-preserving cache executor`
-- Draft PR: #58 — `feat: add provenance-preserving cache executor`
+- Active branch: `agent/scheduled-ingestion`
+- Issue: #61 — `feat: add scheduled ingestion orchestration and operational run status`
+- Draft PR: #62 — `feat: add scheduled ingestion orchestration and operational status`
 
 ## Active Implementation
 
-- `investment_manager/data/cache.py` adds `CacheExecutor` and `CacheExecution`.
-- Cache identity includes provider plus the complete canonical `FetchRequest` boundary.
-- `DatasetPolicy.cache_ttl` controls process-local cache lifetime.
-- Only fully successful `FetchResult` values are cached; partial and failed results are not cached.
-- Exact expiry triggers a provider call.
-- Expired data is not returned as an implicit stale-on-error fallback.
-- Cache hits return the stored canonical result without rewriting observation identity, Decimal values, quality, freshness, source metadata, or `retrieved_at`.
-- Cache timing metadata (`cached_at`, `expires_at`) is UTC-aware execution metadata and is not provider provenance.
-- `docs/CACHE_EXECUTOR.md` defines the provenance/freshness boundary and deferred distributed-cache behavior.
+- `investment_manager/data/ingestion.py` adds `IngestionJob`, `IngestionExecution`, and `IngestionOrchestrator`.
+- Jobs explicitly bind provider, canonical request, dataset policy, UTC cutoff, and partial-publication policy.
+- Fetch execution can compose the existing cache/retry boundary without rewriting canonical provenance.
+- Fully failed fetches publish nothing.
+- Partial results remain operationally partial; publication requires explicit permission.
+- Immutable snapshot publication filters observations by explicit cutoff before persistence.
+- Persistence failure is fail-closed and cannot be reported as accepted/persisted data.
+- `docs/SCHEDULED_INGESTION.md` defines scheduling, failure, partial-result, and operational evidence boundaries.
 
 ## Validation Status
 
-- Initial implementation/documentation head `b825dcc4bf2c391becfc700de466b8902f9c7b93`: Python run #87 and Documentation run #146 passed.
-- Deterministic cache tests cover miss/hit, exact expiry, request/provider isolation, partial/failed non-caching, stale-on-error exclusion, dataset mismatch, UTC validation, provider-result mismatch, and exact provenance preservation.
-- Latest-head CI must be re-run after living-document updates before PR #58 is Ready for Review.
+- Implementation/test head `74a7801c0b8e8d8c55bb58bdba03791b0f2a82d7`: Python run #96 and Documentation run #156 passed.
+- Deterministic tests cover success, fully failed fetch, partial denied, partial allowed, persistence failure, cache-hit evidence, and UTC cutoff validation.
+- Living-document updates require latest-head CI before PR #62 can be marked Ready for Review.
 
 ## Persistent Data Platform Evidence
 
@@ -45,11 +44,11 @@ PR #55 merged as `3ea639233da1d8d42e7ce9e4ff34d3ea9240cb26`; Issue #53 closed. R
 2. Never commit or log database URLs, passwords, service-role credentials, provider secrets, raw payloads, or personal investment data.
 3. Financial values remain `Decimal`; persisted financial values use PostgreSQL `numeric`.
 4. Datetimes remain timezone-aware and UTC-normalized.
-5. Cache reuse must never rewrite freshness or provenance.
-6. Partial/failed provider outcomes must not silently become cached trusted data.
+5. Cache/retry/orchestration must never rewrite freshness or provenance.
+6. Partial/failed provider outcomes must not silently become trusted published data.
 7. Substantial PRs begin as Draft.
 8. Never merge without explicit user approval.
 
 ## Exact Next Recommended Task
 
-Finish latest-head Python and Documentation CI for PR #58. If both pass, update the PR validation evidence and mark Ready for Review. Stop for explicit user merge approval. After merge, proceed to scheduled ingestion and operational status reporting.
+Finish living-document/traceability updates and latest-head Python/Documentation CI for PR #62. If both pass, update PR validation evidence and mark Ready for Review. Stop for explicit user merge approval. After merge, decide and implement the production scheduling/durable run-status mechanism before dataset/snapshot versioning.
