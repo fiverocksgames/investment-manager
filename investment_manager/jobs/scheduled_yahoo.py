@@ -7,6 +7,8 @@ provider payloads are never printed.
 from __future__ import annotations
 
 import os
+import socket
+import ssl
 from datetime import UTC, datetime, timedelta
 from uuid import NAMESPACE_URL, uuid5
 
@@ -36,6 +38,28 @@ def _connection_factory(database_url: str):
         return psycopg.connect(database_url, connect_timeout=10)
 
     return connect
+
+
+def _safe_database_failure_category(exc: BaseException) -> str:
+    """Classify connection failures without inspecting or logging secret-bearing text."""
+
+    if isinstance(exc, TimeoutError):
+        return "timeout"
+    if isinstance(exc, socket.gaierror):
+        return "dns"
+    if isinstance(exc, ssl.SSLError):
+        return "tls"
+    if isinstance(exc, ConnectionError):
+        return "connection"
+
+    name = type(exc).__name__.lower()
+    if "timeout" in name:
+        return "timeout"
+    if "authentication" in name or "invalidpassword" in name:
+        return "authentication"
+    if "operational" in name:
+        return "operational"
+    return "database"
 
 
 def _build_execution(database_url: str, now: datetime):
@@ -110,7 +134,14 @@ def main() -> int:
     try:
         execution = _build_execution(database_url, now)
     except Exception as exc:
-        print(f"scheduled_ingestion_error={type(exc).__name__}")
+        print(
+            " ".join(
+                (
+                    f"scheduled_ingestion_error={type(exc).__name__}",
+                    f"database_failure_category={_safe_database_failure_category(exc)}",
+                )
+            )
+        )
         return 1
 
     snapshot_id = str(execution.snapshot.snapshot_id) if execution.snapshot is not None else "none"
