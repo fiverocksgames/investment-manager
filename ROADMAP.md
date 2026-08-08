@@ -44,13 +44,14 @@ Remaining:
 - Deterministic immutable source-snapshot publication with explicit cutoff, checksum, and snapshot identity
 - Transactional idempotent snapshot persistence with remotely validated Supabase schema and foreign-key indexing
 - Provenance-preserving process-local cache executor with explicit TTL and no silent stale fallback
+- Provider-independent scheduled-ingestion orchestration with explicit partial/failure policy and operational execution evidence
 - Live-success evidence recorded for FRED, Yahoo, and ECOS
 
 ### Active Next Milestones
 
-1. Scheduled ingestion orchestration and operational status reporting
-2. Production scheduling / durable run-status evidence
-3. Dataset and snapshot versioning
+1. Production Yahoo scheduling and durable ingestion-run/failure evidence — implementation/CI validation in progress; remote migration, GitHub secret, and real workflow success still required
+2. Dataset and snapshot versioning
+3. Broaden scheduled ingestion to additional approved datasets/providers after the initial production path is proven
 
 ### Exit Criteria
 
@@ -62,7 +63,8 @@ Remaining:
 - Immutable source snapshots make downstream calculations reproducible with deterministic content identity and cutoff semantics.
 - Persisted observations and snapshots are transactionally idempotent and immutable-conflict safe.
 - Remote database deployment is evidenced separately from committed migration files.
-- Scheduled jobs fail safely and expose operational evidence.
+- Scheduled jobs fail safely and expose durable sanitized operational evidence.
+- Production scheduling is not called live until the workflow, required secret, remote schema, and persisted run evidence are actually verified.
 
 ## Release 0.3 — Portfolio Engine
 
