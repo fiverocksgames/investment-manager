@@ -85,6 +85,8 @@ class DatasetVersionPublisher:
             seen_ids.add(snapshot.snapshot_id)
             if snapshot.cutoff_at > normalized_as_of:
                 raise DatasetVersionError("source snapshot cutoff must not exceed dataset version as_of")
+            if snapshot.published_at > normalized_created:
+                raise DatasetVersionError("source snapshot published_at must not exceed dataset version created_at")
             boundary = (snapshot.provider, snapshot.cutoff_at)
             previous = seen_boundaries.get(boundary)
             if previous is not None and previous != snapshot.snapshot_id:
