@@ -2,35 +2,29 @@
 
 ## Current State
 
-Phase 2 has live-validated FRED, Yahoo, and ECOS providers, provider-independent bounded retry, explicit FX normalization, deterministic immutable source-snapshot publication, remotely deployed persistence schema evidence, and active provenance-preserving cache work.
+Phase 2 has live-validated FRED, Yahoo, and ECOS providers, provider-independent bounded retry, explicit FX normalization, deterministic immutable source-snapshot publication, remotely deployed persistence schema evidence, and a merged provenance-preserving Cache Executor.
 
-PR #55 merged as `3ea639233da1d8d42e7ce9e4ff34d3ea9240cb26`; Issue #53 closed. Remote persistence and follow-up covering-index evidence are documented on `main`.
+PR #58 merged as `74dd4e4da743b6ce0d9d2f0760edc7b640f197a4`; Issue #57 closed. Final PR head `4c2f472ba8e45497650233067a80d197ad4f5468` passed Python run #93 and Documentation run #152 before merge.
 
 ## Repository and Active Work
 
 - Canonical repository: `fiverocksgames/investment-manager`
 - Default branch: `main`
-- Active branch: `agent/cache-executor`
-- Issue: #57 — `feat: add provenance-preserving cache executor`
-- Draft PR: #58 — `feat: add provenance-preserving cache executor`
+- Active reconciliation branch: `agent/post-cache-merge-reconcile`
+- Issue: #59 — `docs: reconcile post-cache merge active state`
+- Runtime feature PRs: none open at reconciliation start
 
-## Active Implementation
+## Verified Cache Executor State
 
-- `investment_manager/data/cache.py` adds `CacheExecutor` and `CacheExecution`.
+- `investment_manager/data/cache.py` provides `CacheExecutor` and `CacheExecution`.
 - Cache identity includes provider plus the complete canonical `FetchRequest` boundary.
 - `DatasetPolicy.cache_ttl` controls process-local cache lifetime.
 - Only fully successful `FetchResult` values are cached; partial and failed results are not cached.
 - Exact expiry triggers a provider call.
 - Expired data is not returned as an implicit stale-on-error fallback.
-- Cache hits return the stored canonical result without rewriting observation identity, Decimal values, quality, freshness, source metadata, or `retrieved_at`.
-- Cache timing metadata (`cached_at`, `expires_at`) is UTC-aware execution metadata and is not provider provenance.
-- `docs/CACHE_EXECUTOR.md` defines the provenance/freshness boundary and deferred distributed-cache behavior.
-
-## Validation Status
-
-- Initial implementation/documentation head `b825dcc4bf2c391becfc700de466b8902f9c7b93`: Python run #87 and Documentation run #146 passed.
-- Deterministic cache tests cover miss/hit, exact expiry, request/provider isolation, partial/failed non-caching, stale-on-error exclusion, dataset mismatch, UTC validation, provider-result mismatch, and exact provenance preservation.
-- Latest-head CI must be re-run after living-document updates before PR #58 is Ready for Review.
+- Cache hits preserve observation identity, Decimal values, observed/retrieved timestamps, quality, freshness, revision, and source attributes exactly.
+- Cache timing metadata is timezone-aware UTC execution metadata and remains separate from source freshness and provider provenance.
+- No Redis/distributed cache, persistence, background refresh, stale-on-error, provider fallback, scheduler integration, or UI behavior is implied by this milestone.
 
 ## Persistent Data Platform Evidence
 
@@ -52,4 +46,4 @@ PR #55 merged as `3ea639233da1d8d42e7ce9e4ff34d3ea9240cb26`; Issue #53 closed. R
 
 ## Exact Next Recommended Task
 
-Finish latest-head Python and Documentation CI for PR #58. If both pass, update the PR validation evidence and mark Ready for Review. Stop for explicit user merge approval. After merge, proceed to scheduled ingestion and operational status reporting.
+After this documentation reconciliation passes Documentation CI and is merged with explicit approval, proceed to the next Phase 2 milestone: scheduled ingestion and operational status reporting. That milestone should begin with a scoped Issue and design for safe scheduling, run-status evidence, failure reporting, secret handling, and manual/provider smoke boundaries before implementation.
