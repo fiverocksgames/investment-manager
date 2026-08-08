@@ -1,5 +1,23 @@
 # Worklog
 
+## 2026-08-08 — Production Scheduling and Durable Ingestion Status
+
+- PR #62 merged as `6d2805f2c66fb91e61f87e4264c382c1d94895ad`; Issue #61 closed, putting provider-independent scheduled-ingestion orchestration on `main`.
+- Closed stale PR #60 without merge and Issue #59 as superseded so older post-cache living documents cannot regress the newer scheduled-ingestion state.
+- Created Issue #63, branch `agent/production-scheduled-ingestion`, and Draft PR #64.
+- Added `IngestionFetchExecution` so actual provider-attempt count from bounded retry is preserved as operational evidence separately from canonical provider data.
+- Sanitized orchestration catch-all failures to record exception type only; raw exception text is excluded because it may contain DB connection strings, credentials, URLs, hosts, or payload fragments.
+- Added `IngestionStatusRepository` with transactional/idempotent terminal run and ordered failure persistence. Identical run replay is accepted; same run ID with different immutable content fails closed and rolls back.
+- Added migration `202608080003_ingestion_operational_status.sql` for server-managed `ingestion_runs` and `ingestion_failures`, with RLS enabled and no client-facing policies.
+- Added optional psycopg 3 PostgreSQL runtime dependency under the `postgres` project extra.
+- Added first production job entrypoint `investment_manager.jobs.scheduled_yahoo`: Yahoo SPY daily data, bounded 10-day window, up to three retry attempts, immutable snapshot persistence, then durable operational-status persistence.
+- Added `.github/workflows/scheduled-yahoo-ingestion.yml` with manual dispatch and weekday `23:45 UTC` cron, `main`-only guard, non-cancelling concurrency, 10-minute timeout, and protected `SUPABASE_DB_URL` repository-secret injection.
+- Scheduled job output is deliberately restricted to run/provider/dataset/status/attempt/count/snapshot identifiers; observation values and database connection strings are not printed.
+- Added deterministic fake-DB/status tests plus scheduler-boundary tests, including a secret-like exception string regression test.
+- Initial implementation/test head `e66e7e97b8b7171479a88f7180cf4602ca387fab`: Python run #101 passed.
+- Production-live success is not claimed. The new migration is not yet remotely applied, `SUPABASE_DB_URL` is not yet verified in GitHub Actions, and no real workflow run under this implementation has succeeded yet.
+- Snapshot persistence and durable run-status persistence remain separate transactions; a snapshot can remain committed if status persistence subsequently fails, while the workflow still fails visibly.
+
 ## 2026-08-08 — Provenance-Preserving Cache Executor
 
 - PR #55 merged as `3ea639233da1d8d42e7ce9e4ff34d3ea9240cb26`; Issue #53 closed.
@@ -12,7 +30,7 @@
 - Added deterministic network-free tests for miss/hit, exact expiry and replacement, provider/request isolation, partial/failed non-caching, stale-on-error exclusion, dataset mismatch, UTC validation, and provider-result mismatch.
 - Added `docs/CACHE_EXECUTOR.md` and updated test plan, roadmap, traceability, and handoff documentation.
 - Initial implementation/documentation head `b825dcc4bf2c391becfc700de466b8902f9c7b93`: Python run #87 and Documentation run #146 passed.
-- Latest-head CI remains required after living-document updates before PR #58 can be marked Ready for Review.
+- PR #58 later passed Python run #93 and Documentation run #152 on final head and merged as `74dd4e4da743b6ce0d9d2f0760edc7b640f197a4`.
 
 ## 2026-08-08 — Remote Persistence Index Validation Evidence
 

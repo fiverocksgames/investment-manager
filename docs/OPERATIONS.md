@@ -14,12 +14,24 @@ The React PWA is built by GitHub Actions and deployed to GitHub Pages. Build fai
 
 ## Phase 2 Scheduled Jobs
 
-Python ingestion jobs run through GitHub Actions. Each workflow invocation must specify provider, dataset, cutoff, and adapter version. Scheduled jobs are initially expected to run daily for market and FX data and according to publication cadence for macroeconomic series; exact schedules are approved per dataset policy.
+Python ingestion jobs run through GitHub Actions. Every production workflow uses explicit UTC scheduling, protected runtime credentials, bounded execution time, and non-overlapping concurrency policy.
+
+The first source-controlled production schedule is Yahoo `SPY` daily ingestion:
+
+- workflow: `.github/workflows/scheduled-yahoo-ingestion.yml`
+- cron: `45 23 * * 1-5` (UTC)
+- manual trigger: `workflow_dispatch`
+- branch guard: `main` only
+- timeout: 10 minutes
+- database credential source: GitHub repository secret `SUPABASE_DB_URL`
+
+A committed workflow is not live-success evidence. Production success requires the corresponding remote database migration, configured secret, a real successful workflow run, and verified durable run evidence.
 
 ## Concurrency and Idempotency
 
-- Only one active run per provider and dataset is allowed.
-- Re-running the same cutoff and source revision must not create duplicate trusted observations.
+- Only one active scheduled Yahoo run is allowed by the workflow concurrency group.
+- Re-running the same immutable observation/snapshot content must not create duplicates.
+- Durable ingestion operational records use immutable run identity; identical replay is idempotent and conflicting content fails closed.
 - A run may resume or restart only through a documented idempotent path.
 - Analysis jobs depend on a published source snapshot rather than an in-progress ingestion run.
 
@@ -51,15 +63,25 @@ Normalized observations are published through `SourceSnapshotPublisher` before d
 - RLS is enabled on the Phase 2 persistence tables, with no client-facing policies in this milestone.
 - Database URLs, passwords, service-role credentials, and other secrets are runtime-only and must never be logged or committed.
 
-The committed Supabase migration is source-controlled schema intent only. It is not evidence that the remote project has been migrated. Remote migration execution, schema inspection, and protected connectivity require separate execution evidence.
+Remote migration execution, schema inspection, and protected connectivity are evidence separate from committed migration files.
+
+## Durable Ingestion Status
+
+Migration `202608080003_ingestion_operational_status.sql` adds server-managed `ingestion_runs` and `ingestion_failures` tables. `IngestionStatusRepository` persists terminal run evidence atomically within that status transaction.
+
+Durable run evidence includes provider, dataset, UTC start/end times, final status, canonical attempt count, actual provider-attempt count, received/accepted counts, cache-hit evidence, and optional snapshot ID. Ordered failure evidence contains only sanitized code/message/retryability/time/provider-reference fields.
+
+Raw exception strings are not accepted as catch-all operational messages because they may contain connection strings, credentials, hosts, URLs, or payload fragments. Catch-all orchestration failures record the exception type only.
+
+Snapshot persistence and durable run-status persistence are currently separate transactions. If the snapshot commit succeeds but status persistence subsequently fails, the workflow must fail visibly; the already committed immutable snapshot is not rolled back or falsely marked as absent. Reconciliation/stronger cross-record atomicity remains a separate design decision.
 
 ## Timeouts and Retries
 
 Every provider call and job has an explicit timeout. Retries are bounded, use exponential backoff with jitter, and apply only to retryable categories. Rate-limit responses respect available retry guidance. Deterministic validation, authentication, unsupported-symbol, and schema errors stop immediately.
 
-The common `BoundedRetryExecutor` retries a whole provider request only when there are no trusted observations and every returned failure is marked retryable. Partial results stop immediately because repeating the complete request could repeat successful source work. Identifier-scoped retry remains a later ingestion-orchestration concern.
+The common `BoundedRetryExecutor` retries a whole provider request only when there are no trusted observations and every returned failure is marked retryable. Partial results stop immediately because repeating the complete request could repeat successful source work.
 
-Retry policy records the maximum attempt count and applied delays. Delay and jitter dependencies are injectable for deterministic tests. Retry exhaustion remains a failed result and never becomes a successful snapshot or connectivity claim.
+Retry policy records the maximum attempt count and applied delays. The scheduled ingestion layer preserves the actual provider-attempt count as separate operational evidence. Retry exhaustion remains a failed result and never becomes a successful snapshot or connectivity claim.
 
 Persistence identity conflicts and deterministic snapshot publication failures are not provider-retry candidates. A transient database transport retry policy requires a separate orchestration decision and must not blindly replay an ambiguous commit outcome.
 
@@ -73,50 +95,47 @@ Each dataset defines expected cadence, market or publication calendar, soft stal
 
 ## Observability
 
-Record:
+Record where available:
 
 - run identifier
-- commit SHA
-- workflow run identifier
-- provider and adapter version
-- dataset and cutoff
+- workflow run identifier and commit SHA in GitHub Actions evidence
+- provider and dataset
+- cutoff
 - start and end time
-- requested, received, normalized, rejected, and published counts
-- source snapshot identifier and checksum when publication succeeds
-- cache hits and misses
-- retry count
-- quality and freshness summary
-- final status and safe error categories
+- received and accepted counts
+- source snapshot identifier when publication succeeds
+- cache-hit status
+- actual provider-attempt count
+- final status and safe failure categories
 
-Logs never contain credentials, tokens, database connection strings, full sensitive payloads, or personal holdings.
+Logs never contain credentials, tokens, database connection strings, full sensitive payloads, or personal holdings. Scheduled job console output is intentionally restricted to safe operational identifiers/counts/status and never prints financial observation values.
 
 ## Run States
 
-Canonical ingestion states are `queued`, `running`, `succeeded`, `partial`, `failed`, and `cancelled`. Only `succeeded`, or `partial` where explicitly allowed, may publish a source snapshot.
+Canonical ingestion model supports pending/running/succeeded/partial/failed states. Durable scheduled-ingestion storage records terminal `succeeded`, `partial`, or `failed` states only. Only `succeeded`, or `partial` where explicitly allowed, may publish a source snapshot.
 
 ## Failure Handling
 
+- Missing `SUPABASE_DB_URL` fails the workflow before runtime installation/execution.
 - Provider outages leave prior good data unchanged.
 - Failed runs never publish successful snapshots.
-- Partial failures are recorded per source identifier.
+- Partial failures are recorded and do not silently become successful runs.
 - Snapshot validation failure publishes nothing and leaves prior good snapshots unchanged.
-- Persistence failure rolls back the in-flight transaction and must not be reported as published.
+- Snapshot persistence failure must not be reported as published.
+- Durable status persistence failure makes the workflow fail visibly.
 - Repeated failure opens an operational task or alert rather than retrying indefinitely.
-- Required-input failure blocks dependent analysis.
 - Prior good data may remain visible only with original timestamp and explicit stale status.
 
 ## Manual Recovery
 
-A maintainer may re-run a bounded failed dataset after confirming provider health, credentials, and policy. Manual recovery records the triggering user, reason, cutoff, and resulting workflow run. Database migration recovery or data correction requires a separately reviewed procedure.
+A maintainer may manually dispatch the production ingestion workflow from `main` after confirming provider health, the required migration, and protected database connectivity. Manual recovery must preserve the same fail-closed and durable-status rules as scheduled execution.
+
+Database migration recovery or data correction requires a separately reviewed procedure. Never paste a database URL or credential into an Issue, PR, workflow input, command output, or log.
 
 ## Change Management
 
 Every production-affecting change requires an Issue, Requirement IDs, documentation, tests, a Draft PR, successful CI, and explicit approval. Provider schema changes, workflow permissions, schedules, and database migrations receive focused review.
 
-## Runbooks
-
-Implementation work must add runbooks for provider outage, rate limiting, source schema change, stale data, failed snapshot publication, credential rotation, database recovery, migration rollback, and application rollback.
-
 ## Service Priorities
 
-Correctness, provenance, and freshness transparency take priority over low latency or high availability. It is preferable to show `insufficient_data` than to publish an unverified current value.
+Correctness, provenance, and freshness transparency take priority over low latency or high availability. It is preferable to show insufficient or stale data explicitly than to publish an unverified current value.

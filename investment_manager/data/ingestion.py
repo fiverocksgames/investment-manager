@@ -20,8 +20,29 @@ def _utc(value: datetime, name: str) -> datetime:
     return value.astimezone(UTC)
 
 
+@dataclass(frozen=True, slots=True)
+class IngestionFetchExecution:
+    """Canonical fetch result plus operational attempt/cache evidence."""
+
+    result: FetchResult
+    cache_hit: bool = False
+    provider_attempts: int = 1
+
+    def __post_init__(self) -> None:
+        if self.provider_attempts < 0:
+            raise ValueError("provider_attempts must not be negative")
+        if not self.cache_hit and self.provider_attempts < 1:
+            raise ValueError("non-cache fetch execution requires at least one provider attempt")
+
+
 class FetchExecutor(Protocol):
-    def __call__(self, request: FetchRequest, policy: DatasetPolicy, *, now: datetime) -> CacheExecution: ...
+    def __call__(
+        self,
+        request: FetchRequest,
+        policy: DatasetPolicy,
+        *,
+        now: datetime,
+    ) -> IngestionFetchExecution | CacheExecution: ...
 
 
 class SnapshotPersister(Protocol):
@@ -53,6 +74,11 @@ class IngestionExecution:
     snapshot: SourceSnapshot | None = None
     persistence: PersistenceResult | None = None
     cache_hit: bool = False
+    provider_attempts: int = 1
+
+    def __post_init__(self) -> None:
+        if self.provider_attempts < 0:
+            raise ValueError("provider_attempts must not be negative")
 
 
 class IngestionOrchestrator:
@@ -74,9 +100,19 @@ class IngestionOrchestrator:
     def execute(self, job: IngestionJob) -> IngestionExecution:
         run_id = self._run_id_factory()
         started = _utc(self._clock(), "started_at")
+        provider_attempts = 1
+        cache_hit = False
         try:
-            cache_execution = self._fetch_executor(job.request, job.policy, now=started)
-            result = cache_execution.result
+            raw_execution = self._fetch_executor(job.request, job.policy, now=started)
+            if isinstance(raw_execution, CacheExecution):
+                result = raw_execution.result
+                cache_hit = raw_execution.cache_hit
+                provider_attempts = 0 if cache_hit else 1
+            else:
+                result = raw_execution.result
+                cache_hit = raw_execution.cache_hit
+                provider_attempts = raw_execution.provider_attempts
+
             if result.provider != job.provider:
                 raise ValueError("fetch result provider must match ingestion job provider")
             if result.request != job.request:
@@ -93,7 +129,8 @@ class IngestionOrchestrator:
                     records_received=0,
                     records_accepted=0,
                     failures=failures,
-                    cache_hit=cache_execution.cache_hit,
+                    cache_hit=cache_hit,
+                    provider_attempts=provider_attempts,
                 )
 
             if result.partial and not job.allow_partial_publication:
@@ -112,7 +149,8 @@ class IngestionOrchestrator:
                     records_received=received,
                     records_accepted=0,
                     failures=failures + (denied,),
-                    cache_hit=cache_execution.cache_hit,
+                    cache_hit=cache_hit,
+                    provider_attempts=provider_attempts,
                 )
 
             publisher = SourceSnapshotPublisher(
@@ -126,10 +164,9 @@ class IngestionOrchestrator:
                 published_at=published_at,
                 observations=result.observations,
             )
+            eligible_ids = set(snapshot.observation_ids)
             eligible = tuple(
-                observation
-                for observation in result.observations
-                if observation.observation_id in set(snapshot.observation_ids)
+                observation for observation in result.observations if observation.observation_id in eligible_ids
             )
             persistence = self._repository.persist(snapshot, eligible)
             status = IngestionStatus.PARTIAL if result.partial else IngestionStatus.SUCCEEDED
@@ -143,13 +180,14 @@ class IngestionOrchestrator:
                 failures=failures,
                 snapshot=snapshot,
                 persistence=persistence,
-                cache_hit=cache_execution.cache_hit,
+                cache_hit=cache_hit,
+                provider_attempts=provider_attempts,
             )
         except Exception as exc:
             failure = IngestionFailure(
                 run_id=run_id,
                 code="INGESTION_EXECUTION_ERROR",
-                message=f"{type(exc).__name__}: {exc}",
+                message=f"ingestion execution failed: {type(exc).__name__}",
                 retryable=False,
                 occurred_at=_utc(self._clock(), "failure_at"),
             )
@@ -161,6 +199,8 @@ class IngestionOrchestrator:
                 records_received=0,
                 records_accepted=0,
                 failures=(failure,),
+                cache_hit=cache_hit,
+                provider_attempts=provider_attempts,
             )
 
     def _terminal(
@@ -176,6 +216,7 @@ class IngestionOrchestrator:
         snapshot: SourceSnapshot | None = None,
         persistence: PersistenceResult | None = None,
         cache_hit: bool = False,
+        provider_attempts: int = 1,
     ) -> IngestionExecution:
         ended = _utc(self._clock(), "ended_at")
         run = IngestionRun(
@@ -185,6 +226,7 @@ class IngestionOrchestrator:
             started_at=started,
             ended_at=ended,
             status=status,
+            attempt=max(1, provider_attempts),
             records_received=records_received,
             records_accepted=records_accepted,
         )
@@ -194,6 +236,7 @@ class IngestionOrchestrator:
             snapshot=snapshot,
             persistence=persistence,
             cache_hit=cache_hit,
+            provider_attempts=provider_attempts,
         )
 
     @staticmethod
