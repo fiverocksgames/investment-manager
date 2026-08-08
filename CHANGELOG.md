@@ -6,6 +6,9 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Added
 
+- Provider-independent `CacheExecutor` and `CacheExecution` for process-local successful-result reuse without rewriting canonical provenance
+- Deterministic cache tests for miss/hit, exact expiry, provider/request isolation, partial/failed non-caching, stale-on-error exclusion, UTC validation, and provenance preservation
+- `docs/CACHE_EXECUTOR.md` with cache-key, TTL, freshness, failure, and deferred distributed-cache boundaries
 - Transactional `SnapshotRepository`, `PersistenceResult`, and `PersistenceError` for immutable canonical observation/snapshot storage
 - Initial Supabase/PostgreSQL migration for `data_observations`, `source_snapshots`, and ordered `source_snapshot_observations`
 - Additive covering-index migration for `source_snapshot_observations.observation_id`
@@ -24,6 +27,8 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Changed
 
+- Cache reuse is bounded by `DatasetPolicy.cache_ttl`; cache timing metadata remains separate from canonical source freshness and provider provenance.
+- Only fully successful `FetchResult` values are cached. Partial/failed results and expired stale-on-error fallback are excluded from the current cache contract.
 - Canonical persistence uses PostgreSQL `numeric` for financial values, `timestamptz` for canonical times, UUID identities, and `jsonb` for provider source attributes.
 - Immutable persistence uses insert-if-absent plus persisted-content verification: identical replay is idempotent while conflicting same-ID content fails closed.
 - Observation rows, snapshot row, and exact ordered snapshot memberships now share one transaction boundary in the persistence repository.
@@ -46,6 +51,7 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Security
 
+- Cache execution stores no new credentials or raw provider payloads and does not mutate provider/source metadata.
 - Data-platform persistence tables have RLS enabled with no browser/client policies in this milestone.
 - Database URLs, passwords, service-role credentials, and other database secrets remain runtime-only and are excluded from code, fixtures, logs, and migration files.
 - Snapshot identity excludes credentials, raw provider requests, raw payloads, and personal portfolio information.
@@ -55,6 +61,7 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Validation
 
+- Cache initial implementation/documentation head `b825dcc4bf2c391becfc700de466b8902f9c7b93`: Python run #87 and Documentation run #146 passed.
 - Persistence initial implementation head `42d2b8414a54dc75930bad3dd233d636c6ce4f5c`: Python run #78 and Documentation run #130 passed.
 - Persistence final evidence head `e88e59e8c5b86d439bfa7521d8f4e00a36c7314f`: Python run #85 and Documentation run #137 passed before PR #47 merged as `b68388ffbe3b16e00fa51d224f02564ab6bf3c62`.
 - Initial persistence migration was applied to Supabase project `xztjjgzpryrfcppqkbdo`; remote schema inspection verified tables, constraints, types, and RLS state.
@@ -67,11 +74,12 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Known Limitations
 
+- Cache execution is process-local only; no Redis/distributed backend, persistent cache, background refresh, stale-on-error, provider fallback, or scheduler integration exists yet.
 - No mandatory PostgreSQL driver dependency or protected live Python `SnapshotRepository` connectivity workflow exists yet.
 - Supabase migration history contains a duplicate-name `snapshot_observation_fk_index` entry from repeated idempotent execution; no automatic history repair is implemented.
 - RLS-without-policy advisor INFO notices are intentional for the server-managed deny-by-default persistence tables.
 - Supabase Auth leaked-password protection remains disabled and requires a separate authentication/security decision.
-- Ingestion-run persistence, cache execution, scheduled ingestion, and dataset/snapshot versioning remain future work.
+- Ingestion-run persistence, scheduled ingestion, and dataset/snapshot versioning remain future work.
 - Snapshot publication/persistence does not perform provider fallback or cross-provider merging.
 - FX normalization does not implement cross-provider fallback, averaging, triangulation, fixing-time reconciliation, or bid/ask spread handling.
 - ECOS and Yahoo live success are bounded evidence from specific runs and do not guarantee future provider availability.
