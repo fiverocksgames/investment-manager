@@ -62,6 +62,7 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 ### Validation
 
 - Cache initial implementation/documentation head `b825dcc4bf2c391becfc700de466b8902f9c7b93`: Python run #87 and Documentation run #146 passed.
+- Cache final head `4c2f472ba8e45497650233067a80d197ad4f5468`: Python run #93 and Documentation run #152 passed before PR #58 merged as `74dd4e4da743b6ce0d9d2f0760edc7b640f197a4`.
 - Persistence initial implementation head `42d2b8414a54dc75930bad3dd233d636c6ce4f5c`: Python run #78 and Documentation run #130 passed.
 - Persistence final evidence head `e88e59e8c5b86d439bfa7521d8f4e00a36c7314f`: Python run #85 and Documentation run #137 passed before PR #47 merged as `b68388ffbe3b16e00fa51d224f02564ab6bf3c62`.
 - Initial persistence migration was applied to Supabase project `xztjjgzpryrfcppqkbdo`; remote schema inspection verified tables, constraints, types, and RLS state.
