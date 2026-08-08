@@ -8,6 +8,7 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 - Transactional `SnapshotRepository`, `PersistenceResult`, and `PersistenceError` for immutable canonical observation/snapshot storage
 - Initial Supabase/PostgreSQL migration for `data_observations`, `source_snapshots`, and ordered `source_snapshot_observations`
+- Follow-up migration adding `source_snapshot_observations_observation_id_idx` for the observation foreign key
 - Deterministic fake-DB persistence tests for atomic write, idempotent replay, immutable conflicts, rollback, exact membership, Decimal values, UTC timestamps, and source metadata
 - `docs/PERSISTENCE.md` with transaction, immutability, RLS, secrets, and remote-migration evidence boundaries
 - Provider-independent immutable source snapshot publication with `SnapshotPublicationPolicy`, `SnapshotPublicationError`, and `SourceSnapshotPublisher`
@@ -25,8 +26,8 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 - Canonical persistence uses PostgreSQL `numeric` for financial values, `timestamptz` for canonical times, UUID identities, and `jsonb` for provider source attributes.
 - Immutable persistence uses insert-if-absent plus persisted-content verification: identical replay is idempotent while conflicting same-ID content fails closed.
-- Observation rows, snapshot row, and exact ordered snapshot memberships now share one transaction boundary in the persistence repository.
-- The initial data-platform migration enables RLS while deliberately defining no client-facing policies; the tables remain server-managed and browser-denied by default.
+- Observation rows, snapshot row, and exact ordered snapshot memberships share one transaction boundary in the persistence repository.
+- Data-platform persistence tables have RLS enabled while deliberately defining no client-facing policies; the tables remain server-managed and browser-denied by default.
 - Source snapshot publication requires explicit dataset/provider/cutoff boundaries and deterministically orders eligible observations before identity generation.
 - Observations after a snapshot cutoff are excluded without rewriting source timestamps, freshness, quality, or provenance.
 - `PARTIAL` quality is rejected from snapshots by default and requires an explicit publication policy to allow it.
@@ -36,6 +37,7 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Fixed
 
+- Added a covering index for `source_snapshot_observations.observation_id`, resolving the Supabase `unindexed_foreign_keys` performance-advisor finding.
 - Prevented immutable observation/snapshot identities from being silently overwritten during persistence replay.
 - Removed ambiguity from FX canonical units by defining ordered base/quote semantics rather than storing a quote currency label alone.
 - Improved ECOS transport observability without logging raw exception strings that could disclose endpoint or credential context.
@@ -54,15 +56,20 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 ### Validation
 
 - Persistence initial implementation head `42d2b8414a54dc75930bad3dd233d636c6ce4f5c`: Python run #78 and Documentation run #130 passed.
-- The committed persistence migration has not yet been applied to a remote Supabase project; no remote-deployment success is claimed.
+- Persistence final evidence head `e88e59e8c5b86d439bfa7521d8f4e00a36c7314f`: Python run #85 and Documentation run #137 passed before PR #47 merged as `b68388ffbe3b16e00fa51d224f02564ab6bf3c62`.
+- The `data_platform_persistence` migration was applied successfully to Supabase project `xztjjgzpryrfcppqkbdo`; remote schema inspection verified expected tables, types, keys, checks, and RLS posture.
+- A bounded remote smoke verified observation/snapshot/membership insertion, identical replay without duplication, PostgreSQL `numeric` preservation of `123.45`, conflicting same-ID rejection, and complete smoke-row cleanup.
+- PR #51 documentation run #140 passed before PR #51 merged as `46b209f7c824c3a439ecb26a2fd20559ad8462f9`.
+- The `snapshot_observation_fk_index` migration was applied successfully and the prior `unindexed_foreign_keys` advisor finding disappeared on re-check.
+- Remaining performance advisor findings are `unused_index` INFO notices on new/empty tables; they are not removal evidence.
 - Immutable snapshot final evidence head `541c15d4008e096f600dd1822cd5a14807fec9be`: Python run #76 and Documentation run #128 passed before PR #45 merged as `878f0bb69cf0df70de12898b42ec4f8e25786320`.
 - FX final head `61715f6eee0dd763fdb55d4c4ab1fbdf44780046`: Python run #63 and Documentation run #115 passed before PR #43 merged as `da322d96ef4905712b511139e5bbb1ea9da1b575`.
 - ECOS Live Smoke run `31182329368` succeeded with 99 trusted observations on attempt 1; Yahoo Live Smoke run `31169043266` succeeded with 10 trusted SPY observations on attempt 1; protected FRED live connectivity is verified.
 
 ### Known Limitations
 
-- The persistence migration is source-controlled but not yet remotely applied or live-validated against Supabase.
-- No mandatory PostgreSQL driver dependency or protected database connectivity workflow exists yet.
+- The deployed schema and direct SQL smoke do not yet validate `SnapshotRepository` through a live PostgreSQL driver.
+- No mandatory PostgreSQL driver dependency or protected database-connectivity workflow exists yet.
 - Ingestion-run persistence, cache execution, scheduled ingestion, and dataset/snapshot versioning remain future work.
 - Snapshot publication/persistence does not perform provider fallback or cross-provider merging.
 - FX normalization does not implement cross-provider fallback, averaging, triangulation, fixing-time reconciliation, or bid/ask spread handling.
