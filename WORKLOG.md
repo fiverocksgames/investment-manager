@@ -15,8 +15,11 @@
 - Scheduled job output is deliberately restricted to run/provider/dataset/status/attempt/count/snapshot identifiers; observation values and database connection strings are not printed.
 - Added deterministic fake-DB/status tests plus scheduler-boundary tests, including a secret-like exception string regression test.
 - Initial implementation/test head `e66e7e97b8b7171479a88f7180cf4602ca387fab`: Python run #101 passed.
-- Production-live success is not claimed. The new migration is not yet remotely applied, `SUPABASE_DB_URL` is not yet verified in GitHub Actions, and no real workflow run under this implementation has succeeded yet.
+- Final PR #64 head `e05f9a0e016cca1e26961893a9d84b227507037a`: Python run #110 and Documentation run #168 passed.
+- PR #64 merged as `0ed5753bcf2bd31db4c768b953a3d34536ec8409`; Issue #63 closed as completed.
+- Production-live success is still not claimed. The operational-status migration is not yet remotely applied, `SUPABASE_DB_URL` is not yet verified in GitHub Actions, and no real scheduled-ingestion workflow run under this implementation has yet been verified.
 - Snapshot persistence and durable run-status persistence remain separate transactions; a snapshot can remain committed if status persistence subsequently fails, while the workflow still fails visibly.
+- Created Issue #65 and branch `agent/post-production-scheduler-reconcile` to reconcile living documents after the merge. Stale reconciliation Issues #48 and #52 were closed as superseded.
 
 ## 2026-08-08 — Provenance-Preserving Cache Executor
 
