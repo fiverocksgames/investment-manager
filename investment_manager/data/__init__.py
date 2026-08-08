@@ -4,7 +4,7 @@ from .cache import CacheExecution, CacheExecutor
 from .ecos import EcosProvider, EcosSeriesBinding
 from .fred import FredProvider, FredSeriesBinding
 from .fx import FxNormalizationBinding, FxNormalizationError, FxNormalizer, FxPair
-from .ingestion import IngestionExecution, IngestionJob, IngestionOrchestrator
+from .ingestion import IngestionExecution, IngestionFetchExecution, IngestionJob, IngestionOrchestrator
 from .models import (
     Asset,
     AssetAlias,
@@ -21,6 +21,7 @@ from .models import (
     ProviderMetadata,
     SourceSnapshot,
 )
+from .operational_status import IngestionStatusRepository, OperationalStatusError, OperationalStatusResult
 from .persistence import PersistenceError, PersistenceResult, SnapshotRepository
 from .providers import DataProvider, FetchRequest, FetchResult, ProviderCapability
 from .retry import BoundedRetryExecutor, RetryExecution, RetryPolicy
@@ -51,12 +52,16 @@ __all__ = [
     "FxPair",
     "IngestionExecution",
     "IngestionFailure",
+    "IngestionFetchExecution",
     "IngestionJob",
     "IngestionOrchestrator",
     "IngestionRun",
     "IngestionStatus",
+    "IngestionStatusRepository",
     "Observation",
     "ObservationKind",
+    "OperationalStatusError",
+    "OperationalStatusResult",
     "PersistenceError",
     "PersistenceResult",
     "ProviderCapability",
