@@ -32,8 +32,9 @@ A committed workflow is not live-success evidence. Production success requires t
 - Only one active scheduled Yahoo run is allowed by the workflow concurrency group.
 - Re-running the same immutable observation/snapshot content must not create duplicates.
 - Durable ingestion operational records use immutable run identity; identical replay is idempotent and conflicting content fails closed.
+- Dataset-version replay for the same dataset/as-of/member content is idempotent and cannot overwrite conflicting immutable content.
 - A run may resume or restart only through a documented idempotent path.
-- Analysis jobs depend on a published source snapshot rather than an in-progress ingestion run.
+- Analysis jobs depend on explicit published snapshot/dataset-version identity rather than an in-progress ingestion run or mutable latest state.
 
 ## Source Snapshot Publication
 
@@ -65,6 +66,26 @@ Normalized observations are published through `SourceSnapshotPublisher` before d
 
 Remote migration execution, schema inspection, and protected connectivity are evidence separate from committed migration files.
 
+## Dataset Version Publication and Persistence
+
+`DatasetVersionPublisher` creates one reproducible identity for one logical dataset over one or more already-immutable source snapshots.
+
+- Version `as_of` and `created_at` are explicit timezone-aware UTC values.
+- All member source snapshots must belong to the same logical dataset.
+- Member cutoffs may not exceed version `as_of`.
+- Member publication times may not exceed version `created_at`.
+- Caller order is ignored; canonical order is provider, cutoff, then snapshot UUID.
+- Duplicate snapshot IDs and different snapshots competing for the same provider/cutoff boundary fail closed.
+- Version checksum uses stable dataset/as-of/member snapshot identity and checksum metadata only.
+- UUIDv5 version identity is deterministic from dataset, `as_of`, and checksum.
+- `created_at` remains operational evidence and is not part of content identity.
+
+`DatasetVersionRepository` references source snapshots already persisted in `source_snapshots`. It verifies their immutable dataset/provider/cutoff/publication/checksum content before inserting a version. `dataset_versions` and ordered `dataset_version_snapshots` membership commit in one transaction. Identical replay is accepted; version-content or membership conflicts roll back and are never overwritten.
+
+The migration `202608080005_dataset_versioning.sql` is committed schema intent only until the PR is explicitly approved/merged and the migration is separately applied and inspected remotely. Do not claim remote deployment before that evidence exists.
+
+The versioning tables are server-managed with RLS enabled and no browser/client policies. A cross-dataset analysis-input manifest is not part of this layer.
+
 ## Durable Ingestion Status
 
 Migration `202608080003_ingestion_operational_status.sql` adds server-managed `ingestion_runs` and `ingestion_failures` tables. `IngestionStatusRepository` persists terminal run evidence atomically within that status transaction.
@@ -83,7 +104,7 @@ The common `BoundedRetryExecutor` retries a whole provider request only when the
 
 Retry policy records the maximum attempt count and applied delays. The scheduled ingestion layer preserves the actual provider-attempt count as separate operational evidence. Retry exhaustion remains a failed result and never becomes a successful snapshot or connectivity claim.
 
-Persistence identity conflicts and deterministic snapshot publication failures are not provider-retry candidates. A transient database transport retry policy requires a separate orchestration decision and must not blindly replay an ambiguous commit outcome.
+Persistence identity conflicts and deterministic snapshot/dataset-version publication failures are not provider-retry candidates. A transient database transport retry policy requires a separate orchestration decision and must not blindly replay an ambiguous commit outcome.
 
 ## Cache Operations
 
@@ -100,10 +121,11 @@ Record where available:
 - run identifier
 - workflow run identifier and commit SHA in GitHub Actions evidence
 - provider and dataset
-- cutoff
+- cutoff / dataset-version `as_of`
 - start and end time
 - received and accepted counts
 - source snapshot identifier when publication succeeds
+- dataset version identifier when version publication succeeds
 - cache-hit status
 - actual provider-attempt count
 - final status and safe failure categories
@@ -122,6 +144,7 @@ Canonical ingestion model supports pending/running/succeeded/partial/failed stat
 - Partial failures are recorded and do not silently become successful runs.
 - Snapshot validation failure publishes nothing and leaves prior good snapshots unchanged.
 - Snapshot persistence failure must not be reported as published.
+- Dataset-version validation/persistence failure produces no trusted version and leaves prior versions unchanged.
 - Durable status persistence failure makes the workflow fail visibly.
 - Repeated failure opens an operational task or alert rather than retrying indefinitely.
 - Prior good data may remain visible only with original timestamp and explicit stale status.
@@ -138,4 +161,4 @@ Every production-affecting change requires an Issue, Requirement IDs, documentat
 
 ## Service Priorities
 
-Correctness, provenance, and freshness transparency take priority over low latency or high availability. It is preferable to show insufficient or stale data explicitly than to publish an unverified current value.
+Correctness, provenance, and freshness transparency take priority over low latency or high availability. It is preferable to show insufficient or stale data explicitly than to publish an unverified current value or ambiguous dataset version.
