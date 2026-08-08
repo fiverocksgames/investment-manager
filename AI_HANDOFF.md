@@ -2,64 +2,49 @@
 
 ## Current State
 
-Phase 2 has live-validated FRED, Yahoo, and ECOS providers; bounded retry; explicit FX normalization; immutable source snapshots; transactional snapshot persistence; provenance-preserving cache execution; scheduled-ingestion orchestration; durable operational status; verified production Yahoo scheduled ingestion; and deterministic logical dataset versioning.
+Phase 2 has live-validated FRED, Yahoo, and ECOS providers; bounded retry; explicit FX normalization; immutable source snapshots; transactional snapshot persistence; provenance-preserving cache execution; scheduled-ingestion orchestration; durable operational status; verified production Yahoo scheduled ingestion; deterministic logical dataset versioning; and a Draft cross-dataset analysis-input manifest milestone.
 
-PR #72 merged as `a88dae118afbcfd3ab1e09d4c8c6643a9cd457bb`; Issue #71 closed. Migration `202608080005_dataset_versioning.sql` has now been applied to Supabase project `xztjjgzpryrfcppqkbdo` and the resulting schema has been remotely inspected.
+PR #74 merged as `0840fc81c83447ed816a0b4be1ca876cea151224`; Issue #73 closed. Dataset-versioning remote deployment evidence is recorded. Active work is Issue #75 / Draft PR #76.
 
 ## Repository and Active Work
 
 - Canonical repository: `fiverocksgames/investment-manager`
 - Default branch: `main`
-- Active branch: `agent/dataset-versioning-remote-evidence`
-- Issue: #73 — `docs: record remote dataset-versioning deployment evidence`
-- Draft PR: #74 — evidence-only remote deployment record
+- Active branch: `agent/analysis-input-manifests`
+- Issue: #75 — `feat: add deterministic cross-dataset analysis input manifests`
+- Draft PR: #76
+- Requirement IDs: `REQ-DATA-002`, `REQ-SIG-002`, `REQ-BKT-001`
 
-## Dataset Versioning
+## Analysis Input Manifest Scope
 
-- `DatasetVersion` represents one immutable version of exactly one logical dataset.
-- `DatasetVersionPublisher` groups already-published `SourceSnapshot` values without copying or rewriting observation content.
-- Identity is deterministic across caller ordering and uses SHA-256 plus UUIDv5 over dataset, `as_of`, and stable source-snapshot identity/content metadata.
-- Point-in-time validation rejects future cutoff/publication, dataset mismatch, duplicate IDs, and conflicting provider/cutoff boundaries.
-- `DatasetVersionRepository` verifies already-persisted source snapshot metadata before atomically persisting version and ordered membership.
-- Identical replay is idempotent; immutable conflicts roll back.
-
-## Remote Dataset-Version Deployment Evidence
-
-- Supabase migration `dataset_versioning` applied successfully after PR #72 merge.
-- Remote migration history contains the applied migration.
-- `dataset_versions` and `dataset_version_snapshots` exist with the expected primary keys, foreign keys, uniqueness checks, checksum/time checks, and ordered membership constraint.
-- `dataset_version_snapshots.snapshot_id` has an explicit covering index; `version_id` is covered by the composite primary key.
-- `dataset_versions(dataset, as_of desc)` index exists for version lookup.
-- Both tables have RLS enabled and zero client-facing policies, matching the intentional server-managed deny-by-default design.
-- Supabase Performance Advisor reports no unindexed-foreign-key warning for the new tables. New indexes currently appear only as `unused_index` INFO because the tables are new/low-usage.
-- Supabase Security Advisor reports `rls_enabled_no_policy` INFO for the new tables, which is expected for this server-only phase. The existing Auth leaked-password-protection warning is unrelated and remains a separate security decision.
-- Python `DatasetVersionRepository` live connectivity has **not** been separately executed against production; do not claim it has.
+- `AnalysisInputManifest` binds exactly one immutable `DatasetVersion` per logical dataset into a reproducible cross-dataset input set.
+- Caller order is not identity. Members are canonically ordered by dataset and version UUID.
+- SHA-256 + UUIDv5 identity includes manifest `as_of` plus stable dataset-version identity/content metadata; operational manifest `created_at` does not rewrite identity.
+- Publication rejects empty input, duplicate logical datasets, duplicate versions, timezone-naive boundaries, look-ahead dataset versions, and versions created after the manifest creation boundary.
+- `AnalysisInputManifestRepository` verifies referenced persisted `dataset_versions` immutable metadata before atomically persisting the manifest and ordered membership.
+- Identical replay is idempotent; missing/conflicting versions or conflicting immutable manifest/membership content fail closed and roll back.
+- Migration `202608080006_analysis_input_manifests.sql` is committed only and must not be applied remotely before explicit PR merge approval.
+- No indicator, regime, candidate-score, portfolio, recommendation, or backtest execution is implemented in this milestone.
 
 ## Validation Status
 
-- PR #74 initial Documentation run #197 failed only because the evidence document contained a bare URL (`MD034`).
-- The URL was converted to a Markdown link.
-- Latest head `d1a6224f2428824d747161b2cc7c9bb54a2e8327` passed Documentation run #198.
+- Deterministic `unittest`/fake-DB coverage added for order/creation-time identity stability, UTC normalization, empty/duplicate/look-ahead/naive-boundary rejection, persisted-version verification, idempotent replay, immutable conflict, and rollback.
+- Head `a7bb9cef07a3efb9e89bf308ce7d86c920b8a19d` passed Python run #138 and Documentation run #202.
+- Living/spec documentation updates are in progress; latest-head CI must be reconfirmed after those commits before Ready for Review.
 
-## Verified Production Scheduled-Ingestion Evidence
+## Security and Data Boundaries
 
-- GitHub Actions run `31257977677` on `main` succeeded with Yahoo `market_prices`, one provider attempt, eight received/accepted observations, and durable snapshot/run evidence.
-- Remote Supabase verification confirmed the matching durable run row, linked snapshot, eight snapshot members, and zero failure rows.
-- This remains bounded evidence for that run, not a guarantee of future provider/database availability.
-
-## Development Rules
-
-1. Follow `PROJECT_POLICY.md` and `AGENTS.md`.
-2. Never commit or log database URLs, passwords, service-role credentials, provider secrets, raw payloads, or personal investment data.
-3. Financial values remain `Decimal`; persisted financial values use PostgreSQL `numeric`.
-4. Datetimes remain timezone-aware and UTC-normalized.
-5. Cache/retry/orchestration/versioning must never rewrite freshness or provenance.
-6. Partial/failed provider outcomes must not silently become trusted published data.
-7. Substantial PRs begin as Draft.
-8. Never merge without explicit user approval.
+1. Never commit or log database URLs, passwords, service-role credentials, provider secrets, raw payloads, observation values, or personal investment data.
+2. Datetimes remain timezone-aware and UTC-normalized.
+3. Input manifests reference immutable version identity; they do not copy or rewrite observations.
+4. RLS is enabled on the new server-managed tables with no client-facing policies in this milestone.
+5. No remote migration or live repository-connectivity claim before separately executed evidence.
+6. Never merge without explicit user approval.
 
 ## Exact Next Steps
 
-1. Update PR #74 with final Documentation #198 evidence and mark Ready for Review.
-2. Stop for explicit user merge approval.
-3. After evidence is merged, next Phase 2 architecture work should define a reproducible cross-dataset analysis-input manifest, or separately broaden production scheduling to additional approved provider/dataset paths.
+1. Finish affected `ANALYSIS_SPEC`, database/architecture, feature-matrix, worklog, and changelog updates.
+2. Confirm latest-head Python and Documentation CI.
+3. Update PR #76 validation evidence and mark Ready for Review only when required CI passes.
+4. Stop for explicit user merge approval.
+5. Only after approval and merge, apply `202608080006_analysis_input_manifests.sql` remotely and verify schema/advisor evidence before claiming deployment.

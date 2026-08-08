@@ -6,6 +6,10 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Added
 
+- Deterministic `AnalysisInputManifest`, `AnalysisInputManifestPublisher`, and `AnalysisInputManifestRepository` for exact cross-dataset analysis inputs over immutable dataset versions
+- Additive Supabase migration `202608080006_analysis_input_manifests.sql` for server-managed `analysis_input_manifests` and ordered `analysis_input_manifest_versions` with RLS enabled and no client-facing policies
+- Deterministic analysis-input manifest tests for caller-order/creation-time identity stability, UTC normalization, duplicate-dataset and look-ahead rejection, persisted-version verification, idempotent replay, immutable conflicts, and transactional rollback
+- `docs/ANALYSIS_INPUT_MANIFESTS.md` documenting cross-dataset identity, point-in-time boundaries, persistence, and deferred model/parameter versioning
 - Deterministic `DatasetVersion`, `DatasetVersionPublisher`, and `DatasetVersionRepository` for one logical dataset over exact immutable source-snapshot membership
 - Additive Supabase migration `202608080005_dataset_versioning.sql` for server-managed `dataset_versions` and ordered `dataset_version_snapshots` with RLS enabled and no client-facing policies
 - Deterministic dataset-version tests for caller-order independence, UTC boundaries, duplicate/conflict/look-ahead rejection, idempotent replay, immutable persisted-snapshot verification, and transactional rollback
@@ -40,6 +44,9 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Changed
 
+- Analysis-input manifests canonically order one immutable dataset version per logical dataset and derive SHA-256 + UUIDv5 identity from manifest `as_of` and stable dataset/version identity metadata; operational manifest creation time does not rewrite content identity.
+- Analysis-input publication enforces point-in-time boundaries: dataset-version `as_of` cannot exceed manifest `as_of`, and referenced dataset versions cannot be created after the manifest creation boundary.
+- Analysis-input persistence verifies the already-persisted dataset-version dataset, `as_of`, `created_at`, and checksum before a manifest can reference it.
 - Logical dataset versions canonically order member source snapshots by provider/cutoff/UUID and derive SHA-256 + UUIDv5 identity from dataset, `as_of`, and stable snapshot identity/content metadata; operational creation/publication times do not rewrite content identity.
 - Dataset-version publication enforces point-in-time boundaries: source cutoff cannot exceed version `as_of`, and source publication cannot occur after version creation.
 - Dataset-version persistence now verifies the already-persisted source snapshot's `published_at` along with dataset/provider/cutoff/checksum before a version can reference it.
@@ -78,13 +85,14 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Security
 
+- Analysis-input manifest tables are server-managed with RLS enabled and no browser/client policies; manifest identity excludes credentials, raw provider payloads, and personal portfolio data.
 - Dataset-version tables are server-managed with RLS enabled and no browser/client policies; version identity excludes credentials, raw provider payloads, and personal portfolio data.
 - Scheduled ingestion reads PostgreSQL connectivity only from the GitHub Actions `SUPABASE_DB_URL` repository secret, rejects a missing secret, and does not print its value.
 - Scheduled-job console output is limited to safe operational identifiers, status, counts, attempt count, and snapshot ID; financial observation values are not logged.
 - Durable catch-all failures record exception type only rather than raw exception text.
 - `ingestion_runs` and `ingestion_failures` have RLS enabled with no browser/client policies in this milestone.
 - Cache execution stores no new credentials or raw provider payloads and does not mutate provider/source metadata.
-- Data-platform persistence tables have RLS enabled with no browser/client policies in this milestone.
+- Data-platform persistence tables have RLS enabled with no client-facing policies in this milestone.
 - Database URLs, passwords, service-role credentials, and other database secrets remain runtime-only and are excluded from code, fixtures, logs, and migration files.
 - Snapshot identity excludes credentials, raw provider requests, raw payloads, and personal portfolio information.
 - FX normalization makes no external calls and does not expose provider credentials or raw payloads.
@@ -93,6 +101,8 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Validation
 
+- Analysis-input manifest latest head `d5d7c942217da6fc915d9eeff40a1fa765b9c553`: Python run #141 and Documentation run #205 passed after implementation, test, analysis-spec, handoff, and traceability updates. Earlier heads `a7bb9cef07a3efb9e89bf308ce7d86c920b8a19d` and `b7d367364022497ad64c76d547884ca7ee937f6e` also passed their corresponding Python/Documentation runs.
+- Dataset-version migration `202608080005_dataset_versioning.sql` was applied remotely after PR #72 merged, and the resulting schema/index/RLS/advisor state was recorded by merged evidence PR #74.
 - Dataset-versioning latest implementation/test head `10ee278428b9536f3cd7d6cc05830da3a7708e9f`: Python run #128 and Documentation run #188 passed. Earlier Python run #127 failed only because the first test revision imported unavailable `pytest`; it was converted to `unittest` and revalidated.
 - First verified production scheduled-ingestion success: GitHub Actions run `31257977677` on `main` commit `ad762ed10eebe3b50ef3924e4fd6978a826ab680` completed successfully with `provider=yahoo`, `dataset=market_prices`, `status=succeeded`, `provider_attempts=1`, `records_received=8`, `records_accepted=8`, `run_id=5346037b-2772-4c22-8e04-4d59fad0daf7`, and `snapshot_id=725526a7-a925-54ff-a070-dcc2b92b96fd`.
 - Remote Supabase verification confirmed the exact durable `ingestion_runs` row, linked Yahoo snapshot, 8 snapshot-membership rows, and zero `ingestion_failures` rows for that run. This is bounded success evidence, not a future availability guarantee.
@@ -113,8 +123,9 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Known Limitations
 
-- Dataset-version migration `202608080005_dataset_versioning.sql` is committed but not remotely applied or validated; deployment must wait for explicit PR merge approval.
-- A `DatasetVersion` covers exactly one logical dataset. Cross-dataset analysis-input manifests, provider fallback/reconciliation, retention/deletion, and point-in-time backtest policy remain separate work.
+- Analysis-input manifest migration `202608080006_analysis_input_manifests.sql` is committed but not remotely applied or validated; deployment must wait for explicit PR #76 merge approval.
+- Analysis-input manifests currently identify exact dataset-version membership only. Analysis parameter/model-version manifests, automatic manifest creation after ingestion, indicator/regime/scoring execution, portfolio logic, recommendation logic, and backtest execution remain separate work.
+- A `DatasetVersion` covers exactly one logical dataset. Provider fallback/reconciliation, retention/deletion, and point-in-time backtest policy remain separate work.
 - Snapshot persistence and durable ingestion-status persistence are separate transactions; a snapshot may commit even if subsequent status persistence fails, in which case the workflow fails visibly and reconciliation may be required.
 - Production scheduled ingestion is currently verified only for the bounded Yahoo SPY run above; one successful run does not guarantee future provider, database, or GitHub-hosted runner availability.
 - Only Yahoo SPY is wired into the initial production schedule; FRED, ECOS, FX and additional market symbols remain manual/live-smoke or unscheduled paths.

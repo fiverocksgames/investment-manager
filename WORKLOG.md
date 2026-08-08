@@ -1,5 +1,18 @@
 # Worklog
 
+## 2026-08-08 — Cross-Dataset Analysis Input Manifests
+
+- PR #74 merged as `0840fc81c83447ed816a0b4be1ca876cea151224`; Issue #73 closed after recording remote dataset-version deployment evidence.
+- Created Issue #75, branch `agent/analysis-input-manifests`, and Draft PR #76 for the next Phase 2 reproducibility milestone.
+- Added deterministic `AnalysisInputManifest`, `AnalysisInputManifestPublisher`, and `AnalysisInputManifestRepository` over exact immutable `DatasetVersion` memberships spanning distinct logical datasets.
+- Manifest identity is caller-order independent and uses canonical dataset/version ordering, SHA-256 content identity, and UUIDv5; operational `created_at` does not alter content identity.
+- Publication rejects empty inputs, multiple versions for the same logical dataset, version look-ahead beyond manifest `as_of`, versions created after manifest creation, duplicate version IDs, and naive time boundaries.
+- Repository persistence verifies every referenced persisted dataset version before atomically writing the manifest and exact ordered membership; identical replay is idempotent and immutable conflicts roll back.
+- Added migration `202608080006_analysis_input_manifests.sql` with server-managed manifest/membership tables, FK/index/uniqueness constraints, RLS enabled, and no client-facing policies.
+- Added `docs/ANALYSIS_INPUT_MANIFESTS.md`, analysis-spec and traceability updates, and deterministic `unittest`/fake-DB coverage.
+- Validation progressed through Python #138 / Documentation #202, Python #140 / Documentation #204, and latest head `d5d7c942217da6fc915d9eeff40a1fa765b9c553` with Python #141 / Documentation #205 passed.
+- The analysis-input manifest migration remains source-controlled only and must not be applied remotely before explicit user approval and merge of PR #76.
+
 ## 2026-08-08 — Dataset and Snapshot Versioning
 
 - PR #70 merged as `6a500adcae708da3ce2b33614856e5de55598f4c`; Issue #69 closed after recording the first verified production scheduled-ingestion success.
