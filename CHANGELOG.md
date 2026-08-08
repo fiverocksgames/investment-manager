@@ -11,8 +11,9 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 - `IngestionFetchExecution` for explicit provider-attempt evidence without rewriting canonical provider data
 - `IngestionStatusRepository`, `OperationalStatusResult`, and `OperationalStatusError` for atomic/idempotent terminal run and ordered failure evidence
 - Additive Supabase migration `202608080003_ingestion_operational_status.sql` for server-managed `ingestion_runs` and `ingestion_failures` tables with RLS enabled and no client-facing policies
+- Additive Supabase migration `202608080004_ingestion_snapshot_fk_index.sql` covering `ingestion_runs(snapshot_id)`
 - Optional `postgres` runtime dependency using psycopg 3 for protected scheduled-job database connectivity
-- Deterministic tests for durable run/failure persistence, identical replay, conflicting run rollback, non-terminal rejection, provider-attempt propagation, sanitized secret-like exceptions, and scheduled-workflow boundaries
+- Deterministic tests for durable run/failure persistence, identical replay, conflicting run rollback, non-terminal rejection, provider-attempt propagation, sanitized secret-like exceptions, database-failure categorization, and scheduled-workflow boundaries
 - Provider-independent `IngestionJob`, `IngestionExecution`, and `IngestionOrchestrator` for fail-closed scheduled-ingestion orchestration
 - Provider-independent `CacheExecutor` and `CacheExecution` for process-local successful-result reuse without rewriting canonical provenance
 - Deterministic cache tests for miss/hit, exact expiry, provider/request isolation, partial/failed non-caching, stale-on-error exclusion, UTC validation, and provenance preservation
@@ -36,6 +37,7 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 ### Changed
 
 - Scheduled-ingestion catch-all errors now preserve only the exception type; raw exception strings are excluded from durable operational evidence to avoid leaking connection strings, credentials, URLs, or payload fragments.
+- Scheduled Yahoo database-connectivity failures now emit a secret-safe category without printing the raw DSN or exception text.
 - Bounded retry attempt counts are propagated separately as actual provider-attempt evidence; a future cache hit may represent zero provider calls while the canonical run attempt contract remains valid.
 - Production scheduling is explicitly evidence-gated: committed workflow code is not considered live until the remote migration, GitHub secret, real workflow execution, and durable run row are verified.
 - Scheduled Yahoo ingestion initially targets SPY with a bounded 10-day daily window and three provider attempts; no provider fallback or silent stale fallback is enabled.
@@ -54,6 +56,7 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Fixed
 
+- Added a covering index for `ingestion_runs.snapshot_id`; remote Supabase advisor no longer reports its prior `unindexed_foreign_keys` finding.
 - Prevented raw catch-all exception text from becoming durable ingestion failure messages.
 - Closed obsolete post-cache reconciliation PR #60 without merge and Issue #59 as superseded by the newer scheduled-ingestion work, preventing stale living documents from regressing `main`.
 - Added a covering index for `source_snapshot_observations.observation_id`; remote Supabase advisor no longer reports the prior `unindexed_foreign_keys` finding.
@@ -79,7 +82,11 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Validation
 
-- Production-scheduling initial implementation/test head `e66e7e97b8b7171479a88f7180cf4602ca387fab`: Python run #101 passed; remote migration/secret/workflow live validation remains pending.
+- First verified production scheduled-ingestion success: GitHub Actions run `31257977677` on `main` commit `ad762ed10eebe3b50ef3924e4fd6978a826ab680` completed successfully with `provider=yahoo`, `dataset=market_prices`, `status=succeeded`, `provider_attempts=1`, `records_received=8`, `records_accepted=8`, `run_id=5346037b-2772-4c22-8e04-4d59fad0daf7`, and `snapshot_id=725526a7-a925-54ff-a070-dcc2b92b96fd`.
+- Remote Supabase verification confirmed the exact durable `ingestion_runs` row, linked Yahoo snapshot, 8 snapshot-membership rows, and zero `ingestion_failures` rows for that run. This is bounded success evidence, not a future availability guarantee.
+- Earlier production runs `31256711191`, `31257558763`, and `31257858229` failed safely before durable run persistence while the protected database connection configuration was being corrected; those failures remain part of operational history.
+- PR #68 merged as `ad762ed10eebe3b50ef3924e4fd6978a826ab680`; its `ingestion_runs(snapshot_id)` covering-index migration was applied remotely and the prior FK advisor finding is resolved.
+- Production-scheduling initial implementation/test head `e66e7e97b8b7171479a88f7180cf4602ca387fab`: Python run #101 passed.
 - Scheduled-ingestion orchestration final head `0e27782c9a794040a8f51346d459ab3b5e1b6435`: Python run #99 and Documentation run #159 passed before PR #62 merged as `6d2805f2c66fb91e61f87e4264c382c1d94895ad`.
 - Cache initial implementation/documentation head `b825dcc4bf2c391becfc700de466b8902f9c7b93`: Python run #87 and Documentation run #146 passed.
 - Persistence initial implementation head `42d2b8414a54dc75930bad3dd233d636c6ce4f5c`: Python run #78 and Documentation run #130 passed.
@@ -94,8 +101,8 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Known Limitations
 
-- The production-scheduling workflow and durable status schema are source-controlled but not yet production-live validated. The new migration has not been remotely applied, `SUPABASE_DB_URL` has not been verified, and no real scheduled ingestion run has yet succeeded under this implementation.
 - Snapshot persistence and durable ingestion-status persistence are separate transactions; a snapshot may commit even if subsequent status persistence fails, in which case the workflow fails visibly and reconciliation may be required.
+- Production scheduled ingestion is currently verified only for the bounded Yahoo SPY run above; one successful run does not guarantee future provider, database, or GitHub-hosted runner availability.
 - Only Yahoo SPY is wired into the initial production schedule; FRED, ECOS, FX and additional market symbols remain manual/live-smoke or unscheduled paths.
 - Cache execution is process-local only; no Redis/distributed backend, persistent cache, background refresh, stale-on-error, or provider fallback exists yet.
 - Supabase migration history contains a duplicate-name `snapshot_observation_fk_index` entry from repeated idempotent execution; no automatic history repair is implemented.
