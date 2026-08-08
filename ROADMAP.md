@@ -42,15 +42,14 @@ Remaining:
 - Provider-independent bounded retry executor with exponential backoff, jitter, partial-result stop, and retry-exhaustion evidence
 - Canonical FX normalization with explicit base/quote direction and deterministic Decimal inverse normalization
 - Deterministic immutable source-snapshot publication with explicit cutoff, checksum, and snapshot identity
+- Transactional idempotent snapshot persistence with remotely validated Supabase schema and foreign-key indexing
 - Live-success evidence recorded for FRED, Yahoo, and ECOS
 
 ### Active Next Milestones
 
-1. Persistence and idempotent snapshot storage integration
-2. Protected remote Supabase migration/application validation
-3. Cache executor with preserved provenance
-4. Scheduled ingestion and operational status reporting
-5. Dataset and snapshot versioning
+1. Cache executor with preserved provenance
+2. Scheduled ingestion and operational status reporting
+3. Dataset and snapshot versioning
 
 ### Exit Criteria
 
