@@ -1,7 +1,6 @@
+import unittest
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
-
-import pytest
 
 from investment_manager.data import (
     DatasetVersionError,
@@ -28,64 +27,70 @@ def snapshot(number: int, *, dataset="market_prices", provider="yahoo", cutoff=N
     )
 
 
-def test_identity_is_stable_across_input_order():
-    one = snapshot(1, provider="fred")
-    two = snapshot(2, provider="yahoo")
-    publisher = DatasetVersionPublisher()
+class DatasetVersionPublisherTests(unittest.TestCase):
+    def test_identity_is_stable_across_input_order(self):
+        one = snapshot(1, provider="fred")
+        two = snapshot(2, provider="yahoo")
+        publisher = DatasetVersionPublisher()
 
-    left = publisher.publish(dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(one, two))
-    right = publisher.publish(dataset="market_prices", as_of=AS_OF, created_at=CREATED + timedelta(minutes=5), snapshots=(two, one))
-
-    assert left.version_id == right.version_id
-    assert left.checksum == right.checksum
-    assert left.snapshot_ids == right.snapshot_ids
-
-
-def test_created_at_is_not_part_of_identity():
-    item = snapshot(1)
-    publisher = DatasetVersionPublisher()
-    first = publisher.publish(dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(item,))
-    later = publisher.publish(dataset="market_prices", as_of=AS_OF, created_at=CREATED + timedelta(hours=1), snapshots=(item,))
-    assert first.version_id == later.version_id
-    assert first.checksum == later.checksum
-
-
-def test_rejects_dataset_mismatch_duplicate_and_future_cutoff():
-    publisher = DatasetVersionPublisher()
-    item = snapshot(1)
-    with pytest.raises(DatasetVersionError, match="dataset must match"):
-        publisher.publish(dataset="fx_rates", as_of=AS_OF, created_at=CREATED, snapshots=(item,))
-    with pytest.raises(DatasetVersionError, match="duplicate snapshot_id"):
-        publisher.publish(dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(item, item))
-    future = snapshot(3, cutoff=AS_OF + timedelta(seconds=1))
-    with pytest.raises(DatasetVersionError, match="cutoff must not exceed"):
-        publisher.publish(dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(future,))
-
-
-def test_rejects_snapshot_published_after_version_creation():
-    publisher = DatasetVersionPublisher()
-    item = snapshot(1, published_at=CREATED + timedelta(seconds=1))
-    with pytest.raises(DatasetVersionError, match="published_at must not exceed"):
-        publisher.publish(dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(item,))
-
-
-def test_rejects_conflicting_same_provider_cutoff_boundary():
-    publisher = DatasetVersionPublisher()
-    one = snapshot(1, provider="yahoo", cutoff=AS_OF - timedelta(days=1), checksum="1" * 64)
-    two = snapshot(2, provider="yahoo", cutoff=AS_OF - timedelta(days=1), checksum="2" * 64)
-    with pytest.raises(DatasetVersionError, match="conflicting snapshots"):
-        publisher.publish(dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(one, two))
-
-
-def test_rejects_naive_times():
-    publisher = DatasetVersionPublisher()
-    with pytest.raises(ValueError, match="timezone-aware"):
-        publisher.publish(
+        left = publisher.publish(dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(one, two))
+        right = publisher.publish(
             dataset="market_prices",
-            as_of=datetime(2026, 8, 8, 12, 0),
-            created_at=CREATED,
-            snapshots=(snapshot(1),),
+            as_of=AS_OF,
+            created_at=CREATED + timedelta(minutes=5),
+            snapshots=(two, one),
         )
+
+        self.assertEqual(left.version_id, right.version_id)
+        self.assertEqual(left.checksum, right.checksum)
+        self.assertEqual(left.snapshot_ids, right.snapshot_ids)
+
+    def test_created_at_is_not_part_of_identity(self):
+        item = snapshot(1)
+        publisher = DatasetVersionPublisher()
+        first = publisher.publish(dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(item,))
+        later = publisher.publish(
+            dataset="market_prices",
+            as_of=AS_OF,
+            created_at=CREATED + timedelta(hours=1),
+            snapshots=(item,),
+        )
+        self.assertEqual(first.version_id, later.version_id)
+        self.assertEqual(first.checksum, later.checksum)
+
+    def test_rejects_dataset_mismatch_duplicate_and_future_cutoff(self):
+        publisher = DatasetVersionPublisher()
+        item = snapshot(1)
+        with self.assertRaisesRegex(DatasetVersionError, "dataset must match"):
+            publisher.publish(dataset="fx_rates", as_of=AS_OF, created_at=CREATED, snapshots=(item,))
+        with self.assertRaisesRegex(DatasetVersionError, "duplicate snapshot_id"):
+            publisher.publish(dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(item, item))
+        future = snapshot(3, cutoff=AS_OF + timedelta(seconds=1))
+        with self.assertRaisesRegex(DatasetVersionError, "cutoff must not exceed"):
+            publisher.publish(dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(future,))
+
+    def test_rejects_snapshot_published_after_version_creation(self):
+        publisher = DatasetVersionPublisher()
+        item = snapshot(1, published_at=CREATED + timedelta(seconds=1))
+        with self.assertRaisesRegex(DatasetVersionError, "published_at must not exceed"):
+            publisher.publish(dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(item,))
+
+    def test_rejects_conflicting_same_provider_cutoff_boundary(self):
+        publisher = DatasetVersionPublisher()
+        one = snapshot(1, provider="yahoo", cutoff=AS_OF - timedelta(days=1), checksum="1" * 64)
+        two = snapshot(2, provider="yahoo", cutoff=AS_OF - timedelta(days=1), checksum="2" * 64)
+        with self.assertRaisesRegex(DatasetVersionError, "conflicting snapshots"):
+            publisher.publish(dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(one, two))
+
+    def test_rejects_naive_times(self):
+        publisher = DatasetVersionPublisher()
+        with self.assertRaisesRegex(ValueError, "timezone-aware"):
+            publisher.publish(
+                dataset="market_prices",
+                as_of=datetime(2026, 8, 8, 12, 0),
+                created_at=CREATED,
+                snapshots=(snapshot(1),),
+            )
 
 
 class FakeCursor:
@@ -158,73 +163,79 @@ def persisted_snapshot_row(item):
     return (item.dataset, item.provider, item.cutoff_at, item.published_at, item.checksum)
 
 
-def test_repository_persists_and_replays_idempotently():
-    one = snapshot(1, provider="fred")
-    two = snapshot(2, provider="yahoo")
-    version = DatasetVersionPublisher().publish(
-        dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(one, two)
-    )
-    state = {
-        "snapshots": {str(one.snapshot_id): persisted_snapshot_row(one), str(two.snapshot_id): persisted_snapshot_row(two)},
-        "versions": {},
-        "memberships": {},
-    }
-    connections = []
+class DatasetVersionRepositoryTests(unittest.TestCase):
+    def test_repository_persists_and_replays_idempotently(self):
+        one = snapshot(1, provider="fred")
+        two = snapshot(2, provider="yahoo")
+        version = DatasetVersionPublisher().publish(
+            dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(one, two)
+        )
+        state = {
+            "snapshots": {
+                str(one.snapshot_id): persisted_snapshot_row(one),
+                str(two.snapshot_id): persisted_snapshot_row(two),
+            },
+            "versions": {},
+            "memberships": {},
+        }
+        connections = []
 
-    def factory():
+        def factory():
+            connection = FakeConnection(state)
+            connections.append(connection)
+            return connection
+
+        repository = DatasetVersionRepository(factory)
+        first = repository.persist(version, (two, one))
+        second = repository.persist(version, (one, two))
+
+        self.assertTrue(first.created_version)
+        self.assertEqual(first.inserted_memberships, 2)
+        self.assertFalse(second.created_version)
+        self.assertEqual(second.inserted_memberships, 0)
+        self.assertTrue(connections[0].committed and connections[1].committed)
+
+    def test_repository_conflict_rolls_back(self):
+        item = snapshot(1)
+        version = DatasetVersionPublisher().publish(
+            dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(item,)
+        )
+        state = {
+            "snapshots": {str(item.snapshot_id): persisted_snapshot_row(item)},
+            "versions": {str(version.version_id): (version.dataset, version.as_of, version.created_at, "f" * 64)},
+            "memberships": {},
+        }
         connection = FakeConnection(state)
-        connections.append(connection)
-        return connection
+        repository = DatasetVersionRepository(lambda: connection)
 
-    repository = DatasetVersionRepository(factory)
-    first = repository.persist(version, (two, one))
-    second = repository.persist(version, (one, two))
+        with self.assertRaisesRegex(DatasetVersionError, "conflicting immutable content"):
+            repository.persist(version, (item,))
 
-    assert first.created_version is True
-    assert first.inserted_memberships == 2
-    assert second.created_version is False
-    assert second.inserted_memberships == 0
-    assert connections[0].committed and connections[1].committed
+        self.assertTrue(connection.rolled_back)
+        self.assertEqual(state["memberships"], {})
 
+    def test_repository_rejects_persisted_snapshot_publication_conflict(self):
+        item = snapshot(1)
+        version = DatasetVersionPublisher().publish(
+            dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(item,)
+        )
+        persisted = list(persisted_snapshot_row(item))
+        persisted[3] = item.published_at + timedelta(minutes=1)
+        state = {
+            "snapshots": {str(item.snapshot_id): tuple(persisted)},
+            "versions": {},
+            "memberships": {},
+        }
+        connection = FakeConnection(state)
+        repository = DatasetVersionRepository(lambda: connection)
 
-def test_repository_conflict_rolls_back():
-    item = snapshot(1)
-    version = DatasetVersionPublisher().publish(
-        dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(item,)
-    )
-    state = {
-        "snapshots": {str(item.snapshot_id): persisted_snapshot_row(item)},
-        "versions": {str(version.version_id): (version.dataset, version.as_of, version.created_at, "f" * 64)},
-        "memberships": {},
-    }
-    connection = FakeConnection(state)
-    repository = DatasetVersionRepository(lambda: connection)
+        with self.assertRaisesRegex(DatasetVersionError, "missing or conflicts"):
+            repository.persist(version, (item,))
 
-    with pytest.raises(DatasetVersionError, match="conflicting immutable content"):
-        repository.persist(version, (item,))
-
-    assert connection.rolled_back is True
-    assert state["memberships"] == {}
+        self.assertTrue(connection.rolled_back)
+        self.assertEqual(state["versions"], {})
+        self.assertEqual(state["memberships"], {})
 
 
-def test_repository_rejects_persisted_snapshot_publication_conflict():
-    item = snapshot(1)
-    version = DatasetVersionPublisher().publish(
-        dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(item,)
-    )
-    persisted = list(persisted_snapshot_row(item))
-    persisted[3] = item.published_at + timedelta(minutes=1)
-    state = {
-        "snapshots": {str(item.snapshot_id): tuple(persisted)},
-        "versions": {},
-        "memberships": {},
-    }
-    connection = FakeConnection(state)
-    repository = DatasetVersionRepository(lambda: connection)
-
-    with pytest.raises(DatasetVersionError, match="missing or conflicts"):
-        repository.persist(version, (item,))
-
-    assert connection.rolled_back is True
-    assert state["versions"] == {}
-    assert state["memberships"] == {}
+if __name__ == "__main__":
+    unittest.main()
