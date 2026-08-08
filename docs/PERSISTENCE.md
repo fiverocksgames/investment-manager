@@ -66,9 +66,11 @@ This is bounded evidence for the tested schema and transaction primitives. It is
 
 ## Advisor Follow-up
 
-After the initial remote migration, Supabase performance advisor reported one actionable finding: the foreign key from `source_snapshot_observations.observation_id` lacked a covering index. Follow-up migration `202608080002_snapshot_observation_fk_index.sql` adds `source_snapshot_observations_observation_id_idx` using `create index if not exists`.
+After the initial remote migration, Supabase performance advisor reported that the foreign key from `source_snapshot_observations.observation_id` lacked a covering index. PR #51 added `202608080002_snapshot_observation_fk_index.sql`, which creates `source_snapshot_observations_observation_id_idx` using `create index if not exists`.
 
-Unused-index informational notices on the new empty data-platform tables are expected immediately after creation and are not evidence that the intended query indexes should be removed.
+After PR #51 merged as `46b209f7c824c3a439ecb26a2fd20559ad8462f9`, the follow-up migration was applied remotely and the performance advisor was re-run. The `unindexed_foreign_keys` finding is no longer present. The remaining performance notices are `unused_index` informational notices, which are expected for newly created/empty tables and are not evidence that intended indexes should be removed.
+
+Supabase migration history currently contains two entries named `snapshot_observation_fk_index` with different migration versions. Because the migration SQL is idempotent (`create index if not exists`), the resulting schema contains the intended index rather than duplicate indexes. The duplicate history entry is retained as execution evidence and must not be hidden or rewritten without a separately reviewed migration-history repair procedure.
 
 The separate Supabase Auth warning for leaked-password protection is outside this persistence schema change and requires a dedicated authentication/security decision.
 
@@ -76,7 +78,7 @@ The separate Supabase Auth warning for leaked-password protection is outside thi
 
 Routine CI validates Python persistence behavior and documentation without connecting to a live Supabase project. Remote migration evidence must be recorded separately and never inferred from committed SQL alone.
 
-After the follow-up index migration is merged, it must be applied remotely and the Supabase performance advisor must be re-run before the foreign-key warning is described as resolved.
+The initial persistence schema and the follow-up foreign-key covering index have both been remotely verified. This evidence does not guarantee future availability, prove application-runtime connectivity, or replace future live `SnapshotRepository` integration testing.
 
 ## Initial Limitations
 
@@ -88,6 +90,7 @@ This milestone does not implement:
 - cache execution;
 - scheduler/orchestration;
 - dataset/snapshot version migration policy;
-- deletion/correction workflows.
+- deletion/correction workflows;
+- automatic repair of duplicate Supabase migration-history entries.
 
 These remain later Phase 2 tasks.
