@@ -12,6 +12,14 @@ Define the deterministic analysis engine used to summarize market conditions and
 - `REQ-SIG-003`: Explain each score using observable factors and disclose missing or stale data.
 - `REQ-BKT-001`: Preserve sufficient historical inputs for future backtesting without implementing backtesting in MVP.
 
+## Versioned Analysis Inputs
+
+A future analysis run must consume an immutable `AnalysisInputManifest` rather than independently selecting mutable/latest datasets at calculation time. The manifest binds exactly one already-published `DatasetVersion` per required logical dataset, uses deterministic canonical ordering and content identity, and enforces a declared point-in-time `as_of` boundary.
+
+The manifest is an input-identity boundary only. Analysis parameters, model version, asset-universe version, and output identity remain separate versioned concerns and must be explicit before regime or candidate-score results are considered reproducible under `REQ-SIG-002`.
+
+See `ANALYSIS_INPUT_MANIFESTS.md` for the manifest contract.
+
 ## Supported MVP Indicators
 
 - Simple and exponential moving averages.
@@ -35,6 +43,7 @@ Scores may combine trend, momentum, volatility, drawdown, liquidity proxies, and
 - Reject impossible values and duplicate observations.
 - Mark stale, incomplete, or estimated data explicitly.
 - Do not silently forward-fill signals across material gaps.
+- Reject analysis inputs whose dataset-version point-in-time evidence exceeds the manifest boundary.
 
 ## Boundaries
 
@@ -42,7 +51,8 @@ Scores may combine trend, momentum, volatility, drawdown, liquidity proxies, and
 - No individual-stock analysis in MVP.
 - No leverage, inverse, derivatives, or automatic execution logic.
 - No unreviewed AI-generated numeric signal may influence a score.
+- An input manifest does not itself imply that any indicator, regime, candidate score, portfolio allocation, or recommendation has been calculated.
 
 ## Validation
 
-Golden datasets must cover indicator calculations, missing data, holidays, split-adjusted data, regime boundaries, and deterministic reruns. Numeric tolerances and reference formulas must be documented with tests.
+Golden datasets must cover indicator calculations, missing data, holidays, split-adjusted data, regime boundaries, deterministic reruns, and exact recovery of versioned input identity. Numeric tolerances and reference formulas must be documented with tests.
