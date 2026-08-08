@@ -2,34 +2,34 @@
 
 ## Current State
 
-Phase 2 now has live-validated FRED, Yahoo, and ECOS providers, provider-independent bounded retry, explicit FX normalization, deterministic immutable source-snapshot publication, and active persistence/idempotency work.
+Phase 2 now has live-validated FRED, Yahoo, and ECOS providers, provider-independent bounded retry, explicit FX normalization, deterministic immutable source-snapshot publication, and remotely deployed persistence schema evidence.
 
-PR #45 merged as `878f0bb69cf0df70de12898b42ec4f8e25786320`; Issue #44 closed. Snapshot publication is deterministic and in-memory.
+PR #47 merged as `b68388ffbe3b16e00fa51d224f02564ab6bf3c62`; Issue #46 closed. The initial persistence migration has been applied successfully to Supabase project `xztjjgzpryrfcppqkbdo` and the remote schema was inspected.
 
 ## Repository and Active Work
 
 - Canonical repository: `fiverocksgames/investment-manager`
 - Default branch: `main`
-- Active branch: `agent/persistence-idempotency`
-- Issue: #46 — `feat: add persistence and idempotent snapshot storage`
-- Draft PR: #47 — `feat: add persistence and idempotent snapshot storage`
+- Active branch: `agent/persistence-fk-index`
+- Issue: #50 — `fix: add covering index for snapshot observation foreign key`
+- Active PR: not yet opened at this handoff update
 
-## Active Implementation
+## Verified Remote Persistence Evidence
 
-- `investment_manager/data/persistence.py` adds `SnapshotRepository`, `PersistenceResult`, and `PersistenceError` behind an injected DB-API-compatible connection factory.
-- `supabase/migrations/202608080001_data_platform_persistence.sql` adds server-managed canonical observation, source snapshot, and ordered membership tables.
-- Financial values use PostgreSQL `numeric`; canonical times use `timestamptz`; provider attributes use `jsonb`.
-- Identical immutable identity replay is idempotent. Same-ID conflicting content fails closed and is never overwritten.
-- Observations, snapshot, and exact ordered membership are one transaction; any persistence failure rolls back all writes.
-- RLS is enabled on the three data-platform tables with no client-facing policies, so browser access remains denied by default.
-- `tests/test_persistence.py` uses a deterministic fake DB to cover atomic write, replay, conflicts, rollback, Decimal preservation, UTC timestamps, and membership validation.
-- `docs/PERSISTENCE.md` defines transaction, immutability, secret, RLS, and migration-validation boundaries.
+- Supabase migration `data_platform_persistence` is recorded remotely.
+- `data_observations`, `source_snapshots`, and `source_snapshot_observations` exist with expected `numeric`, `timestamptz`, UUID, and `jsonb` storage.
+- Primary keys, foreign keys, ordered-membership uniqueness, checksum/publication-order checks, and retrieval-order checks were verified remotely.
+- RLS is enabled on all three data-platform tables and there are intentionally no client-facing policies.
+- A bounded remote smoke inserted one temporary observation/snapshot/membership, replayed identical observation content without duplication, verified PostgreSQL preserved `123.45`, confirmed a conflicting same-ID insert is rejected, and removed all smoke rows afterward.
+- This does not yet prove the Python `SnapshotRepository` against a live PostgreSQL driver; the smoke validated the deployed schema and persistence primitives directly.
 
-## Validation Status
+## Active Follow-up
 
-- Initial implementation head `42d2b8414a54dc75930bad3dd233d636c6ce4f5c`: Python run #78 and Documentation run #130 passed.
-- The remote Supabase migration has **not** been applied or live-validated. Committed SQL is not evidence of remote schema deployment.
-- Final living-document updates require a fresh latest-head Python and Documentation CI gate before Ready for Review.
+- Supabase performance advisor reported one actionable finding: `source_snapshot_observations.observation_id` lacked a covering index.
+- `supabase/migrations/202608080002_snapshot_observation_fk_index.sql` adds `source_snapshot_observations_observation_id_idx` with `create index if not exists`.
+- RLS-without-policy notices are expected for the server-managed deny-by-default design.
+- Existing unused-index notices are expected on the newly created empty tables and are not removal signals.
+- The separate leaked-password-protection Auth warning is outside this persistence migration and requires a dedicated security decision.
 
 ## Development Rules
 
@@ -40,8 +40,8 @@ PR #45 merged as `878f0bb69cf0df70de12898b42ec4f8e25786320`; Issue #44 closed. S
 5. Immutable identity conflicts fail closed; never overwrite them silently.
 6. Substantial PRs begin as Draft.
 7. Never merge without explicit user approval.
-8. Never claim remote migration success without actual execution evidence.
+8. Never claim a remote migration or advisor fix succeeded without actual execution evidence.
 
 ## Exact Next Recommended Task
 
-Complete operations/test/traceability/worklog/changelog updates for PR #47, run Python and Documentation CI on the final head, and mark Ready for Review only if both pass. Stop for explicit user merge approval. After merge, apply and validate the migration against the protected Supabase project as a separate evidence step before calling persistence remotely deployed.
+Open a Draft PR for Issue #50, run applicable CI, and mark Ready for Review only after latest-head evidence succeeds. Stop for explicit user merge approval. After merge, apply the follow-up index migration to the protected Supabase project and re-run the performance advisor before claiming the foreign-key warning resolved.
