@@ -35,9 +35,10 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Changed
 
+- PR #64 merged as `0ed5753bcf2bd31db4c768b953a3d34536ec8409`; the production scheduler and durable ingestion-status implementation are now on `main`.
+- Production scheduling is now in post-merge validation state rather than active implementation state. Remote operational-status migration, GitHub secret configuration, real workflow execution, and durable row verification remain required before calling it production-live.
 - Scheduled-ingestion catch-all errors now preserve only the exception type; raw exception strings are excluded from durable operational evidence to avoid leaking connection strings, credentials, URLs, or payload fragments.
 - Bounded retry attempt counts are propagated separately as actual provider-attempt evidence; a future cache hit may represent zero provider calls while the canonical run attempt contract remains valid.
-- Production scheduling is explicitly evidence-gated: committed workflow code is not considered live until the remote migration, GitHub secret, real workflow execution, and durable run row are verified.
 - Scheduled Yahoo ingestion initially targets SPY with a bounded 10-day daily window and three provider attempts; no provider fallback or silent stale fallback is enabled.
 - Cache reuse is bounded by `DatasetPolicy.cache_ttl`; cache timing metadata remains separate from canonical source freshness and provider provenance.
 - Only fully successful `FetchResult` values are cached. Partial/failed results and expired stale-on-error fallback are excluded from the current cache contract.
@@ -54,6 +55,8 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Fixed
 
+- Reconciled living-document state after PR #64 so merged production scheduler work is no longer described as an active Draft PR.
+- Closed stale reconciliation Issues #48 and #52 as superseded by newer merged work and Issue #65.
 - Prevented raw catch-all exception text from becoming durable ingestion failure messages.
 - Closed obsolete post-cache reconciliation PR #60 without merge and Issue #59 as superseded by the newer scheduled-ingestion work, preventing stale living documents from regressing `main`.
 - Added a covering index for `source_snapshot_observations.observation_id`; remote Supabase advisor no longer reports the prior `unindexed_foreign_keys` finding.
@@ -79,7 +82,8 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Validation
 
-- Production-scheduling initial implementation/test head `e66e7e97b8b7171479a88f7180cf4602ca387fab`: Python run #101 passed; remote migration/secret/workflow live validation remains pending.
+- Production-scheduling final head `e05f9a0e016cca1e26961893a9d84b227507037a`: Python run #110 and Documentation run #168 passed before PR #64 merged as `0ed5753bcf2bd31db4c768b953a3d34536ec8409`.
+- Production-live validation remains pending: operational-status migration application, `SUPABASE_DB_URL` configuration, real `Scheduled Yahoo Ingestion` execution, and durable `ingestion_runs` verification.
 - Scheduled-ingestion orchestration final head `0e27782c9a794040a8f51346d459ab3b5e1b6435`: Python run #99 and Documentation run #159 passed before PR #62 merged as `6d2805f2c66fb91e61f87e4264c382c1d94895ad`.
 - Cache initial implementation/documentation head `b825dcc4bf2c391becfc700de466b8902f9c7b93`: Python run #87 and Documentation run #146 passed.
 - Persistence initial implementation head `42d2b8414a54dc75930bad3dd233d636c6ce4f5c`: Python run #78 and Documentation run #130 passed.
@@ -94,7 +98,7 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Known Limitations
 
-- The production-scheduling workflow and durable status schema are source-controlled but not yet production-live validated. The new migration has not been remotely applied, `SUPABASE_DB_URL` has not been verified, and no real scheduled ingestion run has yet succeeded under this implementation.
+- The production-scheduling workflow and durable status schema are source-controlled and merged, but not yet production-live validated. The operational-status migration has not been remotely applied, `SUPABASE_DB_URL` has not been verified, and no real scheduled ingestion run has yet been verified under this implementation.
 - Snapshot persistence and durable ingestion-status persistence are separate transactions; a snapshot may commit even if subsequent status persistence fails, in which case the workflow fails visibly and reconciliation may be required.
 - Only Yahoo SPY is wired into the initial production schedule; FRED, ECOS, FX and additional market symbols remain manual/live-smoke or unscheduled paths.
 - Cache execution is process-local only; no Redis/distributed backend, persistent cache, background refresh, stale-on-error, or provider fallback exists yet.
