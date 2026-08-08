@@ -6,6 +6,10 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Added
 
+- Deterministic `DatasetVersion`, `DatasetVersionPublisher`, and `DatasetVersionRepository` for one logical dataset over exact immutable source-snapshot membership
+- Additive Supabase migration `202608080005_dataset_versioning.sql` for server-managed `dataset_versions` and ordered `dataset_version_snapshots` with RLS enabled and no client-facing policies
+- Deterministic dataset-version tests for caller-order independence, UTC boundaries, duplicate/conflict/look-ahead rejection, idempotent replay, immutable persisted-snapshot verification, and transactional rollback
+- `docs/DATASET_VERSIONING.md` documenting identity, point-in-time, persistence, and cross-dataset scope boundaries
 - Production-scheduling baseline with `.github/workflows/scheduled-yahoo-ingestion.yml`, manual dispatch, weekday UTC cron, `main`-only execution guard, concurrency control, and protected `SUPABASE_DB_URL` secret injection
 - Yahoo SPY scheduled-ingestion entrypoint that composes bounded retry, immutable source snapshots, snapshot persistence, and durable operational status persistence
 - `IngestionFetchExecution` for explicit provider-attempt evidence without rewriting canonical provider data
@@ -36,6 +40,9 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Changed
 
+- Logical dataset versions canonically order member source snapshots by provider/cutoff/UUID and derive SHA-256 + UUIDv5 identity from dataset, `as_of`, and stable snapshot identity/content metadata; operational creation/publication times do not rewrite content identity.
+- Dataset-version publication enforces point-in-time boundaries: source cutoff cannot exceed version `as_of`, and source publication cannot occur after version creation.
+- Dataset-version persistence now verifies the already-persisted source snapshot's `published_at` along with dataset/provider/cutoff/checksum before a version can reference it.
 - Scheduled-ingestion catch-all errors now preserve only the exception type; raw exception strings are excluded from durable operational evidence to avoid leaking connection strings, credentials, URLs, or payload fragments.
 - Scheduled Yahoo database-connectivity failures now emit a secret-safe category without printing the raw DSN or exception text.
 - Bounded retry attempt counts are propagated separately as actual provider-attempt evidence; a future cache hit may represent zero provider calls while the canonical run attempt contract remains valid.
@@ -56,6 +63,9 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Fixed
 
+- Removed a duplicate parallel dataset-version implementation/migration/test set from the active branch and retained one canonical `investment_manager/data/versioning.py` path.
+- Corrected the dataset-version test suite to use the repository's `unittest discover` CI contract rather than adding an undeclared `pytest` dependency.
+- Closed a point-in-time persistence gap by rejecting source-snapshot objects whose persisted `published_at` differs from the immutable database row.
 - Added a covering index for `ingestion_runs.snapshot_id`; remote Supabase advisor no longer reports its prior `unindexed_foreign_keys` finding.
 - Prevented raw catch-all exception text from becoming durable ingestion failure messages.
 - Closed obsolete post-cache reconciliation PR #60 without merge and Issue #59 as superseded by the newer scheduled-ingestion work, preventing stale living documents from regressing `main`.
@@ -68,6 +78,7 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Security
 
+- Dataset-version tables are server-managed with RLS enabled and no browser/client policies; version identity excludes credentials, raw provider payloads, and personal portfolio data.
 - Scheduled ingestion reads PostgreSQL connectivity only from the GitHub Actions `SUPABASE_DB_URL` repository secret, rejects a missing secret, and does not print its value.
 - Scheduled-job console output is limited to safe operational identifiers, status, counts, attempt count, and snapshot ID; financial observation values are not logged.
 - Durable catch-all failures record exception type only rather than raw exception text.
@@ -82,6 +93,7 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Validation
 
+- Dataset-versioning latest implementation/test head `10ee278428b9536f3cd7d6cc05830da3a7708e9f`: Python run #128 and Documentation run #188 passed. Earlier Python run #127 failed only because the first test revision imported unavailable `pytest`; it was converted to `unittest` and revalidated.
 - First verified production scheduled-ingestion success: GitHub Actions run `31257977677` on `main` commit `ad762ed10eebe3b50ef3924e4fd6978a826ab680` completed successfully with `provider=yahoo`, `dataset=market_prices`, `status=succeeded`, `provider_attempts=1`, `records_received=8`, `records_accepted=8`, `run_id=5346037b-2772-4c22-8e04-4d59fad0daf7`, and `snapshot_id=725526a7-a925-54ff-a070-dcc2b92b96fd`.
 - Remote Supabase verification confirmed the exact durable `ingestion_runs` row, linked Yahoo snapshot, 8 snapshot-membership rows, and zero `ingestion_failures` rows for that run. This is bounded success evidence, not a future availability guarantee.
 - Earlier production runs `31256711191`, `31257558763`, and `31257858229` failed safely before durable run persistence while the protected database connection configuration was being corrected; those failures remain part of operational history.
@@ -101,6 +113,8 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 
 ### Known Limitations
 
+- Dataset-version migration `202608080005_dataset_versioning.sql` is committed but not remotely applied or validated; deployment must wait for explicit PR merge approval.
+- A `DatasetVersion` covers exactly one logical dataset. Cross-dataset analysis-input manifests, provider fallback/reconciliation, retention/deletion, and point-in-time backtest policy remain separate work.
 - Snapshot persistence and durable ingestion-status persistence are separate transactions; a snapshot may commit even if subsequent status persistence fails, in which case the workflow fails visibly and reconciliation may be required.
 - Production scheduled ingestion is currently verified only for the bounded Yahoo SPY run above; one successful run does not guarantee future provider, database, or GitHub-hosted runner availability.
 - Only Yahoo SPY is wired into the initial production schedule; FRED, ECOS, FX and additional market symbols remain manual/live-smoke or unscheduled paths.
@@ -108,7 +122,6 @@ All notable project changes are recorded here. The format is inspired by Keep a 
 - Supabase migration history contains a duplicate-name `snapshot_observation_fk_index` entry from repeated idempotent execution; no automatic history repair is implemented.
 - RLS-without-policy advisor INFO notices are intentional for the server-managed deny-by-default persistence tables.
 - Supabase Auth leaked-password protection remains disabled and requires a separate authentication/security decision.
-- Dataset/snapshot versioning remains future work.
 - Snapshot publication/persistence does not perform provider fallback or cross-provider merging.
 - FX normalization does not implement cross-provider fallback, averaging, triangulation, fixing-time reconciliation, or bid/ask spread handling.
 - ECOS and Yahoo live success are bounded evidence from specific runs and do not guarantee future provider availability.

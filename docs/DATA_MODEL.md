@@ -14,7 +14,7 @@ Define the provider-independent domain model for Phase 2 Data Platform. This doc
 - Data writes are idempotent for the same canonical key, source, observation time, and revision.
 - Downstream analysis consumes only normalized and validated records.
 - FX direction is explicit; base/quote semantics are never inferred from ticker text.
-- Downstream calculations reference an explicit immutable source snapshot rather than an implicit latest state.
+- Downstream calculations reference explicit immutable source snapshots and logical dataset versions rather than implicit latest state.
 
 ## Canonical Entities
 
@@ -112,6 +112,25 @@ Publication is fail-closed: provider mismatches, duplicate observation IDs, disa
 
 See [`SOURCE_SNAPSHOTS.md`](SOURCE_SNAPSHOTS.md).
 
+### DatasetVersion
+
+Records one immutable logical-dataset version assembled from one or more already-published `SourceSnapshot` values.
+
+Implemented fields include:
+
+- `version_id`: deterministic UUIDv5 identity.
+- `dataset`: one normalized logical dataset identifier.
+- `as_of`: timezone-aware UTC point-in-time boundary.
+- `created_at`: UTC operational creation time; never earlier than `as_of` or any member snapshot publication.
+- `snapshot_ids`: non-empty unique deterministic ordering of member source snapshots.
+- `checksum`: lowercase SHA-256 identity over dataset, `as_of`, and stable member snapshot metadata.
+
+All members must belong to the same logical dataset. A member cutoff may not exceed `as_of`. Different snapshots competing for the same provider/cutoff boundary are rejected rather than silently selected. Caller iteration order does not affect checksum, membership order, or version ID.
+
+`created_at` and member `published_at` remain operational evidence and are excluded from content identity. The persistence layer verifies every referenced source snapshot's immutable persisted dataset/provider/cutoff/publication/checksum evidence before writing the version and ordered membership transactionally.
+
+See [`DATASET_VERSIONING.md`](DATASET_VERSIONING.md).
+
 ## Provider Interface Contract
 
 Every provider adapter must describe capabilities, resolve identifiers, fetch bounded observations, preserve provider metadata, normalize canonical observations, classify failures, and report retry hints when available. Adapters must not perform investment analysis, portfolio logic, or UI formatting.
@@ -129,12 +148,13 @@ Every provider adapter must describe capabilities, resolve identifiers, fetch bo
 - FX rates must preserve explicit source base/quote metadata and normalize into one ordered canonical `FxPair` direction.
 - FX reciprocal conversion uses `Decimal` only with fixed precision and documented rounding; zero/negative or unrelated rates are rejected.
 - Source snapshot publication consumes normalized canonical observations only and applies an explicit cutoff without changing source observations.
+- Dataset-version publication consumes immutable source snapshots only and does not copy or rewrite observation/source-snapshot content.
 
 ## Idempotency and Uniqueness
 
 A normalized observation is uniquely identified by canonical subject, metric, observation time/period, provider, revision/vintage identity, and schema version where interpretation changed.
 
-Repeated ingestion of the same source data must not create duplicate trusted observations. Repeated publication of the same eligible source content at the same dataset/provider/cutoff produces the same checksum and snapshot identity.
+Repeated ingestion of the same source data must not create duplicate trusted observations. Repeated publication of the same eligible source content at the same dataset/provider/cutoff produces the same checksum and snapshot identity. Repeated dataset-version publication for the same dataset/as-of/member content produces the same checksum and version identity.
 
 ## Fail-Safe Rules
 
@@ -146,6 +166,7 @@ Repeated ingestion of the same source data must not create duplicate trusted obs
 - Conflicting providers are not silently averaged or merged.
 - Ambiguous FX direction is insufficient data, not a guessed conversion.
 - Snapshot publication failure produces no new trusted snapshot and does not mutate a prior good snapshot.
+- Dataset-version publication/persistence failure produces no trusted version and never overwrites prior immutable versions or memberships.
 
 ## Phase 2 Implementation Sequence
 
@@ -165,9 +186,10 @@ Repeated ingestion of the same source data must not create duplicate trusted obs
 
 - Final secondary FX provider selection.
 - Raw payload retention periods.
-- Exact Supabase migration layout and transactional snapshot persistence.
 - Provider-specific rate limits and credentials.
 - Corporate-action reconciliation across providers.
 - FX fixing-time reconciliation, triangulation, spread handling, and fallback priority.
+- Cross-dataset analysis-input manifest and required/optional dataset policy.
+- Dataset-version retention/deletion and mutable aliases such as `latest`.
 
 These require separate Issues and decision records before implementation.

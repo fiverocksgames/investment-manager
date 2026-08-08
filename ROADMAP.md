@@ -45,13 +45,15 @@ Remaining:
 - Transactional idempotent snapshot persistence with remotely validated Supabase schema and foreign-key indexing
 - Provenance-preserving process-local cache executor with explicit TTL and no silent stale fallback
 - Provider-independent scheduled-ingestion orchestration with explicit partial/failure policy and operational execution evidence
+- Production Yahoo scheduled ingestion with durable run/snapshot status evidence verified for run `31257977677`
 - Live-success evidence recorded for FRED, Yahoo, and ECOS
 
 ### Active Next Milestones
 
-1. Production Yahoo scheduling and durable ingestion-run/failure evidence — implementation/CI validation in progress; remote migration, GitHub secret, and real workflow success still required
-2. Dataset and snapshot versioning
+1. Dataset and snapshot versioning — deterministic one-dataset version identity, immutable ordered source-snapshot membership, persistence, migration, tests, and documentation are in development under Issue #71
+2. Apply and remotely validate the dataset-version schema only after its PR is explicitly approved and merged
 3. Broaden scheduled ingestion to additional approved datasets/providers after the initial production path is proven
+4. Define a separate cross-dataset analysis-input manifest before Phase 3 analysis consumes multiple logical datasets together
 
 ### Exit Criteria
 
@@ -61,7 +63,8 @@ Remaining:
 - Missing, stale, partial, failed, and ambiguous data never silently become trusted analysis inputs.
 - Cache and retries cannot misrepresent freshness or provenance.
 - Immutable source snapshots make downstream calculations reproducible with deterministic content identity and cutoff semantics.
-- Persisted observations and snapshots are transactionally idempotent and immutable-conflict safe.
+- Logical dataset versions deterministically identify the exact immutable source snapshots used at an explicit `as_of` boundary.
+- Persisted observations, snapshots, and dataset versions are transactionally idempotent and immutable-conflict safe.
 - Remote database deployment is evidenced separately from committed migration files.
 - Scheduled jobs fail safely and expose durable sanitized operational evidence.
 - Production scheduling is not called live until the workflow, required secret, remote schema, and persisted run evidence are actually verified.
@@ -93,7 +96,7 @@ Planned:
 - Momentum and volatility
 - Risk-on, neutral, and risk-off regimes
 - Conservative multi-asset allocation logic
-- Reproducible input snapshot and cutoff metadata
+- Reproducible input dataset-version/snapshot and cutoff metadata
 
 ## Release 0.5 — Backtest and Reporting
 

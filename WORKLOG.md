@@ -1,5 +1,20 @@
 # Worklog
 
+## 2026-08-08 — Dataset and Snapshot Versioning
+
+- PR #70 merged as `6a500adcae708da3ce2b33614856e5de55598f4c`; Issue #69 closed after recording the first verified production scheduled-ingestion success.
+- Created Issue #71, branch `agent/dataset-versioning`, and Draft PR #72 for the next Phase 2 architectural milestone.
+- Added deterministic `DatasetVersion`, `DatasetVersionPublisher`, and `DatasetVersionRepository` over exact immutable `SourceSnapshot` memberships for one logical dataset.
+- Dataset-version identity uses canonical member ordering, SHA-256 content identity, and UUIDv5; operational `created_at` and source `published_at` do not alter content identity.
+- Publication rejects dataset mismatches, duplicate snapshot IDs, conflicting provider/cutoff boundaries, look-ahead cutoffs, snapshots published after version creation, empty input, and naive time boundaries.
+- Repository persistence verifies each already-persisted source snapshot including its immutable `published_at` evidence before atomically writing the version and ordered memberships; identical replay is idempotent and conflicts roll back.
+- Added migration `202608080005_dataset_versioning.sql` with server-managed `dataset_versions` and `dataset_version_snapshots`, RLS enabled, no client-facing policies, deterministic content uniqueness, and covering FK indexes.
+- Added `docs/DATASET_VERSIONING.md`, roadmap/traceability/handoff updates, and deterministic network-free versioning tests.
+- During branch reconciliation, removed a duplicate parallel implementation/migration/test set and retained one canonical `investment_manager/data/versioning.py` path.
+- Python run #127 failed because the initial new test imported `pytest` while repository CI installs only the package and runs `unittest discover`; the test suite was converted to `unittest` without adding an unnecessary runtime/test dependency.
+- Latest head `10ee278428b9536f3cd7d6cc05830da3a7708e9f`: Python run #128 and Documentation run #188 passed.
+- The dataset-version migration is source-controlled only and must not be applied remotely before explicit user approval and merge.
+
 ## 2026-08-08 — Production Scheduling and Durable Ingestion Status
 
 - PR #62 merged as `6d2805f2c66fb91e61f87e4264c382c1d94895ad`; Issue #61 closed, putting provider-independent scheduled-ingestion orchestration on `main`.

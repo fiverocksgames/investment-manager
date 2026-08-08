@@ -26,6 +26,13 @@ from .persistence import PersistenceError, PersistenceResult, SnapshotRepository
 from .providers import DataProvider, FetchRequest, FetchResult, ProviderCapability
 from .retry import BoundedRetryExecutor, RetryExecution, RetryPolicy
 from .snapshots import SnapshotPublicationError, SnapshotPublicationPolicy, SourceSnapshotPublisher
+from .versioning import (
+    DatasetVersion,
+    DatasetVersionError,
+    DatasetVersionPersistenceResult,
+    DatasetVersionPublisher,
+    DatasetVersionRepository,
+)
 from .yahoo import YahooProvider, YahooSymbolBinding
 
 __all__ = [
@@ -38,6 +45,11 @@ __all__ = [
     "DataProvider",
     "DataQualityState",
     "DatasetPolicy",
+    "DatasetVersion",
+    "DatasetVersionError",
+    "DatasetVersionPersistenceResult",
+    "DatasetVersionPublisher",
+    "DatasetVersionRepository",
     "EconomicSeries",
     "EcosProvider",
     "EcosSeriesBinding",

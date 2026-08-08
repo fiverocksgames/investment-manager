@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Define validation for documentation, frontend, data ingestion, normalization, immutable source snapshots, persistence, cache execution, scheduled ingestion, durable operational status, analysis, portfolio calculations, authentication, database policies, and deployment.
+Define validation for documentation, frontend, data ingestion, normalization, immutable source snapshots, logical dataset versioning, persistence, cache execution, scheduled ingestion, durable operational status, analysis, portfolio calculations, authentication, database policies, and deployment.
 
 ## Test Levels
 
@@ -12,7 +12,7 @@ Validate required files, Requirement ID references, internal links, decision rec
 
 ### Unit Tests
 
-Cover canonical model validation, symbol/series/FX normalization, timestamp conversion, unit and currency mapping, quality classification, freshness thresholds, retry behavior, deterministic snapshot identity, persistence idempotency, cache behavior, scheduled-ingestion orchestration, durable status persistence, and safe error mapping.
+Cover canonical model validation, symbol/series/FX normalization, timestamp conversion, unit and currency mapping, quality classification, freshness thresholds, retry behavior, deterministic snapshot identity, deterministic dataset-version identity, persistence idempotency, cache behavior, scheduled-ingestion orchestration, durable status persistence, and safe error mapping.
 
 ### Provider Contract Tests
 
@@ -27,6 +27,26 @@ FX normalization is deterministic and network-free. Required scenarios include c
 ### Source Snapshot Publication Tests
 
 Snapshot publication is deterministic and network-free. Required scenarios include same logical eligible observations in different input orders yielding the same checksum/snapshot ID, explicit UTC cutoff filtering, duplicate observation-ID rejection, provider mismatch rejection, partial-quality policy, empty eligible set rejection, publication timestamp validation, UTC normalization, and provenance/freshness preservation.
+
+### Dataset Versioning Tests
+
+Dataset versioning is deterministic and network-free. Required scenarios include:
+
+- caller-order independence for checksum, membership order, and UUIDv5 version identity;
+- `created_at` excluded from content identity while remaining UTC operational evidence;
+- dataset mismatch rejection;
+- duplicate snapshot-ID rejection;
+- same-provider/same-cutoff competing snapshots rejected as ambiguous;
+- source snapshot cutoff after version `as_of` rejected;
+- source snapshot publication after version `created_at` rejected;
+- timezone-naive `as_of`/`created_at` rejected;
+- referenced source snapshot persistence verified before version insertion;
+- exact ordered membership persistence;
+- identical replay idempotency;
+- conflicting same version ID or membership rollback;
+- persisted source-snapshot immutable-content conflict rollback.
+
+Routine CI uses deterministic fake-DB tests and does not claim the dataset-version migration has been executed remotely.
 
 ### Persistence Tests
 
@@ -95,11 +115,11 @@ Routine CI validates the production workflow statically without using real crede
 
 ### Integration Tests
 
-Verify provider fixture through normalization, cache/retry execution, source-snapshot publication, persistence, ingestion-run counts, durable failure recording, and attempt evidence. Failed or disallowed partial runs must not publish trusted snapshots, and cache reuse must not rewrite canonical provenance/freshness.
+Verify provider fixture through normalization, cache/retry execution, source-snapshot publication, snapshot persistence, dataset-version publication/persistence, ingestion-run counts, durable failure recording, and attempt evidence. Failed or disallowed partial runs must not publish trusted snapshots or dataset versions, and cache reuse must not rewrite canonical provenance/freshness.
 
 ### End-to-End Tests
 
-After merge and protected configuration, verify manually dispatched production ingestion produces a real workflow result, normalized persisted data, immutable source snapshot, and matching durable `ingestion_runs` evidence. No test places an order.
+After merge and protected configuration, verify manually dispatched production ingestion produces a real workflow result, normalized persisted data, immutable source snapshot, and matching durable `ingestion_runs` evidence. Dataset-version remote migration/application is validated separately after its own merge approval. No test places an order.
 
 Production-live acceptance requires a real run from `main`; deterministic PR CI cannot substitute for this evidence.
 
@@ -111,8 +131,11 @@ Production-live acceptance requires a real run from `main`; deterministic PR CI 
 - explicit FX direction and inverse normalization
 - deterministic source snapshot content identity
 - cutoff exclusion and disallowed partial snapshot publication
+- deterministic logical dataset-version identity across input order
+- dataset-version look-ahead and conflicting provider/cutoff rejection
 - immutable same-ID persistence conflict
 - transactional snapshot persistence rollback
+- transactional dataset-version persistence replay/conflict rollback
 - durable ingestion-run identical replay and conflicting identity rollback
 - sanitized catch-all operational failure with no connection-string leakage
 - provider-attempt count propagation through bounded retry
@@ -126,7 +149,7 @@ Production-live acceptance requires a real run from `main`; deterministic PR CI 
 - rate limiting
 - authentication and validation failures that must not retry
 - provider schema change
-- prior good snapshot preserved after failure
+- prior good snapshot/version preserved after failure
 
 ## Golden Fixtures
 
@@ -134,7 +157,7 @@ Fixtures include known source payloads, canonical expected records, rejected row
 
 ## Database Validation
 
-The Phase 2 persistence migrations use PostgreSQL `numeric` for canonical financial values, `timestamptz` for canonical times, UUID primary/foreign keys, ordered snapshot membership, uniqueness constraints, and RLS enabled with no client-facing policies. Operational-status tables additionally persist sanitized terminal run/failure evidence and optional snapshot linkage. Remote database validation must verify those constraints after protected migration execution. User-owned table RLS tests remain separately required before portfolio data is exposed.
+The Phase 2 persistence migrations use PostgreSQL `numeric` for canonical financial values, `timestamptz` for canonical times, UUID primary/foreign keys, ordered snapshot and dataset-version membership, uniqueness constraints, and RLS enabled with no client-facing policies. Operational-status tables additionally persist sanitized terminal run/failure evidence and optional snapshot linkage. Remote database validation must verify those constraints after protected migration execution. User-owned table RLS tests remain separately required before portfolio data is exposed.
 
 ## Numeric Validation
 
@@ -142,15 +165,15 @@ Financial calculations use documented formulas, golden fixtures, expected result
 
 ## CI Gates
 
-The Phase 2 pipeline progressively includes Python compilation/unit tests, provider contract tests, persistence tests, cache tests, scheduled-ingestion/status tests, documentation checks, secret scanning, protected migration validation, and frontend verification as applicable.
+The Phase 2 pipeline progressively includes Python compilation/unit tests, provider contract tests, persistence/versioning tests, cache tests, scheduled-ingestion/status tests, documentation checks, secret scanning, protected migration validation, and frontend verification as applicable.
 
 ## Live Smoke and Production Tests
 
 Live provider tests are manually triggered, rate-limited, and do not replace deterministic fixtures. FRED and ECOS live workflows require API keys stored only in GitHub Actions secrets; Yahoo provider live smoke requires no provider secret. Logs expose only bounded summary evidence and classified safe failures.
 
-FRED, Yahoo, and ECOS each have at least one verified successful live retrieval run. Those runs are bounded provider evidence and do not prove the new scheduled persistence workflow.
+FRED, Yahoo, and ECOS each have at least one verified successful live retrieval run. The production Yahoo scheduled-ingestion path additionally has a verified successful workflow plus matching durable database evidence for run `31257977677`. Those bounded successes do not guarantee future provider/database availability.
 
-The production Yahoo scheduled-ingestion workflow additionally requires the protected `SUPABASE_DB_URL` secret and remotely applied operational-status migration. A real workflow success plus matching durable database evidence is required before production scheduling is called live-validated.
+The dataset-version migration remains source-controlled intent until separately approved, merged, applied, and remotely inspected.
 
 ## Test Evidence
 
@@ -158,4 +181,4 @@ Every PR lists exact automated checks/results, skipped areas, and known limitati
 
 ## Release Acceptance
 
-Before Phase 2 is complete, provider adapters and canonical normalization must pass contract tests, stale/failure states must remain observable, duplicate writes must be prevented, cache reuse must preserve provenance/freshness without hiding failed refreshes, deterministic source snapshots must make downstream input sets reproducible, persisted immutable identities must be conflict-safe, scheduled workflows must fail safely, durable run evidence must be sanitized and idempotent, and failed providers/persistence attempts must not silently produce trusted current snapshots.
+Before Phase 2 is complete, provider adapters and canonical normalization must pass contract tests, stale/failure states must remain observable, duplicate writes must be prevented, cache reuse must preserve provenance/freshness without hiding failed refreshes, deterministic source snapshots and dataset versions must make downstream inputs reproducible, persisted immutable identities must be conflict-safe, scheduled workflows must fail safely, durable run evidence must be sanitized and idempotent, and failed providers/persistence attempts must not silently produce trusted current snapshots or versions.
