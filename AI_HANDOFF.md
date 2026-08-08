@@ -4,15 +4,16 @@
 
 Phase 2 now has live-validated FRED, Yahoo, and ECOS providers, provider-independent bounded retry, explicit FX normalization, deterministic immutable source-snapshot publication, and remotely deployed persistence schema evidence.
 
-PR #47 merged as `b68388ffbe3b16e00fa51d224f02564ab6bf3c62`; Issue #46 closed. PR #51 merged as `46b209f7c824c3a439ecb26a2fd20559ad8462f9`; Issue #50 closed. The initial persistence migration and follow-up foreign-key covering-index migration have both been applied to Supabase project `xztjjgzpryrfcppqkbdo`.
+PR #47 merged as `b68388ffbe3b16e00fa51d224f02564ab6bf3c62`; Issue #46 closed. PR #51 merged as `46b209f7c824c3a439ecb26a2fd20559ad8462f9`; Issue #50 closed. PR #55 merged as `3ea639233da1d8d42e7ce9e4ff34d3ea9240cb26`; Issue #53 closed. The initial persistence migration and follow-up foreign-key covering-index migration have both been applied to Supabase project `xztjjgzpryrfcppqkbdo`.
 
 ## Repository and Active Work
 
 - Canonical repository: `fiverocksgames/investment-manager`
 - Default branch: `main`
-- Active branch: `agent/persistence-index-evidence`
-- Issue: #53 — `docs: record remote persistence index validation evidence`
-- Draft PR: to be opened for evidence-only documentation
+- Active reconciliation branch: `agent/post-persistence-reconcile`
+- Issue: #52 — `docs: reconcile post-index persistence state`
+- PR #54 was closed without merge as superseded after PR #55 updated the verified persistence evidence on `main`.
+- Current reconciliation scope is documentation-only: align `ROADMAP.md` and this handoff with the verified post-persistence state.
 
 ## Verified Remote Persistence Evidence
 
@@ -41,9 +42,9 @@ PR #47 merged as `b68388ffbe3b16e00fa51d224f02564ab6bf3c62`; Issue #46 closed. P
 4. Datetimes remain timezone-aware and UTC-normalized; persistence uses `timestamptz`.
 5. Immutable identity conflicts fail closed; never overwrite them silently.
 6. Substantial PRs begin as Draft.
-7. Never merge without explicit user approval.
-8. Never claim a remote migration or advisor fix succeeded without actual execution evidence.
+7. Never merge without explicit user approval for that specific PR.
+8. Never claim a remote migration, advisor fix, or live provider result without actual execution evidence.
 
 ## Exact Next Recommended Task
 
-Open a Draft evidence-only PR for Issue #53, run Documentation CI, and mark Ready for Review only if the latest head passes. Stop for explicit user merge approval. After merge, continue with the next Phase 2 milestone; live Python `SnapshotRepository` connectivity remains a separate future task unless intentionally prioritized.
+Complete Issue #52 by opening a Draft documentation-only PR from `agent/post-persistence-reconcile`, run Documentation CI, and mark it Ready for Review if the latest head passes. Do not merge without explicit user approval. After that reconciliation is merged, begin the cache-executor milestone with preserved provenance. Live Python `SnapshotRepository` connectivity remains a separate later validation task unless explicitly reprioritized.
