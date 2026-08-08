@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Define validation for documentation, frontend, data ingestion, normalization, immutable source snapshots, persistence, cache execution, analysis, portfolio calculations, authentication, database policies, and deployment.
+Define validation for documentation, frontend, data ingestion, normalization, immutable source snapshots, persistence, cache execution, scheduled ingestion, durable operational status, analysis, portfolio calculations, authentication, database policies, and deployment.
 
 ## Test Levels
 
@@ -12,7 +12,7 @@ Validate required files, Requirement ID references, internal links, decision rec
 
 ### Unit Tests
 
-Cover canonical model validation, symbol/series/FX normalization, timestamp conversion, unit and currency mapping, quality classification, freshness thresholds, retry behavior, deterministic snapshot identity, persistence idempotency, cache behavior, and safe error mapping.
+Cover canonical model validation, symbol/series/FX normalization, timestamp conversion, unit and currency mapping, quality classification, freshness thresholds, retry behavior, deterministic snapshot identity, persistence idempotency, cache behavior, scheduled-ingestion orchestration, durable status persistence, and safe error mapping.
 
 ### Provider Contract Tests
 
@@ -42,7 +42,22 @@ Persistence tests use an injected deterministic fake DB rather than a remote Sup
 - UTC-aware timestamps are preserved;
 - source metadata is serialized deterministically as JSON.
 
-The committed PostgreSQL migration is reviewed as code but routine CI does not claim that it has been executed against a remote Supabase project. Remote migration application, schema inspection, and service-role connectivity require separate protected evidence.
+The committed PostgreSQL migration is reviewed as code but routine CI does not claim that it has been executed against a remote Supabase project. Remote migration application, schema inspection, and protected connectivity require separate protected evidence.
+
+### Durable Operational Status Tests
+
+`IngestionStatusRepository` uses an injected deterministic fake DB in routine CI. Required scenarios include:
+
+- terminal ingestion run and ordered failures commit atomically within the status transaction;
+- identical run/failure replay is idempotent;
+- same run ID with conflicting immutable content fails closed and rolls back;
+- non-terminal runs are rejected before a connection is opened;
+- every persisted failure references the exact run ID;
+- persisted failure count exactly matches the terminal execution;
+- actual provider-attempt count is preserved separately from cache-hit evidence;
+- catch-all orchestration failure messages exclude raw exception strings and secret-like database URLs.
+
+The operational-status migration is source-controlled schema intent until separately applied and inspected on the remote Supabase project.
 
 ### Cache Executor Tests
 
@@ -65,13 +80,28 @@ Cache timing metadata is validated separately from canonical source freshness. A
 
 The common retry executor uses injected sleepers and jitter sources so unit tests do not wait or depend on randomness. Required scenarios include direct success, retryable recovery, retry exhaustion, non-retryable stop, partial-result stop, and invalid policy bounds.
 
+### Scheduled Workflow Tests
+
+Routine CI validates the production workflow statically without using real credentials or provider/database network calls. Required checks include:
+
+- `workflow_dispatch` exists;
+- cron is explicit UTC (`45 23 * * 1-5` for the initial Yahoo SPY job);
+- production job is guarded to `refs/heads/main`;
+- `SUPABASE_DB_URL` is referenced only through GitHub Actions secrets;
+- missing protected secret fails visibly;
+- scheduled command invokes the reviewed Python module;
+- no literal PostgreSQL connection string is committed in the workflow;
+- PostgreSQL driver is an optional runtime dependency rather than a hidden global dependency.
+
 ### Integration Tests
 
-Verify provider fixture through normalization, cache execution, source-snapshot publication, persistence, ingestion-run counts, and failure recording. Failed or disallowed partial runs must not publish trusted snapshots, and cache reuse must not rewrite canonical provenance/freshness.
+Verify provider fixture through normalization, cache/retry execution, source-snapshot publication, persistence, ingestion-run counts, durable failure recording, and attempt evidence. Failed or disallowed partial runs must not publish trusted snapshots, and cache reuse must not rewrite canonical provenance/freshness.
 
 ### End-to-End Tests
 
-After implementation, verify scheduled or manually dispatched ingestion produces observable run status and normalized persisted data with source and freshness metadata. No test places an order.
+After merge and protected configuration, verify manually dispatched production ingestion produces a real workflow result, normalized persisted data, immutable source snapshot, and matching durable `ingestion_runs` evidence. No test places an order.
+
+Production-live acceptance requires a real run from `main`; deterministic PR CI cannot substitute for this evidence.
 
 ## Required Phase 2 Scenarios
 
@@ -83,6 +113,10 @@ After implementation, verify scheduled or manually dispatched ingestion produces
 - cutoff exclusion and disallowed partial snapshot publication
 - immutable same-ID persistence conflict
 - transactional snapshot persistence rollback
+- durable ingestion-run identical replay and conflicting identity rollback
+- sanitized catch-all operational failure with no connection-string leakage
+- provider-attempt count propagation through bounded retry
+- scheduled workflow missing-secret failure
 - market holidays and publication delays
 - stale and hard-expired datasets
 - allowed and disallowed partial datasets
@@ -100,7 +134,7 @@ Fixtures include known source payloads, canonical expected records, rejected row
 
 ## Database Validation
 
-The Phase 2 persistence migration uses PostgreSQL `numeric` for canonical financial values, `timestamptz` for canonical times, UUID primary/foreign keys, ordered snapshot membership, uniqueness constraints, and RLS enabled with no client-facing policies. Remote database validation must verify those constraints after protected migration execution. User-owned table RLS tests remain separately required before portfolio data is exposed.
+The Phase 2 persistence migrations use PostgreSQL `numeric` for canonical financial values, `timestamptz` for canonical times, UUID primary/foreign keys, ordered snapshot membership, uniqueness constraints, and RLS enabled with no client-facing policies. Operational-status tables additionally persist sanitized terminal run/failure evidence and optional snapshot linkage. Remote database validation must verify those constraints after protected migration execution. User-owned table RLS tests remain separately required before portfolio data is exposed.
 
 ## Numeric Validation
 
@@ -108,15 +142,15 @@ Financial calculations use documented formulas, golden fixtures, expected result
 
 ## CI Gates
 
-The Phase 2 pipeline progressively includes Python compilation/unit tests, provider contract tests, persistence tests, cache tests, documentation checks, secret scanning, protected migration validation, and frontend verification as applicable.
+The Phase 2 pipeline progressively includes Python compilation/unit tests, provider contract tests, persistence tests, cache tests, scheduled-ingestion/status tests, documentation checks, secret scanning, protected migration validation, and frontend verification as applicable.
 
-## Live Smoke Tests
+## Live Smoke and Production Tests
 
-Live provider tests are manually triggered, rate-limited, and do not replace deterministic fixtures. FRED and ECOS live workflows require API keys stored only in GitHub Actions secrets; Yahoo live smoke requires no secret. Logs expose only bounded summary evidence and classified safe failures.
+Live provider tests are manually triggered, rate-limited, and do not replace deterministic fixtures. FRED and ECOS live workflows require API keys stored only in GitHub Actions secrets; Yahoo provider live smoke requires no provider secret. Logs expose only bounded summary evidence and classified safe failures.
 
-FRED, Yahoo, and ECOS each have at least one verified successful live retrieval run. Those runs are bounded evidence and do not guarantee permanent provider availability.
+FRED, Yahoo, and ECOS each have at least one verified successful live retrieval run. Those runs are bounded provider evidence and do not prove the new scheduled persistence workflow.
 
-FX normalization, source snapshot publication, fake-DB persistence, and cache-executor tests have no live network dependency. Remote Supabase migration/application validation is a separate protected operational check, not a provider smoke test.
+The production Yahoo scheduled-ingestion workflow additionally requires the protected `SUPABASE_DB_URL` secret and remotely applied operational-status migration. A real workflow success plus matching durable database evidence is required before production scheduling is called live-validated.
 
 ## Test Evidence
 
@@ -124,4 +158,4 @@ Every PR lists exact automated checks/results, skipped areas, and known limitati
 
 ## Release Acceptance
 
-Before Phase 2 is complete, provider adapters and canonical normalization must pass contract tests, stale/failure states must remain observable, duplicate writes must be prevented, cache reuse must preserve provenance/freshness without hiding failed refreshes, deterministic source snapshots must make downstream input sets reproducible, persisted immutable identities must be conflict-safe, and failed providers/persistence attempts must not silently produce trusted current snapshots.
+Before Phase 2 is complete, provider adapters and canonical normalization must pass contract tests, stale/failure states must remain observable, duplicate writes must be prevented, cache reuse must preserve provenance/freshness without hiding failed refreshes, deterministic source snapshots must make downstream input sets reproducible, persisted immutable identities must be conflict-safe, scheduled workflows must fail safely, durable run evidence must be sanitized and idempotent, and failed providers/persistence attempts must not silently produce trusted current snapshots.
