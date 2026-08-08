@@ -13,7 +13,7 @@ PR #70 merged as `6a500adcae708da3ce2b33614856e5de55598f4c`; Issue #69 closed. T
 - Active branch: `agent/dataset-versioning`
 - Issue: #71 — `feat: add deterministic dataset and snapshot versioning`
 - Requirement IDs: `REQ-DATA-002`, `REQ-OPS-002`, `REQ-MKT-002`
-- Draft PR: pending creation/CI validation
+- PR: #72 — Draft pending final latest-head CI, then Ready for Review
 
 ## Dataset Versioning Scope
 
@@ -23,15 +23,17 @@ PR #70 merged as `6a500adcae708da3ce2b33614856e5de55598f4c`; Issue #69 closed. T
 - SHA-256 version content covers dataset, `as_of`, and stable member snapshot identity/content metadata. Operational creation/publication timestamps are not content identity.
 - UUIDv5 derives deterministic version identity from dataset, `as_of`, and checksum.
 - Publication fails closed on dataset mismatch, duplicate snapshot IDs, conflicting provider/cutoff identities, look-ahead cutoff, publication after version creation, empty input, or timezone-naive boundaries.
-- `DatasetVersionRepository` requires every member source snapshot to exist with matching immutable persisted content before atomically writing the version and ordered memberships.
+- `DatasetVersionRepository` requires every member source snapshot to exist with matching immutable persisted dataset/provider/cutoff/`published_at`/checksum evidence before atomically writing the version and ordered memberships.
 - Identical replay is idempotent. Conflicting version content or membership order rolls back.
-- Migration `202608080005_dataset_versions.sql` adds server-managed `dataset_versions` and `dataset_version_snapshots` with RLS enabled and no client-facing policies.
+- Migration `202608080005_dataset_versioning.sql` adds server-managed `dataset_versions` and `dataset_version_snapshots` with RLS enabled and no client-facing policies.
 - Cross-dataset analysis-input bundles, provider fallback/reconciliation, retention/deletion, portfolio logic, and backtesting remain out of scope.
 
 ## Validation Status
 
-- Deterministic network-free unit/fake-DB tests have been added for identity/order stability, UTC normalization, mismatch/duplicate/conflict/look-ahead rejection, atomic persistence, replay, missing source snapshots, immutable conflict, membership conflict, and pre-connect input validation.
-- Python and Documentation CI are pending until the Draft PR is opened.
+- Deterministic network-free unit/fake-DB tests cover identity/order stability, UTC normalization, mismatch/duplicate/conflict/look-ahead rejection, publication-time boundaries, atomic persistence, replay, persisted source-snapshot publication conflict, and immutable version conflict.
+- Python run #127 failed because the initial new test imported `pytest` while repository CI uses `unittest discover` and does not install pytest. The suite was converted to the repository test contract.
+- Head `10ee278428b9536f3cd7d6cc05830da3a7708e9f` passed Python #128 and Documentation #188 before final living-document evidence commits.
+- Final living-document commits require one last latest-head Python/Documentation CI confirmation before PR #72 can be marked Ready for Review.
 - The new migration is committed only; it must not be applied remotely before explicit merge approval.
 
 ## Verified Production Scheduled-Ingestion Evidence
@@ -53,9 +55,7 @@ PR #70 merged as `6a500adcae708da3ce2b33614856e5de55598f4c`; Issue #69 closed. T
 
 ## Exact Next Steps
 
-1. Finish traceability/living-document updates for Issue #71.
-2. Open a Draft PR and run applicable Python/Documentation CI.
-3. Fix any deterministic CI failures without waiting for user approval.
-4. Mark Ready for Review only after latest-head CI succeeds and documentation evidence is current.
-5. Stop for explicit user merge approval.
-6. Only after merge approval/merge, apply the dataset-version migration remotely and verify schema/advisor evidence before claiming deployment.
+1. Confirm latest-head Python and Documentation CI after final living-document commits.
+2. If both pass, update PR #72 validation evidence and mark Ready for Review.
+3. Stop for explicit user merge approval.
+4. Only after approval and merge, apply `202608080005_dataset_versioning.sql` remotely and verify schema/advisor evidence before claiming deployment.
