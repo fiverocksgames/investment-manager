@@ -1,5 +1,19 @@
 # Worklog
 
+## 2026-08-08 — Provenance-Preserving Cache Executor
+
+- PR #55 merged as `3ea639233da1d8d42e7ce9e4ff34d3ea9240cb26`; Issue #53 closed.
+- Created Issue #57, branch `agent/cache-executor`, and Draft PR #58.
+- Added process-local `CacheExecutor` and `CacheExecution` using the full provider + canonical `FetchRequest` boundary as cache identity.
+- Reuses only fully successful `FetchResult` values for `DatasetPolicy.cache_ttl`; partial and failed results are never cached.
+- Exact expiry triggers a new provider call. Expired successful data is not returned as an implicit stale-on-error fallback.
+- Cache hits preserve canonical observations and provider provenance exactly, including IDs, Decimal values, observed/retrieved timestamps, quality, freshness, revision, and source attributes.
+- Cache timing metadata is timezone-aware UTC execution metadata and is explicitly separate from source freshness.
+- Added deterministic network-free tests for miss/hit, exact expiry and replacement, provider/request isolation, partial/failed non-caching, stale-on-error exclusion, dataset mismatch, UTC validation, and provider-result mismatch.
+- Added `docs/CACHE_EXECUTOR.md` and updated test plan, roadmap, traceability, and handoff documentation.
+- Initial implementation/documentation head `b825dcc4bf2c391becfc700de466b8902f9c7b93`: Python run #87 and Documentation run #146 passed.
+- Latest-head CI remains required after living-document updates before PR #58 can be marked Ready for Review.
+
 ## 2026-08-08 — Remote Persistence Index Validation Evidence
 
 - PR #51 merged as `46b209f7c824c3a439ecb26a2fd20559ad8462f9`; Issue #50 closed.
