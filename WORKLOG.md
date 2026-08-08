@@ -1,5 +1,14 @@
 # Worklog
 
+## 2026-08-08 — Remote Persistence Index Validation Evidence
+
+- PR #51 merged as `46b209f7c824c3a439ecb26a2fd20559ad8462f9`; Issue #50 closed.
+- Applied `snapshot_observation_fk_index` to Supabase project `xztjjgzpryrfcppqkbdo`.
+- Re-ran Supabase performance advisor and verified the prior `unindexed_foreign_keys` finding for `source_snapshot_observations.observation_id` is no longer present.
+- The new `source_snapshot_observations_observation_id_idx` and the two existing data-platform indexes currently appear only as `unused_index` INFO notices, which is expected for newly created/empty tables and is not removal evidence.
+- Supabase migration history contains two entries named `snapshot_observation_fk_index` with different versions. Because the migration uses `create index if not exists`, schema state remains correct; the duplicate history record is documented rather than hidden.
+- Created Issue #53 and branch `agent/persistence-index-evidence` for evidence-only living-document updates. No schema or application-code changes are included.
+
 ## 2026-08-08 — Persistence and Idempotent Snapshot Storage
 
 - PR #45 merged as `878f0bb69cf0df70de12898b42ec4f8e25786320`; Issue #44 closed.
@@ -13,8 +22,7 @@
 - Added deterministic fake-DB tests covering atomic write, identical replay, observation conflict, membership conflict, rollback, exact snapshot membership, Decimal preservation, UTC timestamps, and deterministic source-metadata serialization.
 - Added `docs/PERSISTENCE.md` and updated operations, test plan, roadmap, feature traceability, and handoff documents.
 - Initial implementation head `42d2b8414a54dc75930bad3dd233d636c6ce4f5c`: Python run #78 and Documentation run #130 passed.
-- The migration has **not** been applied to a remote Supabase project. Remote migration/application and protected connectivity remain separate evidence work after merge.
-- Final latest-head CI is required before PR #47 may be marked Ready for Review; explicit user approval remains required before merge.
+- The initial migration was later applied remotely and validated with bounded temporary-row smoke evidence; see the remote persistence sections above and `docs/PERSISTENCE.md`.
 
 ## 2026-08-08 — Immutable Source Snapshot Publication
 
