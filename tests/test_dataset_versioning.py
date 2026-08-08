@@ -15,14 +15,14 @@ AS_OF = datetime(2026, 8, 8, 12, 0, tzinfo=UTC)
 CREATED = AS_OF + timedelta(seconds=1)
 
 
-def snapshot(number: int, *, dataset="market_prices", provider="yahoo", cutoff=None, checksum=None):
+def snapshot(number: int, *, dataset="market_prices", provider="yahoo", cutoff=None, checksum=None, published_at=None):
     cutoff = cutoff or (AS_OF - timedelta(days=number))
     return SourceSnapshot(
         snapshot_id=UUID(f"00000000-0000-0000-0000-{number:012d}"),
         dataset=dataset,
         provider=provider,
         cutoff_at=cutoff,
-        published_at=cutoff + timedelta(seconds=1),
+        published_at=published_at or (cutoff + timedelta(seconds=1)),
         observation_ids=(UUID(f"10000000-0000-0000-0000-{number:012d}"),),
         checksum=checksum or (f"{number:064x}"[-64:]),
     )
@@ -62,6 +62,13 @@ def test_rejects_dataset_mismatch_duplicate_and_future_cutoff():
         publisher.publish(dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(future,))
 
 
+def test_rejects_snapshot_published_after_version_creation():
+    publisher = DatasetVersionPublisher()
+    item = snapshot(1, published_at=CREATED + timedelta(seconds=1))
+    with pytest.raises(DatasetVersionError, match="published_at must not exceed"):
+        publisher.publish(dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(item,))
+
+
 def test_rejects_conflicting_same_provider_cutoff_boundary():
     publisher = DatasetVersionPublisher()
     one = snapshot(1, provider="yahoo", cutoff=AS_OF - timedelta(days=1), checksum="1" * 64)
@@ -89,7 +96,7 @@ class FakeCursor:
     def execute(self, operation, parameters=()):
         compact = " ".join(operation.split()).lower()
         self.row = None
-        if compact.startswith("select dataset, provider, cutoff_at, checksum from source_snapshots"):
+        if compact.startswith("select dataset, provider, cutoff_at, published_at, checksum from source_snapshots"):
             self.row = self.state["snapshots"].get(parameters[0])
         elif compact.startswith("insert into dataset_versions"):
             version_id = parameters[0]
@@ -148,7 +155,7 @@ class FakeConnection:
 
 
 def persisted_snapshot_row(item):
-    return (item.dataset, item.provider, item.cutoff_at, item.checksum)
+    return (item.dataset, item.provider, item.cutoff_at, item.published_at, item.checksum)
 
 
 def test_repository_persists_and_replays_idempotently():
@@ -197,4 +204,27 @@ def test_repository_conflict_rolls_back():
         repository.persist(version, (item,))
 
     assert connection.rolled_back is True
+    assert state["memberships"] == {}
+
+
+def test_repository_rejects_persisted_snapshot_publication_conflict():
+    item = snapshot(1)
+    version = DatasetVersionPublisher().publish(
+        dataset="market_prices", as_of=AS_OF, created_at=CREATED, snapshots=(item,)
+    )
+    persisted = list(persisted_snapshot_row(item))
+    persisted[3] = item.published_at + timedelta(minutes=1)
+    state = {
+        "snapshots": {str(item.snapshot_id): tuple(persisted)},
+        "versions": {},
+        "memberships": {},
+    }
+    connection = FakeConnection(state)
+    repository = DatasetVersionRepository(lambda: connection)
+
+    with pytest.raises(DatasetVersionError, match="missing or conflicts"):
+        repository.persist(version, (item,))
+
+    assert connection.rolled_back is True
+    assert state["versions"] == {}
     assert state["memberships"] == {}
