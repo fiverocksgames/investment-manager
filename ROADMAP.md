@@ -45,11 +45,12 @@ Remaining:
 - Transactional idempotent snapshot persistence with remotely validated Supabase schema and foreign-key indexing
 - Provenance-preserving process-local cache executor with explicit TTL and no silent stale fallback
 - Provider-independent scheduled-ingestion orchestration with explicit partial/failure policy and operational execution evidence
-- Live-success evidence recorded for FRED, Yahoo, and ECOS
+- Production Yahoo SPY scheduling implementation with durable ingestion-run/failure persistence, merged on `main`
+- Live-success evidence recorded for FRED, Yahoo, and ECOS provider retrieval
 
 ### Active Next Milestones
 
-1. Production Yahoo scheduling and durable ingestion-run/failure evidence — implementation/CI validation in progress; remote migration, GitHub secret, and real workflow success still required
+1. Production-live validation of the merged Yahoo scheduler: apply operational-status migration, configure `SUPABASE_DB_URL`, manually dispatch the workflow, and verify durable run evidence
 2. Dataset and snapshot versioning
 3. Broaden scheduled ingestion to additional approved datasets/providers after the initial production path is proven
 
