@@ -43,13 +43,13 @@ Remaining:
 - Canonical FX normalization with explicit base/quote direction and deterministic Decimal inverse normalization
 - Deterministic immutable source-snapshot publication with explicit cutoff, checksum, and snapshot identity
 - Transactional idempotent snapshot persistence with remotely validated Supabase schema and foreign-key indexing
+- Provenance-preserving process-local Cache Executor with explicit TTL, full request/provider cache identity, success-only reuse, and no stale-on-error fallback
 - Live-success evidence recorded for FRED, Yahoo, and ECOS
 
 ### Active Next Milestones
 
-1. Cache executor with preserved provenance
-2. Scheduled ingestion and operational status reporting
-3. Dataset and snapshot versioning
+1. Scheduled ingestion and operational status reporting
+2. Dataset and snapshot versioning
 
 ### Exit Criteria
 
