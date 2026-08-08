@@ -47,18 +47,42 @@ Database URLs, passwords, service-role credentials, and other secrets are runtim
 
 The migration enables Row Level Security on all three Phase 2 persistence tables and deliberately creates no client-facing policies. This keeps browser access denied by default. Server-side ingestion access and future user-owned portfolio/RLS design require separately reviewed configuration.
 
+Supabase security advisor reports `rls_enabled_no_policy` informational notices for these tables. Those notices are expected for the current server-managed deny-by-default design and are not treated as missing client authorization policy.
+
+## Verified Remote Evidence
+
+The initial `data_platform_persistence` migration was applied successfully to the protected Supabase project after PR #47 merged. Remote schema inspection confirmed:
+
+- all three persistence tables exist;
+- `numeric`, `timestamptz`, UUID, and `jsonb` column types match the committed contract;
+- primary keys, foreign keys, uniqueness constraints, checksum/publication-order checks, and retrieval-order checks exist;
+- RLS is enabled on all three tables;
+- no client-facing RLS policies exist;
+- the migration is recorded by Supabase.
+
+A bounded remote smoke used temporary UUIDs and no personal investment data. It inserted one canonical observation, one snapshot, and one ordered membership; replayed the identical observation with `ON CONFLICT DO NOTHING`; verified exactly one row remained and PostgreSQL preserved the value as `123.45`; confirmed a conflicting same-ID insert was rejected by the primary-key constraint; and deleted all temporary rows afterward.
+
+This is bounded evidence for the tested schema and transaction primitives. It is not a claim that the Python `SnapshotRepository` has yet been executed end-to-end against a live PostgreSQL driver.
+
+## Advisor Follow-up
+
+After the initial remote migration, Supabase performance advisor reported one actionable finding: the foreign key from `source_snapshot_observations.observation_id` lacked a covering index. Follow-up migration `202608080002_snapshot_observation_fk_index.sql` adds `source_snapshot_observations_observation_id_idx` using `create index if not exists`.
+
+Unused-index informational notices on the new empty data-platform tables are expected immediately after creation and are not evidence that the intended query indexes should be removed.
+
+The separate Supabase Auth warning for leaked-password protection is outside this persistence schema change and requires a dedicated authentication/security decision.
+
 ## Migration Validation Boundary
 
-Routine CI validates Python persistence behavior and documentation without connecting to a live Supabase project. Committing the migration is not evidence that it has been applied remotely.
+Routine CI validates Python persistence behavior and documentation without connecting to a live Supabase project. Remote migration evidence must be recorded separately and never inferred from committed SQL alone.
 
-Remote migration execution, schema inspection, service-role connectivity, and rollback/recovery validation require separate protected execution evidence after merge.
+After the follow-up index migration is merged, it must be applied remotely and the Supabase performance advisor must be re-run before the foreign-key warning is described as resolved.
 
 ## Initial Limitations
 
 This milestone does not implement:
 
-- remote migration deployment;
-- a mandatory PostgreSQL driver;
+- a mandatory PostgreSQL driver or live Python repository smoke;
 - ingestion-run persistence;
 - user-owned portfolio tables or user RLS policies;
 - cache execution;
